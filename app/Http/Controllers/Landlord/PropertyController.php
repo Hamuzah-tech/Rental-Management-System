@@ -4,62 +4,196 @@ namespace App\Http\Controllers\Landlord;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Property;
+
 
 class PropertyController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+
     public function index()
     {
-        //
+        $properties = Property::where(
+            'landlord_id',
+            Auth::id()
+        )
+        ->latest()
+        ->paginate(10);
+
+
+        return view(
+            'landlord.properties.index',
+            compact('properties')
+        );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
+
     public function create()
     {
-        //
+        return view(
+            'landlord.properties.create'
+        );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
+
+
     public function store(Request $request)
     {
-        //
+
+        $data = $request->validate([
+
+            'name' => [
+                'required',
+                'string'
+            ],
+
+            'address' => [
+                'nullable',
+                'string'
+            ],
+
+            'description' => [
+                'nullable',
+                'string'
+            ],
+
+        ]);
+
+
+
+        $data['landlord_id'] = Auth::id();
+
+        $data['status'] = true;
+
+
+
+        Property::create($data);
+
+
+
+        return redirect()
+            ->route('landlord.properties.index')
+            ->with(
+                'success',
+                'Property created successfully.'
+            );
+
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+
+
+
+    public function edit(Property $property)
     {
-        //
+
+        $this->authorizeProperty($property);
+
+
+        return view(
+            'landlord.properties.edit',
+            compact('property')
+        );
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+
+
+
+
+    public function update(Request $request, Property $property)
     {
-        //
+
+        $this->authorizeProperty($property);
+
+
+
+        $data = $request->validate([
+
+            'name'=>'required|string',
+
+            'address'=>'nullable|string',
+
+            'description'=>'nullable|string',
+
+        ]);
+
+
+
+        $property->update($data);
+
+
+
+        return redirect()
+            ->route('landlord.properties.index')
+            ->with(
+                'success',
+                'Property updated.'
+            );
+
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+
+
+
+
+    public function destroy(Property $property)
     {
-        //
+
+        $this->authorizeProperty($property);
+
+
+        $property->delete();
+
+
+
+        return back()
+            ->with(
+                'success',
+                'Property deleted.'
+            );
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+
+
+
+    public function toggleStatus(Property $property)
     {
-        //
+
+        $this->authorizeProperty($property);
+
+
+
+        $property->update([
+
+            'status'=>!$property->status
+
+        ]);
+
+
+
+        return back();
+
     }
+
+
+
+
+
+
+    private function authorizeProperty(Property $property)
+    {
+
+        abort_if(
+            $property->landlord_id !== Auth::id(),
+            403
+        );
+
+    }
+
+
 }

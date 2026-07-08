@@ -3,63 +3,168 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\StorePropertyRequest;
+use App\Http\Requests\Admin\UpdatePropertyRequest;
+use App\Models\Property;
+use App\Models\User;
+use App\Services\PropertyService;
+use Illuminate\Http\RedirectResponse;
 
 class PropertyController extends Controller
 {
+
+    public function __construct(
+        protected PropertyService $propertyService
+    ) {
+    }
+
+
     /**
-     * Display a listing of the resource.
+     * Display properties.
      */
     public function index()
     {
-        //
+        $properties = Property::with('landlord')
+            ->latest()
+            ->paginate(10);
+
+
+        return view(
+            'admin.properties.index',
+            compact('properties')
+        );
     }
 
+
+
     /**
-     * Show the form for creating a new resource.
+     * Show create form.
      */
     public function create()
     {
-        //
+
+        $landlords = User::role('Landlord')
+            ->latest()
+            ->get();
+
+
+        return view(
+            'admin.properties.create',
+            compact('landlords')
+        );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+
 
     /**
-     * Display the specified resource.
+     * Store property.
      */
-    public function show(string $id)
+    public function store(StorePropertyRequest $request): RedirectResponse
     {
-        //
+
+        $this->propertyService->create(
+            $request->validated()
+        );
+
+
+        return redirect()
+            ->route('admin.properties.index')
+            ->with(
+                'success',
+                'Property created successfully.'
+            );
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+
 
     /**
-     * Update the specified resource in storage.
+     * Show property.
      */
-    public function update(Request $request, string $id)
+    public function show(Property $property)
     {
-        //
+
+        $property->load([
+            'landlord',
+            'tenants'
+        ]);
+
+
+        return view(
+            'admin.properties.show',
+            compact('property')
+        );
+
     }
 
+
+
     /**
-     * Remove the specified resource from storage.
+     * Edit form.
      */
-    public function destroy(string $id)
+    public function edit(Property $property)
     {
-        //
+
+        $landlords = User::role('Landlord')
+            ->get();
+
+
+        return view(
+            'admin.properties.edit',
+            compact(
+                'property',
+                'landlords'
+            )
+        );
+
     }
+
+
+
+
+    /**
+     * Update property.
+     */
+    public function update(
+        UpdatePropertyRequest $request,
+        Property $property
+    ): RedirectResponse {
+
+
+        $this->propertyService->update(
+            $property,
+            $request->validated()
+        );
+
+
+        return redirect()
+            ->route('admin.properties.index')
+            ->with(
+                'success',
+                'Property updated successfully.'
+            );
+
+    }
+
+
+
+
+    /**
+     * Delete property.
+     */
+    public function destroy(Property $property): RedirectResponse
+    {
+
+        $this->propertyService->delete($property);
+
+
+        return redirect()
+            ->route('admin.properties.index')
+            ->with(
+                'success',
+                'Property deleted successfully.'
+            );
+
+    }
+
 }
