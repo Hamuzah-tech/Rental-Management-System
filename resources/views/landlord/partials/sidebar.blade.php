@@ -56,8 +56,8 @@ Landlord Portal
         </a>
 
 
-    <a href="#"
-       class="flex items-center gap-3 px-6 py-3 hover:bg-slate-800">
+    <a href="{{ route('landlord.payments.index') }}"
+    class="flex items-center gap-3 px-6 py-3 hover:bg-slate-800 transition">
 
         <x-heroicon-o-banknotes class="w-5 h-5"/>
 

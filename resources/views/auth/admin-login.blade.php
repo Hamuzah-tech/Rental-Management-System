@@ -7,41 +7,46 @@
 
     @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
-<body class="bg-slate-100">
 
-<div class="min-h-screen flex items-center justify-center">
+<body class="bg-white">
 
-    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+<div class="min-h-screen flex items-center justify-center px-6">
 
-        <div class="text-center mb-8">
+    <div class="w-full max-w-md">
+
+
+        <div class="mb-8">
 
             <h1 class="text-3xl font-bold text-slate-800">
-                Rental MS
+                Portal
             </h1>
 
-            <p class="text-gray-500 mt-2">
-                Super Administrator Login
+            <p class="text-slate-500 mt-2">
+                Operations manager workspace login.
             </p>
 
         </div>
 
-                @if ($errors->any())
 
-        <div class="mb-4 bg-red-100 border border-red-300 text-red-700 rounded-lg p-3">
+        @if ($errors->any())
 
-            {{ $errors->first() }}
+            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
 
-        </div>
+                {{ $errors->first() }}
+
+            </div>
 
         @endif
+
 
         <form method="POST" action="{{ route('admin.login') }}">
 
             @csrf
 
+
             <div class="mb-4">
 
-                <label class="block mb-2 font-medium">
+                <label class="block mb-2 text-sm font-medium text-slate-700">
                     Email
                 </label>
 
@@ -51,13 +56,15 @@
                     value="{{ old('email') }}"
                     required
                     autofocus
-                    class="w-full border rounded-lg p-3">
+                    autocomplete="email"
+                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none">
 
             </div>
 
+
             <div class="mb-6">
 
-                <label class="block mb-2 font-medium">
+                <label class="block mb-2 text-sm font-medium text-slate-700">
                     Password
                 </label>
 
@@ -65,33 +72,37 @@
                     type="password"
                     name="password"
                     required
-                    class="w-full border rounded-lg p-3">
+                    autocomplete="current-password"
+                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none">
 
             </div>
 
-            <div class="mb-6">
 
-                <label class="flex items-center">
+            <div class="mb-6 flex items-center">
 
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        class="mr-2">
+                <input
+                    type="checkbox"
+                    name="remember"
+                    class="rounded border-slate-300 text-slate-600 focus:ring-slate-400">
 
+                <label class="ml-2 text-sm text-slate-500">
                     Remember me
-
                 </label>
 
             </div>
 
-            <button
-                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg">
 
-                Login as Super Admin
+            <button
+                type="submit"
+                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl transition">
+
+                Login
 
             </button>
 
+
         </form>
+
 
     </div>
 

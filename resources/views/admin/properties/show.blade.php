@@ -12,182 +12,299 @@
 
 
 
-<div class="bg-white rounded-xl shadow p-6">
+    <!-- Property Info -->
 
+    <div class="bg-white border border-slate-200 rounded-xl p-6">
 
-<div class="flex justify-between">
 
+        <div class="flex justify-between items-start">
 
-<div>
 
-<h2 class="text-3xl font-bold">
+            <div>
 
-{{ $property->name }}
 
-</h2>
+                <h2 class="text-2xl font-bold text-slate-800">
 
+                    {{ $property->name }}
 
-<p class="text-gray-500">
+                </h2>
 
-{{ $property->address }}
 
-</p>
+                <p class="text-sm text-slate-500 mt-1">
 
+                    {{ $property->address }}
 
-</div>
+                </p>
 
 
-@if($property->status)
+            </div>
 
-<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full h-fit">
 
-Active
 
-</span>
 
-@endif
+            @if($property->status)
 
+                <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-sm">
 
-</div>
+                    Active
 
+                </span>
 
-<hr class="my-6">
+            @else
 
+                <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-sm">
 
-<div class="grid md:grid-cols-2 gap-6">
+                    Inactive
 
+                </span>
 
-<div>
+            @endif
 
-<h3 class="font-bold">
-Owner
-</h3>
 
-<p>
-{{ $property->landlord->name }}
-</p>
 
+        </div>
 
-</div>
 
 
 
-<div>
 
-<h3 class="font-bold">
-Total Tenants
-</h3>
+        <div class="border-t border-slate-200 my-6"></div>
 
-<p>
 
-{{ $property->tenants->count() }}
 
-</p>
 
 
-</div>
+        <div class="grid md:grid-cols-2 gap-6">
 
 
-</div>
 
+            <div class="flex items-center gap-3">
 
 
-</div>
+                <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
 
+                    <x-heroicon-o-user class="w-5 h-5 text-slate-300"/>
 
+                </div>
 
 
-<div class="bg-white rounded-xl shadow">
+                <div>
 
+                    <p class="text-sm text-slate-500">
+                        Owner
+                    </p>
 
-<div class="px-6 py-4 border-b">
 
-<h3 class="text-xl font-bold">
-Tenants
-</h3>
+                    <p class="font-semibold text-slate-800">
 
-</div>
+                        {{ $property->landlord->name }}
 
+                    </p>
 
+                </div>
 
-<table class="w-full">
 
+            </div>
 
-<thead class="bg-gray-100">
 
-<tr>
 
-<th class="px-6 py-3 text-left">
-Name
-</th>
 
-<th class="px-6 py-3 text-left">
-Phone
-</th>
 
-<th class="px-6 py-3 text-left">
-Status
-</th>
 
-</tr>
 
-</thead>
+            <div class="flex items-center gap-3">
 
 
-<tbody>
+                <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
 
+                    <x-heroicon-o-users class="w-5 h-5 text-slate-300"/>
 
-@forelse($property->tenants as $tenant)
+                </div>
 
 
-<tr class="border-t">
+                <div>
 
+                    <p class="text-sm text-slate-500">
+                        Total Tenants
+                    </p>
 
-<td class="px-6 py-3">
-{{ $tenant->name }}
-</td>
 
+                    <p class="font-semibold text-slate-800">
 
-<td class="px-6 py-3">
-{{ $tenant->phone }}
-</td>
+                        {{ $property->tenants->count() }}
 
+                    </p>
 
-<td class="px-6 py-3">
+                </div>
 
-{{ $tenant->status }}
 
-</td>
+            </div>
 
 
-</tr>
 
 
-@empty
+        </div>
 
 
-<tr>
 
-<td colspan="3"
-class="text-center py-6 text-gray-500">
+    </div>
 
-No tenants yet.
 
-</td>
 
-</tr>
 
 
-@endforelse
 
 
-</tbody>
+    <!-- Tenants -->
 
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-</table>
 
 
-</div>
+        <div class="px-6 py-4 border-b border-slate-200">
+
+
+            <h3 class="text-lg font-bold text-slate-800">
+
+                Tenants
+
+            </h3>
+
+
+        </div>
+
+
+
+
+
+        <table class="w-full text-sm">
+
+
+
+            <thead class="bg-slate-50">
+
+
+                <tr class="text-slate-500">
+
+
+                    <th class="px-5 py-3 text-left">
+                        #
+                    </th>
+
+
+                    <th class="px-5 py-3 text-left">
+                        Name
+                    </th>
+
+
+                    <th class="px-5 py-3 text-left">
+                        Phone
+                    </th>
+
+
+                    <th class="px-5 py-3 text-left">
+                        Status
+                    </th>
+
+
+                </tr>
+
+
+            </thead>
+
+
+
+
+
+            <tbody>
+
+
+            @forelse($property->tenants as $index => $tenant)
+
+
+
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+
+
+                    <td class="px-5 py-3 text-slate-400">
+
+                        {{ $index + 1 }}
+
+                    </td>
+
+
+
+                    <td class="px-5 py-3 font-medium text-slate-700">
+
+                        {{ $tenant->name }}
+
+                    </td>
+
+
+
+                    <td class="px-5 py-3 text-slate-600">
+
+                        {{ $tenant->phone }}
+
+                    </td>
+
+
+
+
+                    <td class="px-5 py-3">
+
+
+                        <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
+
+                            {{ $tenant->status }}
+
+                        </span>
+
+
+                    </td>
+
+
+
+                </tr>
+
+
+
+            @empty
+
+
+
+                <tr>
+
+
+                    <td colspan="4"
+                        class="text-center py-8 text-slate-500">
+
+
+                        No tenants yet.
+
+
+                    </td>
+
+
+                </tr>
+
+
+
+            @endforelse
+
+
+
+            </tbody>
+
+
+
+        </table>
+
+
+
+    </div>
+
+
 
 
 

@@ -3,90 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Management System</title>
+    <title>Portal</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100">
+<body class="bg-white">
 
-<div class="min-h-screen flex items-center justify-center">
+<div class="min-h-screen flex items-center justify-center px-6">
 
-    <div class="max-w-5xl w-full px-6">
+    <div class="w-full max-w-md">
 
-        <div class="text-center mb-12">
+        <h1 class="text-3xl font-bold text-slate-800">
+            Portal
+        </h1>
 
-            <h1 class="text-5xl font-bold text-slate-800">
-                Rental Management System
-            </h1>
+        <p class="mt-2 text-slate-500">
+            Choose your workspace to continue.
+        </p>
 
-            <p class="mt-4 text-lg text-slate-500">
-                Select the portal you want to access.
-            </p>
+        <div class="mt-10 space-y-4">
 
-        </div>
-
-
-        <div class="grid md:grid-cols-2 gap-8">
-
-
-            <!-- Staff -->
-
+            <!-- Operations Manager -->
             <a href="{{ route('admin.login') }}"
-               class="bg-white rounded-2xl shadow-lg p-10 hover:shadow-2xl transition text-center">
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
 
-                <div class="flex justify-center mb-6">
+                <x-heroicon-o-user-circle
+                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
 
-                    <x-heroicon-o-user-circle class="w-20 h-20 text-indigo-600"/>
-
+                <div class="flex-1">
+                    <h2 class="font-semibold text-slate-800">
+                        Operations Manager
+                    </h2>
                 </div>
 
-                <h2 class="text-2xl font-bold text-slate-800">
-                    Staff Portal
-                </h2>
-
-                <p class="mt-3 text-gray-500">
-                    Super Administrator and Staff Login
-                </p>
-
-                <div class="mt-8">
-
-                    <span class="bg-indigo-600 text-white px-6 py-3 rounded-lg">
-                        Login
-                    </span>
-
-                </div>
+                <span class="text-slate-400 text-xl">
+                    →
+                </span>
 
             </a>
 
-
-
             <!-- Landlord -->
-
             <a href="{{ route('landlord.login') }}"
-               class="bg-white rounded-2xl shadow-lg p-10 hover:shadow-2xl transition text-center">
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
 
-                <div class="flex justify-center mb-6">
+                <x-heroicon-o-home-modern
+                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
 
-                    <x-heroicon-o-home-modern class="w-20 h-20 text-green-600"/>
+                <div class="flex-1">
+                    <h2 class="font-semibold text-slate-800">
+                        Landlord Portal
+                    </h2>
 
+                    <p class="text-sm text-slate-500">
+                        Property Management
+                    </p>
                 </div>
 
-                <h2 class="text-2xl font-bold text-slate-800">
-                    Landlord Portal
-                </h2>
+                <span class="text-slate-400 text-xl">
+                    →
+                </span>
 
-                <p class="mt-3 text-gray-500">
-                    Login to manage your properties and tenants.
-                </p>
+            </a>
 
-                <div class="mt-8">
+            <!-- Tenant Portal -->
+            <a href="{{ route('tenant.payments.index') }}"
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
 
-                    <span class="bg-green-600 text-white px-6 py-3 rounded-lg">
-                        Login
-                    </span>
+                <x-heroicon-o-credit-card
+                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
 
+                <div class="flex-1">
+                    <h2 class="font-semibold text-slate-800">
+                        Tenant Portal
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Record Payments • Payment History • Move-Out Notice
+                    </p>
                 </div>
+
+                <span class="text-slate-400 text-xl">
+                    →
+                </span>
 
             </a>
 

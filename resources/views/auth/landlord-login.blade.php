@@ -7,27 +7,29 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100">
 
-<div class="min-h-screen flex items-center justify-center">
+<body class="bg-white">
 
-    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+<div class="min-h-screen flex items-center justify-center px-6">
 
-        <div class="text-center mb-8">
+    <div class="w-full max-w-md">
 
-            <h1 class="text-3xl font-bold text-green-600">
-                Rental Management System
+        <div class="mb-8">
+
+            <h1 class="text-3xl font-bold text-slate-800">
+                Portal
             </h1>
 
-            <p class="text-gray-500 mt-2">
-                Landlord Portal
+            <p class="text-slate-500 mt-2">
+                Landlord workspace login.
             </p>
 
         </div>
 
+
         @if ($errors->any())
 
-            <div class="mb-4 bg-red-100 border border-red-300 text-red-700 rounded-lg p-3">
+            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
 
                 {{ $errors->first() }}
 
@@ -35,13 +37,15 @@
 
         @endif
 
+
         <form method="POST" action="{{ route('landlord.login') }}">
 
             @csrf
 
+
             <div class="mb-4">
 
-                <label class="block mb-2 font-medium">
+                <label class="block mb-2 text-sm font-medium text-slate-700">
                     Username
                 </label>
 
@@ -52,13 +56,14 @@
                     required
                     autofocus
                     autocomplete="username"
-                    class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none">
 
             </div>
 
+
             <div class="mb-6">
 
-                <label class="block mb-2 font-medium">
+                <label class="block mb-2 text-sm font-medium text-slate-700">
                     Password
                 </label>
 
@@ -67,9 +72,10 @@
                     name="password"
                     required
                     autocomplete="current-password"
-                    class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none">
 
             </div>
+
 
             <div class="mb-6 flex items-center">
 
@@ -77,23 +83,26 @@
                     type="checkbox"
                     id="remember"
                     name="remember"
-                    class="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500">
+                    class="rounded border-slate-300 text-slate-600 focus:ring-slate-400">
 
-                <label for="remember" class="ml-2 text-sm text-gray-600">
+                <label for="remember" class="ml-2 text-sm text-slate-500">
                     Remember me
                 </label>
 
             </div>
 
+
             <button
                 type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg transition">
+                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl transition">
 
                 Login
 
             </button>
 
+
         </form>
+
 
     </div>
 
