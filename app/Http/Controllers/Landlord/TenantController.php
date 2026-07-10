@@ -17,31 +17,44 @@ class TenantController extends Controller
     /**
      * Display tenants belonging to logged landlord
      */
-    public function index()
-    {
+    public function index(Request $request)
+{
+    $filter = $request->get('payment_status', 'all');
 
-        $tenants = Tenant::whereHas(
-            'property',
-            function ($query) {
+    $query = Tenant::with(['property', 'payments'])
+        ->whereHas('property', function ($q) {
+            $q->where('landlord_id', Auth::id());
+        });
 
-                $query->where(
-                    'landlord_id',
-                    Auth::id()
-                );
+    if ($filter == 'paid') {
 
-            }
-        )
-        ->latest()
-        ->paginate(10);
-
-
-
-        return view(
-            'landlord.tenants.index',
-            compact('tenants')
-        );
+        $query->whereHas('payments', function ($q) {
+            $q->where('status', 'Approved');
+        });
 
     }
+
+    if ($filter == 'unpaid') {
+
+        $query->whereDoesntHave('payments', function ($q) {
+            $q->where('status', 'Approved');
+        });
+
+    }
+
+    $tenants = $query
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    return view(
+        'landlord.tenants.index',
+        compact(
+            'tenants',
+            'filter'
+        )
+    );
+}
 
 
 

@@ -3,86 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant Portal</title>
+    <title>Tenant</title>
 
-    @vite(['resources/css/app.css','resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100">
 
-<div class="min-h-screen flex items-center justify-center">
 
-    <div class="bg-white shadow-xl rounded-xl p-10 w-full max-w-3xl">
+<body class="bg-white">
 
-        <div class="text-center mb-10">
 
-            <h1 class="text-4xl font-bold text-indigo-700">
-                Rental Management System
-            </h1>
+<div class="min-h-screen flex items-center justify-center px-6">
 
-            <p class="text-gray-500 mt-2">
-                Tenant Self-Service Portal
-            </p>
 
-        </div>
+    <div class="w-full max-w-3xl">
 
-        <div class="grid md:grid-cols-3 gap-6">
+
+        <h1 class="text-3xl font-bold text-slate-800">
+            Tenant
+        </h1>
+
+
+        <p class="mt-2 text-slate-500">
+            Manage your rent payments and move-out requests.
+        </p>
+
+
+
+
+        <div class="mt-10 space-y-4">
+
+
+
+            <!-- Record Payment -->
 
             <a href="{{ route('tenant.payments.create') }}"
-               class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-8 text-center transition">
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
 
-                <div class="text-5xl mb-4">
-                    💳
+
+                <x-heroicon-o-credit-card
+                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
+
+
+                <div class="flex-1">
+
+
+                    <h2 class="font-semibold text-slate-800">
+                        Record Payment
+                    </h2>
+
+
+                    <p class="text-sm text-slate-500">
+                        Submit your rent payment with proof.
+                    </p>
+
+
                 </div>
 
-                <h2 class="font-bold text-xl">
-                    Record Payment
-                </h2>
 
-                <p class="mt-2 text-sm">
-                    Submit your rent payment.
-                </p>
+
+                <span class="text-slate-400 text-xl">
+                    →
+                </span>
+
 
             </a>
+
+
+
+
+
+
+
+            <!-- Payment History -->
+
 
             <a href="{{ route('tenant.payments.history') }}"
-               class="bg-green-600 hover:bg-green-700 text-white rounded-xl p-8 text-center transition">
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
 
-                <div class="text-5xl mb-4">
-                    📄
+
+
+                <x-heroicon-o-document-text
+                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
+
+
+
+                <div class="flex-1">
+
+
+                    <h2 class="font-semibold text-slate-800">
+                        Payment History
+                    </h2>
+
+
+                    <p class="text-sm text-slate-500">
+                        Check approved, pending and rejected payments.
+                    </p>
+
+
                 </div>
 
-                <h2 class="font-bold text-xl">
-                    Payment History
-                </h2>
 
-                <p class="mt-2 text-sm">
-                    View your payment records.
-                </p>
+
+                <span class="text-slate-400 text-xl">
+                    →
+                </span>
+
+
 
             </a>
 
-            <a href="#"
-               class="bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-8 text-center transition">
 
-                <div class="text-5xl mb-4">
-                    🚪
+
+
+
+
+
+
+
+            <!-- Move Out Notice -->
+
+
+            <a href="{{ route('tenant.moveout.create') }}"
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
+
+
+
+                <x-heroicon-o-arrow-right-on-rectangle
+                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
+
+
+
+                <div class="flex-1">
+
+
+                    <h2 class="font-semibold text-slate-800">
+                        Move-Out Notice
+                    </h2>
+
+
+                    <p class="text-sm text-slate-500">
+                        Submit a request to leave your property.
+                    </p>
+
+
                 </div>
 
-                <h2 class="font-bold text-xl">
-                    Move-Out Notice
-                </h2>
 
-                <p class="mt-2 text-sm">
-                    Submit your move-out request.
-                </p>
+
+                <span class="text-slate-400 text-xl">
+                    →
+                </span>
+
+
 
             </a>
+
+
+
+
 
         </div>
+
+
 
     </div>
 
+
+
 </div>
+
+
 
 </body>
 </html>

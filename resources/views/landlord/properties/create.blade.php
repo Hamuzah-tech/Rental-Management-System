@@ -2,8 +2,6 @@
 
 @section('title','Add Property')
 
-@section('page-title','Add Property')
-
 
 @section('content')
 
@@ -30,17 +28,9 @@
 
                 <h2 class="text-lg font-semibold text-slate-800">
 
-                    Add Property
+                    Add Hostel
 
                 </h2>
-
-
-                <p class="text-sm text-slate-500">
-
-                    Create a new property in your portfolio.
-
-                </p>
-
             </div>
 
 
@@ -71,7 +61,7 @@
 
                     <label class="block text-sm font-medium text-slate-700 mb-2">
 
-                        Property Name
+                        Hostel Name
 
                     </label>
 
@@ -116,7 +106,7 @@
                         name="address"
                         value="{{ old('address') }}"
                         class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
-                        placeholder="Example: Blantyre">
+                        placeholder="Example: Chikanda">
 
 
                 </div>
@@ -148,7 +138,7 @@
                         name="description"
                         rows="4"
                         class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
-                        placeholder="Property description">{{ old('description') }}</textarea>
+                        placeholder="Hostel description">{{ old('description') }}</textarea>
 
 
                 </div>

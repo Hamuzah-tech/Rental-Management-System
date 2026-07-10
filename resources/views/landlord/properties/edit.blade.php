@@ -2,7 +2,6 @@
 
 @section('title','Edit Property')
 
-@section('page-title','Edit Property')
 
 @section('content')
 
@@ -36,7 +35,7 @@
 
                 <h2 class="text-xl font-bold text-slate-800">
 
-                    Edit Property
+                    Edit Hostel
 
                 </h2>
 
@@ -44,7 +43,7 @@
 
                 <p class="text-sm text-slate-500">
 
-                    Update property information.
+                    Update Hostel information.
 
                 </p>
 
@@ -221,7 +220,7 @@
 
 
 
-                Update Property
+                Update Hostel
 
 
 

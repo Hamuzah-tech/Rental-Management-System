@@ -34,4 +34,12 @@ class Tenant extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    /**
+     * Tenant has many move-out notices.
+     */
+    public function moveOutNotices(): HasMany
+    {
+        return $this->hasMany(MoveOutNotice::class);
+    }
 }
