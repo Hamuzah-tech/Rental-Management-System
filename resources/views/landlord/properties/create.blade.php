@@ -180,7 +180,7 @@
                     <x-heroicon-o-check class="w-4 h-4"/>
 
 
-                    Save Property
+                    Save 
 
 
                 </button>
