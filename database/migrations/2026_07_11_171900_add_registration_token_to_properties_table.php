@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('properties', function (Blueprint $table) {
-            if (!Schema::hasColumn('properties', 'landlord_id')) {
-                $table->foreignId('landlord_id')->nullable()->after('id')->constrained('users')->onDelete('cascade');
+            if (!Schema::hasColumn('properties', 'registration_token')) {
+                $table->string('registration_token', 64)->unique()->nullable();
             }
         });
     }
@@ -24,8 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('properties', function (Blueprint $table) {
-            $table->dropForeign(['landlord_id']);
-            $table->dropColumn('landlord_id');
+            $table->dropColumn('registration_token');
         });
     }
 };

@@ -94,7 +94,6 @@
                             name="tenant_code"
                             value="{{ old('tenant_code') }}"
                             required
-                            placeholder="Example: TNT-X82K9P"
                             class="w-full rounded-xl border border-slate-300 px-4 py-3 uppercase focus:border-slate-500 focus:ring-slate-500">
 
                     </div>
@@ -203,7 +202,6 @@
                         <textarea
                             name="comment"
                             rows="3"
-                            placeholder="Leave any message for your landlord..."
                             class="w-full rounded-xl border border-slate-300 px-4 py-3 resize-none focus:border-slate-500 focus:ring-slate-500">{{ old('comment') }}</textarea>
 
                     </div>

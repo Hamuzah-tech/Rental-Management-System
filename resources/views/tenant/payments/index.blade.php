@@ -17,6 +17,15 @@
 
     <div class="w-full max-w-3xl">
 
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{{ route('home') }}"
+               class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 transition">
+                <x-heroicon-o-arrow-left
+                    class="w-5 h-5"/>
+                <span>Back</span>
+            </a>
+        </div>
 
         <h1 class="text-3xl font-bold text-slate-800">
             Tenant

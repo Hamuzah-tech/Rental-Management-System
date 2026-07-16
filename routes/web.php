@@ -7,13 +7,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\LandlordLoginController;
 
-
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\LandlordController;
 use App\Http\Controllers\Admin\PropertyController;
 use App\Http\Controllers\Admin\TenantController;
-
 
 // Landlord Controllers
 use App\Http\Controllers\Landlord\DashboardController as LandlordDashboard;
@@ -22,12 +20,10 @@ use App\Http\Controllers\Landlord\TenantController as LandlordTenantController;
 use App\Http\Controllers\Landlord\PaymentController as LandlordPaymentController;
 use App\Http\Controllers\Landlord\MoveOutNoticeController as LandlordMoveOutNoticeController;
 
-
 // Tenant Controllers
 use App\Http\Controllers\Tenant\PaymentController;
 use App\Http\Controllers\Tenant\MoveOutNoticeController;
-
-
+use App\Http\Controllers\TenantRegistrationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,16 +31,9 @@ use App\Http\Controllers\Tenant\MoveOutNoticeController;
 |--------------------------------------------------------------------------
 */
 
-
 Route::get('/', function () {
-
     return view('home');
-
 })->name('home');
-
-
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -52,24 +41,18 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-
 Route::middleware('auth')->group(function () {
-
-
 
     /*
     |--------------------------------------------------------------------------
     | Profile
     |--------------------------------------------------------------------------
     */
-
-
     Route::get('/profile', [
         ProfileController::class,
         'edit'
     ])
     ->name('profile.edit');
-
 
     Route::patch('/profile', [
         ProfileController::class,
@@ -77,52 +60,36 @@ Route::middleware('auth')->group(function () {
     ])
     ->name('profile.update');
 
-
     Route::delete('/profile', [
         ProfileController::class,
         'destroy'
     ])
     ->name('profile.destroy');
 
-
-
-
-
     /*
     |--------------------------------------------------------------------------
     | Super Admin Routes
     |--------------------------------------------------------------------------
     */
-
-
     Route::middleware('role:Super Admin')
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
-
-
-
             Route::get('/dashboard', [
                 AdminDashboard::class,
                 'index'
             ])
             ->name('dashboard');
 
-
-
             Route::resource(
                 'properties',
                 PropertyController::class
             );
 
-
-
             Route::resource(
                 'landlords',
                 LandlordController::class
             );
-
-
 
             Route::patch('/landlords/{landlord}/status', [
                 LandlordController::class,
@@ -130,73 +97,48 @@ Route::middleware('auth')->group(function () {
             ])
             ->name('landlords.status');
 
-
-
             Route::post('/landlords/{landlord}/reset-password', [
                 LandlordController::class,
                 'resetPassword'
             ])
             ->name('landlords.reset-password');
 
-
-
             Route::resource(
                 'tenants',
                 TenantController::class
             );
-
-
         });
-
-
-
-
-
 
     /*
     |--------------------------------------------------------------------------
     | Landlord Routes
     |--------------------------------------------------------------------------
     */
-
-
     Route::middleware('role:Landlord')
         ->prefix('landlord')
         ->name('landlord.')
         ->group(function () {
-
-
 
             /*
             |--------------------------------------------------------------------------
             | Dashboard
             |--------------------------------------------------------------------------
             */
-
-
             Route::get('/dashboard', [
                 LandlordDashboard::class,
                 'index'
             ])
             ->name('dashboard');
 
-
-
-
-
             /*
             |--------------------------------------------------------------------------
             | Properties
             |--------------------------------------------------------------------------
             */
-
-
             Route::resource(
                 'properties',
                 LandlordPropertyController::class
             );
-
-
 
             Route::patch('/properties/{property}/status', [
                 LandlordPropertyController::class,
@@ -204,25 +146,22 @@ Route::middleware('auth')->group(function () {
             ])
             ->name('properties.status');
 
-
-
-
-
-
-
             /*
             |--------------------------------------------------------------------------
             | Tenants
             |--------------------------------------------------------------------------
             */
-
-
             Route::resource(
                 'tenants',
                 LandlordTenantController::class
             );
 
-
+            // ADD THIS ROUTE FOR GENERATING REGISTRATION LINKS
+            Route::post('/tenants/generate-link', [
+                LandlordTenantController::class,
+                'generateRegistrationLink'
+            ])
+            ->name('tenants.generate-link');
 
             Route::patch('/tenants/{tenant}/move-out', [
                 LandlordTenantController::class,
@@ -230,35 +169,22 @@ Route::middleware('auth')->group(function () {
             ])
             ->name('tenants.moveout');
 
-
-
             Route::patch('/tenants/{tenant}/reactivate', [
                 LandlordTenantController::class,
                 'reactivate'
             ])
             ->name('tenants.reactivate');
 
-
-
-
-
-
-
-
             /*
             |--------------------------------------------------------------------------
             | Payments
             |--------------------------------------------------------------------------
             */
-
-
             Route::get('/payments', [
                 LandlordPaymentController::class,
                 'index'
             ])
             ->name('payments.index');
-
-
 
             Route::get('/payments/{payment}', [
                 LandlordPaymentController::class,
@@ -266,15 +192,11 @@ Route::middleware('auth')->group(function () {
             ])
             ->name('payments.show');
 
-
-
             Route::patch('/payments/{payment}/approve', [
                 LandlordPaymentController::class,
                 'approve'
             ])
             ->name('payments.approve');
-
-
 
             Route::patch('/payments/{payment}/reject', [
                 LandlordPaymentController::class,
@@ -282,26 +204,16 @@ Route::middleware('auth')->group(function () {
             ])
             ->name('payments.reject');
 
-
-
-
-
-
-
             /*
             |--------------------------------------------------------------------------
             | Move Out Notices
             |--------------------------------------------------------------------------
             */
-
-
             Route::get('/move-out-notices', [
                 LandlordMoveOutNoticeController::class,
                 'index'
             ])
             ->name('moveouts.index');
-
-
 
             Route::patch('/move-out-notices/{notice}/confirm', [
                 LandlordMoveOutNoticeController::class,
@@ -309,121 +221,63 @@ Route::middleware('auth')->group(function () {
             ])
             ->name('moveouts.confirm');
 
-
-
             Route::patch('/move-out-notices/{notice}/cancel', [
                 LandlordMoveOutNoticeController::class,
                 'cancel'
             ])
             ->name('moveouts.cancel');
-
-
-
         });
-
-
-
 });
-
-
-
-
-
-
 
 /*
 |--------------------------------------------------------------------------
 | Admin Login
 |--------------------------------------------------------------------------
 */
-
-
 Route::middleware('guest')->group(function () {
-
-
     Route::get('/admin/login', [
         AdminLoginController::class,
         'create'
     ])
     ->name('admin.login');
 
-
-
     Route::post('/admin/login', [
         AdminLoginController::class,
         'store'
     ]);
-
-
-
 });
-
-
-
-
-
-
 
 /*
 |--------------------------------------------------------------------------
 | Landlord Login
 |--------------------------------------------------------------------------
 */
-
-
 Route::middleware('guest')->group(function () {
-
-
     Route::get('/landlord/login', [
         LandlordLoginController::class,
         'create'
     ])
     ->name('landlord.login');
 
-
-
     Route::post('/landlord/login', [
         LandlordLoginController::class,
         'store'
     ]);
-
-
-
 });
-
-
-
-
-
-
 
 /*
 |--------------------------------------------------------------------------
 | Tenant Public Portal
 |--------------------------------------------------------------------------
 */
-
-
 Route::prefix('tenant')
     ->name('tenant.')
     ->group(function () {
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Payments
-        |--------------------------------------------------------------------------
-        */
-
-
         Route::get('/', [
             PaymentController::class,
             'index'
         ])
         ->name('payments.index');
-
-
 
         Route::get('/payments/create', [
             PaymentController::class,
@@ -431,15 +285,11 @@ Route::prefix('tenant')
         ])
         ->name('payments.create');
 
-
-
         Route::post('/payments', [
             PaymentController::class,
             'store'
         ])
         ->name('payments.store');
-
-
 
         Route::get('/payments/history', [
             PaymentController::class,
@@ -447,27 +297,11 @@ Route::prefix('tenant')
         ])
         ->name('payments.history');
 
-
-
         Route::post('/payments/history', [
             PaymentController::class,
             'search'
         ])
         ->name('payments.search');
-
-
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Move Out Notice
-        |--------------------------------------------------------------------------
-        */
-
 
         Route::get('/move-out', [
             MoveOutNoticeController::class,
@@ -475,18 +309,12 @@ Route::prefix('tenant')
         ])
         ->name('moveout.create');
 
-
-
         Route::post('/move-out', [
             MoveOutNoticeController::class,
             'store'
         ])
         ->name('moveout.store');
-
-
-
     });
-
 
 // For landlord password reset routes
 Route::prefix('landlord')->name('landlord.')->group(function() {
@@ -496,5 +324,24 @@ Route::prefix('landlord')->name('landlord.')->group(function() {
     Route::post('password/reset', [App\Http\Controllers\Landlord\ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
+// Tenant Registration Routes
+Route::get('/register/property/{token}', [TenantRegistrationController::class, 'show'])
+    ->name('tenant.register');
+
+Route::post('/register/property/{token}', [TenantRegistrationController::class, 'store'])
+    ->name('tenant.register.store');
+
+Route::get(
+    '/registration-success/{tenant}',
+    [TenantRegistrationController::class, 'success']
+)->name('tenant.registration.success');
+
+Route::get(
+    '/tenants/property/{property}/registration-link',
+    [TenantController::class,'registrationLink']
+)->name('landlord.tenants.registration-link');
+
+Route::get('/tenant/move-out/success', [MoveOutNoticeController::class, 'success'])
+    ->name('tenant.moveout.success');
 
 require __DIR__.'/auth.php';

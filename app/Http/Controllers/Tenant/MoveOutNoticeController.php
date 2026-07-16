@@ -132,9 +132,6 @@ class MoveOutNoticeController extends Controller
             'comment'        => $data['comment'] ?? null,
 
             'status'         => 'Pending',
-
-            'submitted_at'   => now(),
-
         ]);
 
         return redirect()

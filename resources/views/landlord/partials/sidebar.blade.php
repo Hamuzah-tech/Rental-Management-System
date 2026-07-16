@@ -30,7 +30,6 @@
         x-transition:leave-end="opacity-0"
         @click="open = false"
         class="fixed inset-0 bg-black/40 z-40 lg:hidden"
-        style="display: none;"
         x-cloak>
     </div>
 
@@ -44,15 +43,18 @@
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="-translate-x-full"
         @click.away="open = false"
-        class="fixed lg:relative top-0 left-0 z-50
+        class="fixed top-0 left-0 z-50
                w-64
                min-h-screen
                bg-white
                border-r border-slate-200
                flex
                flex-col
-               lg:translate-x-0"
-        style="display: none;"
+               lg:!translate-x-0 lg:!relative lg:!block"
+        :class="{
+            'hidden': !open,
+            'lg:flex': true
+        }"
         x-cloak>
 
         <!-- Logo -->
@@ -149,17 +151,6 @@
                     class="w-5 h-5 {{ request()->routeIs('landlord.payments.*') ? 'text-white' : 'text-[#C0C9D6]' }}" />
 
                 Payments
-
-            </a>
-
-            <!-- Move Out Notices -->
-            <a href="#"
-               class="flex items-center gap-3 mx-2 px-4 py-3 transition-all duration-200 text-slate-700 hover:bg-gray-100 hover:text-slate-800">
-
-                <x-heroicon-o-bell
-                    class="w-5 h-5 text-[#C0C9D6]" />
-
-                Move Out Notices
 
             </a>
 
