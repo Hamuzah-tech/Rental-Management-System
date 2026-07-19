@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('landlord.tenants.store') }}">
+    <form method="POST" action="{{ route('landlord.tenants.store') }}" id="tenantForm">
         @csrf
 
         <div class="p-6 space-y-5">
@@ -72,7 +72,7 @@
                     class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400">
                     <option value="">Select a property</option>
                     @foreach($properties as $property)
-                        <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}">
+                        <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}" {{ old('property_id') == $property->id ? 'selected' : '' }}>
                             {{ $property->name }}
                         </option>
                     @endforeach
@@ -89,7 +89,7 @@
                         type="text"
                         id="monthlyRent"
                         name="monthly_rent"
-                        value="{{ old('monthly_rent') ? number_format(old('monthly_rent')) : '' }}"
+                        value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
                         class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-12"
                         required
                         placeholder="0">
@@ -288,22 +288,22 @@
 
     // Format number with commas
     function formatNumberWithCommas(number) {
-        if (!number) return '';
+        if (!number && number !== 0) return '';
         const num = number.toString().replace(/,/g, '');
         return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     // Parse number from formatted string
     function parseNumberFromFormatted(formatted) {
-        if (!formatted) return '';
-        return formatted.replace(/,/g, '');
+        if (!formatted) return 0;
+        return parseFloat(formatted.replace(/,/g, '')) || 0;
     }
 
     // Set rent amount from property selection
     function setRentFromProperty(selectElement, targetInput) {
         const selectedOption = selectElement.options[selectElement.selectedIndex];
-        if (selectedOption && selectedOption.dataset.rent) {
-            const rent = parseInt(selectedOption.dataset.rent) || 0;
+        if (selectedOption && selectedOption.dataset.rent !== undefined) {
+            const rent = parseFloat(selectedOption.dataset.rent) || 0;
             targetInput.value = formatNumberWithCommas(rent);
             targetInput.dataset.rawValue = rent;
         } else {
@@ -327,7 +327,7 @@
             return;
         }
         
-        const numericValue = parseInt(value, 10);
+        const numericValue = parseFloat(value);
         if (!isNaN(numericValue)) {
             input.value = formatNumberWithCommas(numericValue);
             input.dataset.rawValue = numericValue;
@@ -345,7 +345,7 @@
         let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
         
         if (value !== '') {
-            const numericValue = parseInt(value, 10);
+            const numericValue = parseFloat(value);
             if (!isNaN(numericValue)) {
                 input.value = formatNumberWithCommas(numericValue);
                 input.dataset.rawValue = numericValue;
@@ -356,7 +356,7 @@
     // Get raw numeric value from input
     function getRawRentValue(input) {
         const value = input.dataset.rawValue || input.value.replace(/,/g, '');
-        return parseInt(value) || 0;
+        return parseFloat(value) || 0;
     }
 
     // Open modal
@@ -510,19 +510,13 @@
     monthlyRentInput?.addEventListener('blur', handleRentBlur);
 
     // Prevent form submission with commas
-    document.querySelector('form')?.addEventListener('submit', function(e) {
+    document.getElementById('tenantForm')?.addEventListener('submit', function(e) {
         const rentInput = document.getElementById('monthlyRent');
         if (rentInput) {
             // Remove commas before submitting
             const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'monthly_rent';
-            hiddenInput.value = rawValue;
-            this.appendChild(hiddenInput);
-            
-            // Disable the visible input so it doesn't submit with commas
-            rentInput.disabled = true;
+            // Update the input value to raw number without commas
+            rentInput.value = rawValue;
         }
     });
 

@@ -26,7 +26,7 @@
 
 <!-- Success -->
 @if(session('success'))
-    <div class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm">
+    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
         {{ session('success') }}
     </div>
 @endif
@@ -51,10 +51,21 @@
                     </span>
                 </div>
                 
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    <div class="text-xs">
+                        <span class="text-slate-500">Rent:</span>
+                        <span class="font-medium text-slate-700">MK {{ number_format($property->monthly_rent ?? 0) }}</span>
+                    </div>
+                    <div class="text-xs">
+                        <span class="text-slate-500">Tenants:</span>
+                        <span class="font-medium text-slate-700">{{ $property->currentTenantCount() }}/{{ $property->max_tenants ?? 0 }}</span>
+                    </div>
+                </div>
+                
                 <div class="flex justify-between items-center mt-3">
                     <div>
                         @if($property->status)
-                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
+                            <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">
                                 Active
                             </span>
                         @else
@@ -102,12 +113,14 @@
 
     <!-- Desktop Table View -->
     <div class="hidden sm:block overflow-x-auto">
-        <table class="w-full text-sm min-w-[600px]">
+        <table class="w-full text-sm min-w-[700px]">
             <thead class="bg-slate-50">
                 <tr class="text-slate-500">
                     <th class="px-4 py-3 text-left">#</th>
                     <th class="px-4 py-3 text-left">Name</th>
                     <th class="px-4 py-3 text-left">Address</th>
+                    <th class="px-4 py-3 text-left">Rent (MK)</th>
+                    <th class="px-4 py-3 text-left">Tenants</th>
                     <th class="px-4 py-3 text-left">Status</th>
                     <th class="px-4 py-3 text-right">Actions</th>
                 </tr>
@@ -124,9 +137,20 @@
                         <td class="px-4 py-3 text-slate-600">
                             {{ $property->address }}
                         </td>
+                        <td class="px-4 py-3 text-slate-700">
+                            {{ number_format($property->monthly_rent ?? 0) }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-slate-700">
+                                {{ $property->currentTenantCount() }}/{{ $property->max_tenants ?? 0 }}
+                            </span>
+                            @if($property->isFull())
+                                <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded-full">Full</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             @if($property->status)
-                                <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
+                                <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">
                                     Active
                                 </span>
                             @else
@@ -167,7 +191,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">
+                        <td colspan="7" class="px-6 py-8 text-center text-slate-500">
                             No properties found.
                         </td>
                     </tr>
@@ -244,21 +268,15 @@ function openConfirmModal(formId, title, message) {
     const backdrop = document.getElementById('modalBackdrop');
     const box = document.getElementById('modalBox');
 
-    // Reset styles first
     modal.style.display = 'flex';
     modal.classList.remove('hidden');
     
-    // Small delay to ensure display is applied
     requestAnimationFrame(() => {
-        // Fade in backdrop
         backdrop.style.opacity = '1';
-        
-        // Animate modal box
         box.style.opacity = '1';
         box.style.transform = 'translateY(0) scale(1)';
     });
 
-    // Prevent body scroll
     document.body.style.overflow = 'hidden';
     isModalOpen = true;
 }
@@ -270,12 +288,10 @@ function closeConfirmModal() {
     const backdrop = document.getElementById('modalBackdrop');
     const box = document.getElementById('modalBox');
 
-    // Animate out
     backdrop.style.opacity = '0';
     box.style.opacity = '0';
     box.style.transform = 'translateY(20px) scale(0.95)';
 
-    // Hide after animation
     setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.add('hidden');
@@ -290,18 +306,15 @@ function submitConfirmAction() {
     }
 }
 
-// Close on backdrop click
 document.addEventListener('click', function(event) {
     if (isModalOpen) {
         const modal = document.getElementById('confirmModal');
-        const box = document.getElementById('modalBox');
         if (event.target === modal || event.target === document.getElementById('modalBackdrop')) {
             closeConfirmModal();
         }
     }
 });
 
-// Close on Escape key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape' && isModalOpen) {
         closeConfirmModal();

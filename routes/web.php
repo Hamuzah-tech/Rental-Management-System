@@ -95,6 +95,9 @@ Route::prefix('register')
         
         Route::get('/success/{tenant}', [TenantRegistrationController::class, 'success'])
             ->name('registration.success');
+        
+        Route::get('/full/{property}', [TenantRegistrationController::class, 'full'])
+            ->name('registration.full');
     });
 
 /*
