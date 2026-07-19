@@ -129,49 +129,7 @@
 
 
 
-            <!-- Move Out Notice -->
-
-
-            <a href="{{ route('tenant.moveout.create') }}"
-               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
-
-
-
-                <x-heroicon-o-arrow-right-on-rectangle
-                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
-
-
-
-                <div class="flex-1">
-
-
-                    <h2 class="font-semibold text-slate-800">
-                        Move-Out Notice
-                    </h2>
-
-
-                    <p class="text-sm text-slate-500">
-                        Submit a request to leave your property.
-                    </p>
-
-
-                </div>
-
-
-
-                <span class="text-slate-400 text-xl">
-                    →
-                </span>
-
-
-
-            </a>
-
-
-
-
-
-        </div>
+           
 
 
 

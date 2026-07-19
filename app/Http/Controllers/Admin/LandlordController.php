@@ -115,9 +115,12 @@ class LandlordController extends Controller
         ]);
 
 
-        $landlord->update($validated);
+            $landlord->update($validated);
 
-
+            return redirect()
+             ->route('admin.landlords.index')
+             ->with('success', 'Landlord updated successfully.');
+             
         return redirect()
             ->route('admin.landlords.index')
             ->with('success', 'Landlord updated successfully.');

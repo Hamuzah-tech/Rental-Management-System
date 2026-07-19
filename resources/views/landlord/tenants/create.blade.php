@@ -70,8 +70,9 @@
                     name="property_id"
                     id="propertySelect"
                     class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                    <option value="">Select a property</option>
                     @foreach($properties as $property)
-                        <option value="{{ $property->id }}">
+                        <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}">
                             {{ $property->name }}
                         </option>
                     @endforeach
@@ -82,12 +83,18 @@
                 <label class="block text-sm font-medium text-slate-700 mb-2">
                     Monthly Rent
                 </label>
-                <input
-                    type="number"
-                    name="monthly_rent"
-                    value="{{ old('monthly_rent') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                    required>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
+                    <input
+                        type="text"
+                        id="monthlyRent"
+                        name="monthly_rent"
+                        value="{{ old('monthly_rent') ? number_format(old('monthly_rent')) : '' }}"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-12"
+                        required
+                        placeholder="0">
+                </div>
+                <p class="text-xs text-slate-500 mt-1">Amount will be automatically filled from property selection</p>
             </div>
 
             <div>
@@ -169,11 +176,26 @@
                         id="modalPropertySelect"
                         class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400">
                         @foreach($properties as $property)
-                            <option value="{{ $property->id }}">
-                                {{ $property->name }}
+                            <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}">
+                                {{ $property->name }} (MK {{ number_format($property->monthly_rent ?? 0) }})
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Monthly Rent
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
+                        <input
+                            type="text"
+                            id="modalMonthlyRent"
+                            readonly
+                            class="w-full rounded-xl border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 pl-12 cursor-default">
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">This rent amount will be pre-filled for the tenant</p>
                 </div>
 
                 <!-- Generate Button -->
@@ -251,10 +273,12 @@
     const shareBtn = document.getElementById('shareRegistrationBtn');
     const modal = document.getElementById('registrationModal');
     const overlay = document.getElementById('modalOverlay');
-    const closeModalBtn = modal.querySelector('[x-heroicon-o-x-mark]')?.closest('button') || document.querySelector('[onclick="closeRegistrationModal()"]');
     const generateBtn = document.getElementById('generateLinkBtn');
     const copyBtn = document.getElementById('copyLinkBtn');
-    const propertySelect = document.getElementById('modalPropertySelect');
+    const propertySelect = document.getElementById('propertySelect');
+    const modalPropertySelect = document.getElementById('modalPropertySelect');
+    const monthlyRentInput = document.getElementById('monthlyRent');
+    const modalMonthlyRent = document.getElementById('modalMonthlyRent');
     const linkInput = document.getElementById('registrationLink');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const linkContainer = document.getElementById('linkContainer');
@@ -262,10 +286,93 @@
     const errorText = document.getElementById('errorText');
     const copySuccessMessage = document.getElementById('copySuccessMessage');
 
+    // Format number with commas
+    function formatNumberWithCommas(number) {
+        if (!number) return '';
+        const num = number.toString().replace(/,/g, '');
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // Parse number from formatted string
+    function parseNumberFromFormatted(formatted) {
+        if (!formatted) return '';
+        return formatted.replace(/,/g, '');
+    }
+
+    // Set rent amount from property selection
+    function setRentFromProperty(selectElement, targetInput) {
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        if (selectedOption && selectedOption.dataset.rent) {
+            const rent = parseInt(selectedOption.dataset.rent) || 0;
+            targetInput.value = formatNumberWithCommas(rent);
+            targetInput.dataset.rawValue = rent;
+        } else {
+            targetInput.value = '';
+            targetInput.dataset.rawValue = '';
+        }
+    }
+
+    // Handle rent input with commas
+    function handleRentInput(e) {
+        const input = e.target;
+        const cursorPosition = input.selectionStart;
+        const oldLength = input.value.length;
+        
+        // Remove non-numeric characters
+        let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
+        
+        if (value === '') {
+            input.value = '';
+            input.dataset.rawValue = '';
+            return;
+        }
+        
+        const numericValue = parseInt(value, 10);
+        if (!isNaN(numericValue)) {
+            input.value = formatNumberWithCommas(numericValue);
+            input.dataset.rawValue = numericValue;
+            
+            // Adjust cursor position
+            const newLength = input.value.length;
+            const diff = newLength - oldLength;
+            input.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        }
+    }
+
+    // Handle rent input blur - ensure proper formatting
+    function handleRentBlur(e) {
+        const input = e.target;
+        let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
+        
+        if (value !== '') {
+            const numericValue = parseInt(value, 10);
+            if (!isNaN(numericValue)) {
+                input.value = formatNumberWithCommas(numericValue);
+                input.dataset.rawValue = numericValue;
+            }
+        }
+    }
+
+    // Get raw numeric value from input
+    function getRawRentValue(input) {
+        const value = input.dataset.rawValue || input.value.replace(/,/g, '');
+        return parseInt(value) || 0;
+    }
+
     // Open modal
     function openRegistrationModal() {
+        // Sync property selection with main form
+        const mainPropertyId = propertySelect.value;
+        if (mainPropertyId) {
+            modalPropertySelect.value = mainPropertyId;
+        }
+        
+        // Set rent in modal
+        setRentFromProperty(modalPropertySelect, modalMonthlyRent);
+        
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        
         // Reset state
         linkContainer.classList.add('hidden');
         errorMessage.classList.add('hidden');
@@ -287,7 +394,13 @@
 
     // Generate link
     function generateRegistrationLink() {
-        const propertyId = propertySelect.value;
+        const propertyId = modalPropertySelect.value;
+        
+        if (!propertyId) {
+            errorText.textContent = 'Please select a property first.';
+            errorMessage.classList.remove('hidden');
+            return;
+        }
         
         // Hide previous results
         linkContainer.classList.add('hidden');
@@ -382,6 +495,37 @@
         }, 3000);
     }
 
+    // Update rent when property changes in main form
+    propertySelect?.addEventListener('change', function() {
+        setRentFromProperty(this, monthlyRentInput);
+    });
+
+    // Update rent when property changes in modal
+    modalPropertySelect?.addEventListener('change', function() {
+        setRentFromProperty(this, modalMonthlyRent);
+    });
+
+    // Format rent input as user types
+    monthlyRentInput?.addEventListener('input', handleRentInput);
+    monthlyRentInput?.addEventListener('blur', handleRentBlur);
+
+    // Prevent form submission with commas
+    document.querySelector('form')?.addEventListener('submit', function(e) {
+        const rentInput = document.getElementById('monthlyRent');
+        if (rentInput) {
+            // Remove commas before submitting
+            const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'monthly_rent';
+            hiddenInput.value = rawValue;
+            this.appendChild(hiddenInput);
+            
+            // Disable the visible input so it doesn't submit with commas
+            rentInput.disabled = true;
+        }
+    });
+
     // Event Listeners
     shareBtn?.addEventListener('click', openRegistrationModal);
     generateBtn?.addEventListener('click', generateRegistrationLink);
@@ -397,12 +541,10 @@
         }
     });
 
-    // Auto-generate link when property changes
-    propertySelect?.addEventListener('change', function() {
-        if (!modal.classList.contains('hidden')) {
-            generateRegistrationLink();
-        }
-    });
+    // Initialize rent from property on page load
+    if (propertySelect) {
+        setRentFromProperty(propertySelect, monthlyRentInput);
+    }
 
     console.log('Registration modal script loaded successfully');
 </script>

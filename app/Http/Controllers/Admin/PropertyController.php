@@ -25,8 +25,9 @@ class PropertyController extends Controller
     public function index()
     {
         $properties = Property::with('landlord')
-            ->latest()
-            ->paginate(10);
+    ->withCount('tenants')
+    ->latest()
+    ->paginate(10);
 
 
         return view(

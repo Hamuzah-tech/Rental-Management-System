@@ -9,6 +9,9 @@ use Illuminate\Support\Str;
 use App\Models\Tenant;
 use App\Models\Property;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TenantsExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TenantController extends Controller
 {
@@ -293,6 +296,85 @@ class TenantController extends Controller
                 'success',
                 'Tenant reactivated.'
             );
+    }
+
+    /**
+     * Export tenants to Excel - Only tenants belonging to the logged-in landlord
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $filter = $request->get('payment_status', 'all');
+
+            $query = Tenant::with(['property', 'payments'])
+                ->whereHas('property', function ($q) {
+                    $q->where('landlord_id', Auth::id());
+                });
+
+            // Apply the same filter as the index page
+            if ($filter == 'paid') {
+                $query->whereHas('payments', function ($q) {
+                    $q->where('status', 'Approved');
+                });
+            }
+
+            if ($filter == 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) {
+                    $q->where('status', 'Approved');
+                });
+            }
+
+            $tenants = $query->get();
+
+            if ($tenants->isEmpty()) {
+                return back()->with('error', 'No tenants found to export.');
+            }
+
+            return Excel::download(new TenantsExport($tenants), 'tenants_' . date('Y-m-d') . '.xlsx');
+        } catch (\Exception $e) {
+            Log::error('Excel Export Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to export tenants to Excel. Please try again.');
+        }
+    }
+
+    /**
+     * Export tenants to PDF - Only tenants belonging to the logged-in landlord
+     */
+    public function exportPdf(Request $request)
+    {
+        try {
+            $filter = $request->get('payment_status', 'all');
+
+            $query = Tenant::with(['property', 'payments'])
+                ->whereHas('property', function ($q) {
+                    $q->where('landlord_id', Auth::id());
+                });
+
+            // Apply the same filter as the index page
+            if ($filter == 'paid') {
+                $query->whereHas('payments', function ($q) {
+                    $q->where('status', 'Approved');
+                });
+            }
+
+            if ($filter == 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) {
+                    $q->where('status', 'Approved');
+                });
+            }
+
+            $tenants = $query->get();
+
+            if ($tenants->isEmpty()) {
+                return back()->with('error', 'No tenants found to export.');
+            }
+
+            $pdf = Pdf::loadView('exports.tenants-pdf', compact('tenants'));
+            return $pdf->download('tenants_' . date('Y-m-d') . '.pdf');
+        } catch (\Exception $e) {
+            Log::error('PDF Export Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to export tenants to PDF. Please try again.');
+        }
     }
 
     /**

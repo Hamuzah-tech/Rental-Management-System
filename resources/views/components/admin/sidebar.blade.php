@@ -4,13 +4,8 @@
     <div class="px-6 py-5 border-b border-slate-200">
 
         <h1 class="text-xl font-bold text-slate-800">
-            Rental MS
+            Rentals
         </h1>
-
-        <p class="text-sm text-slate-500">
-            Super Administrator
-        </p>
-
     </div>
 
 
@@ -75,47 +70,20 @@
 
         </a>
 
-
-
-        <!-- Payments -->
-        <a href="#"
-           class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition">
-
-            <x-heroicon-o-banknotes class="w-5 h-5 text-slate-400"/>
-
-            <span>
-                Payments
-            </span>
-
-        </a>
-
-
-
-        <!-- Reports -->
-        <a href="#"
-           class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition">
-
-            <x-heroicon-o-chart-bar class="w-5 h-5 text-slate-400"/>
-
-            <span>
-                Reports
-            </span>
-
-        </a>
-
-
-
         <!-- Settings -->
-        <a href="#"
-           class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition">
+       <a href="{{ route('admin.settings.index') }}"
+   class="flex items-center gap-3 mx-2 px-4 py-3 transition-all duration-200
+   {{ request()->routeIs('admin.settings.*')
+        ? 'bg-[#5C8BD9] text-white'
+        : 'text-slate-700 hover:bg-gray-100 hover:text-slate-800'
+   }}">
 
-            <x-heroicon-o-cog-6-tooth class="w-5 h-5 text-slate-400"/>
+    <x-heroicon-o-cog-6-tooth
+        class="w-5 h-5 {{ request()->routeIs('admin.settings.*') ? 'text-white' : 'text-[#C0C9D6]' }}" />
 
-            <span>
-                Settings
-            </span>
+    Settings
 
-        </a>
+</a>
 
 
     </nav>

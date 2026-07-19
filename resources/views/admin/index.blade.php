@@ -1,13 +1,12 @@
 @extends('layouts.admin')
 
-@section('title','Dashboard')
+@section('title', 'Dashboard')
 
-@section('page-title','Dashboard')
+@section('page-title', 'Dashboard')
 
 @section('content')
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
     <x-admin.stat-card
         title="Landlords"
@@ -20,8 +19,6 @@
 
     </x-admin.stat-card>
 
-
-
     <x-admin.stat-card
         title="Properties"
         value="{{ $totalProperties }}"
@@ -32,8 +29,6 @@
         </x-slot:icon>
 
     </x-admin.stat-card>
-
-
 
     <x-admin.stat-card
         title="Tenants"
@@ -46,21 +41,6 @@
 
     </x-admin.stat-card>
 
-
-
-    <x-admin.stat-card
-        title="Pending Payments"
-        value="{{ $pendingPayments }}"
-        color="red">
-
-        <x-slot:icon>
-            <x-heroicon-o-banknotes class="w-8 h-8 text-red-600"/>
-        </x-slot:icon>
-
-    </x-admin.stat-card>
-
-
 </div>
-
 
 @endsection

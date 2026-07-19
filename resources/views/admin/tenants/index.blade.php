@@ -8,71 +8,48 @@
 @section('content')
 
 
-<div class="space-y-6">
+<div class="bg-white border border-slate-200 rounded-xl p-4 mb-6">
 
+    <form method="GET" class="flex flex-col md:flex-row gap-4">
 
+        <input
+            type="text"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Search tenant..."
+            class="flex-1 rounded-xl border-slate-300">
 
-    <!-- Header -->
+        <select
+            name="landlord"
+            onchange="this.form.submit()"
+            class="rounded-xl border-slate-300">
 
-    <div class="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center">
+            <option value="">All Landlords</option>
 
+            @foreach($landlords as $landlord)
 
-        <div>
+                <option
+                    value="{{ $landlord->id }}"
+                    {{ request('landlord') == $landlord->id ? 'selected' : '' }}>
 
+                    {{ $landlord->name }}
 
-            <h2 class="text-xl font-bold text-slate-800">
+                </option>
 
-                Tenants
+            @endforeach
 
-            </h2>
+        </select>
 
+        <button
+            class="px-5 bg-slate-800 text-white rounded-xl">
 
-            <p class="text-sm text-slate-500 mt-1">
+            Search
 
-                Manage all tenants.
+        </button>
 
-            </p>
+    </form>
 
-
-        </div>
-
-
-
-
-        <a href="{{ route('admin.tenants.create') }}"
-           class="bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-900 transition text-sm flex items-center gap-2">
-
-
-            <x-heroicon-o-plus class="w-4 h-4"/>
-
-            Add Tenant
-
-
-        </a>
-
-
-
-    </div>
-
-
-
-
-
-    <!-- Success -->
-
-    @if(session('success'))
-
-
-    <div class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm">
-
-
-        {{ session('success') }}
-
-
-    </div>
-
-
-    @endif
+</div>
 
 
 
