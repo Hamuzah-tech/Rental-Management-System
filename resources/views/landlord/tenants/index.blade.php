@@ -2,43 +2,11 @@
 
 @section('title', 'Tenants')
 
+@section('page-title', 'Tenants')
+
 @section('content')
 
 <div class="space-y-6">
-
-    {{-- Header --}}
-    <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">
-                    Tenants
-                </h2>
-                <p class="text-gray-500 text-sm mt-1">
-                    Manage your tenants.
-                </p>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3">
-                {{-- Export Buttons --}}
-                <a href="{{ route('landlord.tenants.export.pdf', ['payment_status' => request('payment_status', 'all')]) }}"
-                   class="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    PDF
-                </a>
-
-                {{-- Add Tenant Button --}}
-                <a href="{{ route('landlord.tenants.create') }}"
-                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Add Tenant
-                </a>
-            </div>
-        </div>
-    </div>
 
     {{-- Success Message --}}
     @if(session('success'))
@@ -59,29 +27,51 @@
         </div>
     @endif
 
-    {{-- Filters --}}
+    {{-- Filters and Actions --}}
     <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <form method="GET" action="{{ route('landlord.tenants.index') }}" class="flex flex-wrap items-center gap-4">
-            <div class="flex items-center gap-2">
-                <label for="payment_status" class="text-sm font-medium text-gray-700">Payment Status:</label>
-                <select 
-                    id="payment_status" 
-                    name="payment_status" 
-                    onchange="this.form.submit()"
-                    class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                    <option value="all" {{ request('payment_status') == 'all' ? 'selected' : '' }}>All Tenants</option>
-                    <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                    <option value="unpaid" {{ request('payment_status') == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
-                </select>
-            </div>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {{-- Filters --}}
+            <form method="GET" action="{{ route('landlord.tenants.index') }}" class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="payment_status" class="text-sm font-medium text-gray-700">Status:</label>
+                    <select 
+                        id="payment_status" 
+                        name="payment_status" 
+                        onchange="this.form.submit()"
+                        class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                        <option value="all" {{ request('payment_status') == 'all' ? 'selected' : '' }}>All Tenants</option>
+                        <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>Paid</option>
+                        <option value="unpaid" {{ request('payment_status') == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
+                    </select>
+                </div>
 
-            @if(request('payment_status') != 'all')
-                <a href="{{ route('landlord.tenants.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-                    Clear Filter
+                @if(request('payment_status') != 'all')
+                    <a href="{{ route('landlord.tenants.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+                        Clear Filter
+                    </a>
+                @endif
+            </form>
+
+            {{-- Actions --}}
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('landlord.tenants.export.pdf', ['payment_status' => request('payment_status', 'all')]) }}"
+                   class="border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg text-sm transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    PDF
                 </a>
-            @endif
-        </form>
+
+                <a href="{{ route('landlord.tenants.create') }}"
+                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Tenant
+                </a>
+            </div>
+        </div>
     </div>
 
     {{-- Table --}}
@@ -90,62 +80,62 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200">
-                        <th class="px-4 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs w-12">#</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Tenant Code</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Name</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs hidden sm:table-cell">Phone</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs hidden md:table-cell">Property</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs hidden lg:table-cell">Rent (MK)</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Status</th>
-                        <th class="px-6 py-3.5 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Payment</th>
-                        <th class="px-6 py-3.5 text-right font-semibold text-gray-500 uppercase tracking-wider text-xs">Actions</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs w-12">#</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Tenant Code</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Name</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs hidden sm:table-cell">Phone</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs hidden md:table-cell">Property</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs hidden lg:table-cell">Rent (MK)</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Status</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider text-xs">Payment</th>
+                        <th class="px-4 py-3 text-right font-semibold text-gray-500 uppercase tracking-wider text-xs">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($tenants as $index => $tenant)
                         <tr class="border-b border-gray-100 hover:bg-gray-50/70 transition-colors duration-150">
-                            <td class="px-4 py-4 text-center text-gray-400 font-medium text-sm">
+                            <td class="px-4 py-3 text-center text-gray-400 font-medium text-sm">
                                 {{ $tenants->firstItem() + $index }}
                             </td>
 
-                            <td class="px-6 py-4 font-medium text-gray-800">
+                            <td class="px-4 py-3 font-medium text-gray-800 text-xs">
                                 {{ $tenant->tenant_code }}
                             </td>
 
-                            <td class="px-6 py-4 text-gray-700">
+                            <td class="px-4 py-3 text-gray-700">
                                 {{ $tenant->name }}
                             </td>
 
-                            <td class="px-6 py-4 text-gray-600 hidden sm:table-cell">
+                            <td class="px-4 py-3 text-gray-600 hidden sm:table-cell">
                                 <a href="tel:{{ $tenant->phone }}" class="hover:underline">
                                     {{ $tenant->phone }}
                                 </a>
                             </td>
 
-                            <td class="px-6 py-4 text-gray-600 hidden md:table-cell">
+                            <td class="px-4 py-3 text-gray-600 hidden md:table-cell">
                                 {{ $tenant->property->name ?? 'N/A' }}
                             </td>
 
-                            <td class="px-6 py-4 text-gray-600 hidden lg:table-cell">
+                            <td class="px-4 py-3 text-gray-600 hidden lg:table-cell">
                                 {{ number_format($tenant->monthly_rent) }}
                             </td>
 
-                            <td class="px-6 py-4">
-                                <span class="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                            <td class="px-4 py-3">
+                                <span class="inline-block bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-medium">
                                     {{ $tenant->status }}
                                 </span>
                             </td>
 
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3">
                                 @php
                                     $hasPayment = $tenant->payments()->where('status', 'Approved')->exists();
                                 @endphp
-                                <span class="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                                <span class="inline-block {{ $hasPayment ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }} px-2.5 py-0.5 rounded-full text-xs font-medium">
                                     {{ $hasPayment ? 'Paid' : 'Unpaid' }}
                                 </span>
                             </td>
 
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1">
                                     {{-- Edit --}}
                                     <a href="{{ route('landlord.tenants.edit', $tenant) }}"
@@ -181,7 +171,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-16 text-gray-500">
+                            <td colspan="9" class="text-center py-12 text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
