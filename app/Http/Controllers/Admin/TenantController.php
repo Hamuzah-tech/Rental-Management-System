@@ -1,159 +1,94 @@
 <?php
+// app/Http/Controllers/Admin/TenantController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
-use App\Models\Property;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TenantController extends Controller
 {
     /**
-     * Display tenants
+     * Display a listing of tenants.
      */
-    public function index(Request $request)
+    public function index()
     {
-        // Get all landlords for the filter
-        $landlords = User::role('Landlord')
-            ->orderBy('name')
-            ->get();
-
-        $tenants = Tenant::with(['property.landlord']);
-
-        // Search by tenant name
-        if ($request->filled('search')) {
-            $tenants->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        // Filter by landlord
-        if ($request->filled('landlord')) {
-            $tenants->whereHas('property', function ($query) use ($request) {
-                $query->where('landlord_id', $request->landlord);
-            });
-        }
-
-        $tenants = $tenants
+        $tenants = Tenant::with('property')
             ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->paginate(20);
 
-        return view('admin.tenants.index', compact(
-            'tenants',
-            'landlords'
-        ));
+        return view('admin.tenants.index', compact('tenants'));
     }
 
     /**
-     * Show create form
+     * Show trashed (soft deleted) tenants.
      */
-    public function create()
+    public function trashed()
     {
-        $properties = Property::with('landlord')->get();
+        $tenants = Tenant::onlyTrashed()
+            ->with('property')
+            ->latest('deleted_at')
+            ->paginate(20);
 
-        return view('admin.tenants.create', compact('properties'));
+        return view('admin.trash.tenants', compact('tenants'));
     }
 
     /**
-     * Store tenant
+     * Restore a soft deleted tenant.
      */
-    public function store(Request $request)
+    public function restore($id)
     {
-        $data = $request->validate([
-            'property_id' => [
-                'required',
-                'exists:properties,id'
-            ],
-            'name' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'phone' => [
-                'required',
-                'string',
-                'max:50'
-            ],
-            'email' => [
-                'nullable',
-                'email'
-            ],
-            'move_in_date' => [
-                'required',
-                'date'
-            ],
+        $tenant = Tenant::onlyTrashed()->findOrFail($id);
+        $tenant->restore();
+
+        Log::info('Tenant restored by admin', [
+            'tenant_id' => $tenant->id,
+            'admin_id' => auth()->id()
         ]);
 
-        Tenant::create($data);
-
         return redirect()
-            ->route('admin.tenants.index')
-            ->with('success', 'Tenant created successfully.');
+            ->route('admin.trash.tenants')
+            ->with('success', 'Tenant restored successfully.');
     }
 
     /**
-     * Show edit form
+     * Permanently delete a tenant (Admin only).
      */
-    public function edit(Tenant $tenant)
+    public function forceDelete($id)
     {
-        $properties = Property::with('landlord')->get();
+        $tenant = Tenant::onlyTrashed()->findOrFail($id);
+        
+        // Delete related payments first
+        $tenant->payments()->delete();
+        
+        $tenant->forceDelete();
 
-        return view(
-            'admin.tenants.edit',
-            compact(
-                'tenant',
-                'properties'
-            )
-        );
-    }
-
-    /**
-     * Update tenant
-     */
-    public function update(Request $request, Tenant $tenant)
-    {
-        $data = $request->validate([
-            'property_id' => [
-                'required',
-                'exists:properties,id'
-            ],
-            'name' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'phone' => [
-                'required',
-                'string',
-                'max:50'
-            ],
-            'email' => [
-                'nullable',
-                'email'
-            ],
-            'move_in_date' => [
-                'required',
-                'date'
-            ],
+        Log::info('Tenant permanently deleted by admin', [
+            'tenant_id' => $tenant->id,
+            'admin_id' => auth()->id()
         ]);
 
-        $tenant->update($data);
-
         return redirect()
-            ->route('admin.tenants.index')
-            ->with('success', 'Tenant updated successfully.');
+            ->route('admin.trash.tenants')
+            ->with('success', 'Tenant permanently deleted.');
     }
 
     /**
-     * Delete tenant
+     * Soft delete the specified tenant.
      */
     public function destroy(Tenant $tenant)
     {
         $tenant->delete();
 
+        Log::info('Tenant soft deleted by admin', [
+            'tenant_id' => $tenant->id,
+            'admin_id' => auth()->id()
+        ]);
+
         return redirect()
             ->route('admin.tenants.index')
-            ->with('success', 'Tenant deleted successfully.');
+            ->with('success', 'Tenant moved to archive.');
     }
 }

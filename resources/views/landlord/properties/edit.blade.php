@@ -25,7 +25,14 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('landlord.properties.update',$property) }}">
+    <!-- Success Message (for users) -->
+    @if(session('success'))
+        <div class="mx-6 mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('landlord.properties.update', $property) }}" id="editPropertyForm">
         @csrf
         @method('PUT')
 
@@ -38,8 +45,8 @@
                 </label>
                 <input
                     name="name"
-                    value="{{ old('name',$property->name) }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
+                    value="{{ old('name', $property->name) }}"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('name') border-red-500 @enderror"
                     required>
                 @error('name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -54,8 +61,8 @@
                 </label>
                 <input
                     name="address"
-                    value="{{ old('address',$property->address) }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm">
+                    value="{{ old('address', $property->address) }}"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('address') border-red-500 @enderror">
                 @error('address')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -73,7 +80,7 @@
                         id="monthlyRent"
                         name="monthly_rent"
                         value="{{ old('monthly_rent', number_format($property->monthly_rent ?? 0)) }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-12"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-12 @error('monthly_rent') border-red-500 @enderror"
                         required>
                 </div>
                 <p class="text-xs text-slate-500 mt-1">Enter the monthly rent amount for this property</p>
@@ -91,7 +98,7 @@
                     type="number"
                     name="max_tenants"
                     value="{{ old('max_tenants', $property->max_tenants ?? 10) }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('max_tenants') border-red-500 @enderror"
                     min="1"
                     required>
                 <p class="text-xs text-slate-500 mt-1">Maximum number of tenants allowed for this property</p>
@@ -112,7 +119,7 @@
                 <textarea
                     name="description"
                     rows="4"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm">{{ old('description',$property->description) }}</textarea>
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('description') border-red-500 @enderror">{{ old('description', $property->description) }}</textarea>
                 @error('description')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -128,6 +135,7 @@
             </a>
 
             <button
+                type="submit"
                 class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl text-sm transition flex items-center gap-2">
                 <x-heroicon-o-check class="w-4 h-4"/>
                 Update Hostel
@@ -180,7 +188,8 @@
         }
     }
 
-    document.querySelector('form')?.addEventListener('submit', function(e) {
+    // Handle form submission - remove commas before submit
+    document.getElementById('editPropertyForm')?.addEventListener('submit', function(e) {
         const rentInput = document.getElementById('monthlyRent');
         if (rentInput) {
             const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');

@@ -6,6 +6,24 @@
 
 <div class="max-w-3xl mx-auto">
 
+    <!-- Display Success Message -->
+    @if(session('success'))
+        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- Display All Errors -->
+    @if($errors->any())
+        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+            <ul class="list-disc list-inside">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
         <!-- Header -->
@@ -20,7 +38,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('landlord.properties.store') }}">
+        <form method="POST" action="{{ route('landlord.properties.store') }}" id="propertyForm">
             @csrf
 
             <div class="p-6 space-y-5">
@@ -34,7 +52,7 @@
                         type="text"
                         name="name"
                         value="{{ old('name') }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('name') border-red-500 @enderror"
                         placeholder="Example: Sunrise Hostel"
                         required>
                     @error('name')
@@ -52,7 +70,7 @@
                         type="text"
                         name="address"
                         value="{{ old('address') }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('address') border-red-500 @enderror"
                         placeholder="Example: Chikanda">
                     @error('address')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -71,7 +89,7 @@
                             id="monthlyRent"
                             name="monthly_rent"
                             value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
-                            class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-12"
+                            class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-12 @error('monthly_rent') border-red-500 @enderror"
                             placeholder="0"
                             required>
                     </div>
@@ -90,7 +108,7 @@
                         type="number"
                         name="max_tenants"
                         value="{{ old('max_tenants', 10) }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('max_tenants') border-red-500 @enderror"
                         placeholder="Example: 10"
                         min="1"
                         required>
@@ -109,7 +127,7 @@
                     <textarea
                         name="description"
                         rows="4"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('description') border-red-500 @enderror"
                         placeholder="Hostel description">{{ old('description') }}</textarea>
                     @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -190,11 +208,12 @@
         }
     }
 
-    // Handle form submission
-    document.querySelector('form')?.addEventListener('submit', function(e) {
+    // Handle form submission - REMOVE COMMAS BEFORE SUBMIT
+    document.getElementById('propertyForm')?.addEventListener('submit', function(e) {
         const rentInput = document.getElementById('monthlyRent');
         if (rentInput) {
-            const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');
+            // Remove commas for form submission
+            const rawValue = rentInput.value.replace(/,/g, '');
             rentInput.value = rawValue;
         }
     });

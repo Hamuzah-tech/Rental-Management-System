@@ -1,23 +1,29 @@
 <?php
+// app/Models/Tenant.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
 {
+    use SoftDeletes; // ← ADD THIS
+
     protected $fillable = [
-    'tenant_code',
-    'property_id',
-    'name',
-    'email',
-    'phone',
-    'monthly_rent',
-    'move_in_date',
-    'status',
-];
+        'tenant_code',
+        'property_id',
+        'name',
+        'email',
+        'phone',
+        'monthly_rent',
+        'move_in_date',
+        'status',
+    ];
+
+    protected $dates = ['deleted_at']; // ← ADD THIS
 
     /**
      * Tenant belongs to a property.

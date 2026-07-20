@@ -10,7 +10,7 @@
 <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
         <h2 class="text-xl font-bold text-slate-800">
-            Properties
+           Hostels
         </h2>
         <p class="text-sm text-slate-500 mt-1">
             Manage your Hostel(s).
@@ -65,7 +65,7 @@
                 <div class="flex justify-between items-center mt-3">
                     <div>
                         @if($property->status)
-                            <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
                                 Active
                             </span>
                         @else
@@ -150,7 +150,7 @@
                         </td>
                         <td class="px-4 py-3">
                             @if($property->status)
-                                <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+                                <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
                                     Active
                                 </span>
                             @else

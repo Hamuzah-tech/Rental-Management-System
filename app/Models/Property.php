@@ -1,12 +1,15 @@
 <?php
+// app/Models/Property.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Property extends Model
 {
+    use SoftDeletes; // ← ADD THIS
 
     protected $fillable = [
         'landlord_id',
@@ -25,6 +28,9 @@ class Property extends Model
         'status' => 'boolean',
     ];
 
+    protected $dates = ['deleted_at']; // ← ADD THIS
+
+    // Relationships
     public function landlord()
     {
         return $this->belongsTo(User::class, 'landlord_id');
