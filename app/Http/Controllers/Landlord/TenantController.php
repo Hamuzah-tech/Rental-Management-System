@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 class TenantController extends Controller
 {
     /**
-     * Display a listing of tenants (only active)
+     * Display a listing of tenants.
      */
     public function index(Request $request)
     {
@@ -88,7 +88,7 @@ class TenantController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
                 'phone' => 'required|string|max:20',
-                'monthly_rent' => 'nullable|numeric|min:0',
+                'monthly_rent' => 'required|numeric|min:0',
                 'move_in_date' => 'required|date',
                 'status' => 'sometimes|boolean',
             ]);
@@ -107,11 +107,14 @@ class TenantController extends Controller
 
             // Generate tenant code
             $data['tenant_code'] = 'TEN-' . strtoupper(Str::random(8));
-            $data['status'] = $data['status'] ?? 'active';
+            $data['status'] = 'active';
 
             $tenant = Tenant::create($data);
 
-            Log::info('Tenant created successfully', ['id' => $tenant->id]);
+            Log::info('Tenant created successfully', [
+                'id' => $tenant->id,
+                'monthly_rent' => $tenant->monthly_rent
+            ]);
 
             return redirect()
                 ->route('landlord.tenants.index')
@@ -165,7 +168,7 @@ class TenantController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
                 'phone' => 'required|string|max:20',
-                'monthly_rent' => 'nullable|numeric|min:0',
+                'monthly_rent' => 'required|numeric|min:0',
                 'move_in_date' => 'required|date',
                 'status' => 'required|in:active,inactive,moved_out',
             ]);
@@ -177,7 +180,10 @@ class TenantController extends Controller
 
             $tenant->update($data);
 
-            Log::info('Tenant updated successfully', ['id' => $tenant->id]);
+            Log::info('Tenant updated successfully', [
+                'id' => $tenant->id,
+                'monthly_rent' => $tenant->monthly_rent
+            ]);
 
             return redirect()
                 ->route('landlord.tenants.index')
@@ -225,7 +231,6 @@ class TenantController extends Controller
 
     /**
      * Generate a registration link for a tenant.
-     * This creates a unique registration token for the property.
      */
     public function generateRegistrationLink(Request $request)
     {
@@ -238,7 +243,6 @@ class TenantController extends Controller
                 ->where('landlord_id', Auth::id())
                 ->firstOrFail();
 
-            // Check if property has available slots
             if ($property->isFull()) {
                 return response()->json([
                     'success' => false,
@@ -246,14 +250,12 @@ class TenantController extends Controller
                 ], 422);
             }
 
-            // Generate a new registration token if it doesn't exist
             if (empty($property->registration_token)) {
                 $property->update([
                     'registration_token' => Str::random(40)
                 ]);
             }
 
-            // Generate the registration link
             $registrationLink = route('tenant.registration', [
                 'token' => $property->registration_token
             ]);
@@ -280,38 +282,6 @@ class TenantController extends Controller
     }
 
     /**
-     * Copy registration link to clipboard helper.
-     */
-    public function copyRegistrationLink(Request $request)
-    {
-        try {
-            $request->validate([
-                'property_id' => 'required|exists:properties,id',
-            ]);
-
-            $property = Property::where('id', $request->property_id)
-                ->where('landlord_id', Auth::id())
-                ->firstOrFail();
-
-            $registrationLink = route('tenant.registration', [
-                'token' => $property->registration_token
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'link' => $registrationLink,
-                'message' => 'Link copied to clipboard.'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to copy link.'
-            ], 500);
-        }
-    }
-
-    /**
      * Move out a tenant.
      */
     public function moveOut(Tenant $tenant)
@@ -323,7 +293,6 @@ class TenantController extends Controller
             'move_out_date' => now(),
         ]);
 
-        // Soft delete the tenant
         $tenant->delete();
 
         Log::info('Tenant moved out', ['id' => $tenant->id]);
@@ -355,12 +324,7 @@ class TenantController extends Controller
      */
     public function exportExcel()
     {
-        $tenants = Tenant::whereHas('property', function ($q) {
-            $q->where('landlord_id', Auth::id());
-        })->get();
-
         // Implementation for Excel export
-        // You can use Maatwebsite Excel package
     }
 
     /**
@@ -368,12 +332,7 @@ class TenantController extends Controller
      */
     public function exportPdf()
     {
-        $tenants = Tenant::whereHas('property', function ($q) {
-            $q->where('landlord_id', Auth::id());
-        })->get();
-
         // Implementation for PDF export
-        // You can use DomPDF or similar package
     }
 
     /**

@@ -11,26 +11,42 @@ class PaymentController extends Controller
     /**
      * Display all payments for the landlord.
      */
-        public function index(Request $request)
-    {
-        $query = \App\Models\Payment::with([
-            'tenant',
-            'tenant.property'
-        ])->whereHas('tenant.property', function ($q) {
-            $q->where('landlord_id', auth()->id());
-        });
+public function index()
+{
+    $payments = Payment::whereHas('tenant.property', function ($q) {
+        $q->where('landlord_id', Auth::id());
+    })
+    ->with(['tenant' => function ($q) {
+        $q->select('id', 'name', 'tenant_code', 'monthly_rent', 'property_id');
+    }])
+    ->latest()
+    ->paginate(20);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+    return view('landlord.payments.index', compact('payments'));
+}
 
-        $payments = $query
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+public function store(Request $request)
+{
+    $data = $request->validate([
+        'tenant_id' => 'required|exists:tenants,id',
+        'amount' => 'required|numeric|min:0',
+        'month' => 'required|date_format:Y-m',
+        'reference' => 'nullable|string|max:50',
+    ]);
 
-        return view('landlord.payments.index', compact('payments'));
+    $tenant = Tenant::findOrFail($data['tenant_id']);
+    
+    // Use tenant's monthly rent as default
+    if (empty($data['amount'])) {
+        $data['amount'] = $tenant->monthly_rent ?? 0;
     }
+
+    $payment = Payment::create($data);
+
+    return redirect()
+        ->route('landlord.payments.index')
+        ->with('success', 'Payment recorded successfully.');
+}
 
     /**
      * Display a single payment.

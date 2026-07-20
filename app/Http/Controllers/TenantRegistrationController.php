@@ -45,17 +45,15 @@ class TenantRegistrationController extends Controller
         }
 
         try {
-            // Validate with phone uniqueness check - PER PROPERTY ONLY
-            $data = $request->validate([
+            // Validate with rent option logic
+            $rules = [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
                 'phone' => [
                     'required',
                     'string',
                     'max:20',
-                    // Phone uniqueness check - ONLY for this specific property
                     function ($attribute, $value, $fail) use ($property) {
-                        // Check if this phone is already registered to THIS property
                         $existing = Tenant::where('phone', $value)
                             ->where('property_id', $property->id)
                             ->whereNull('deleted_at')
@@ -64,29 +62,45 @@ class TenantRegistrationController extends Controller
                         if ($existing) {
                             $fail('This phone number is already registered for this property.');
                         }
-                        // ✅ REMOVED: The check for other properties
-                        // Now phone numbers can be reused across different properties
                     }
                 ],
-                'monthly_rent' => 'nullable|numeric|min:0',
+                'rent_option' => 'required|in:default,custom',
                 'move_in_date' => 'required|date',
-            ]);
+            ];
 
-            // Generate tenant code
-            $data['tenant_code'] = 'TEN-' . strtoupper(Str::random(8));
-            $data['property_id'] = $property->id;
-            $data['status'] = 'active';
-
-            // Check if property has monthly rent set
-            if ($property->monthly_rent > 0) {
-                $data['monthly_rent'] = $property->monthly_rent;
+            // Add conditional validation for custom rent
+            if ($request->rent_option === 'custom') {
+                $rules['custom_monthly_rent'] = 'required|numeric|min:0';
             }
 
-            $tenant = Tenant::create($data);
+            $data = $request->validate($rules);
+
+            // Determine monthly rent
+            if ($data['rent_option'] === 'default') {
+                $monthlyRent = $property->monthly_rent ?? 0;
+            } else {
+                $monthlyRent = $data['custom_monthly_rent'];
+            }
+
+            // Generate tenant code
+            $tenantData = [
+                'tenant_code' => 'TEN-' . strtoupper(Str::random(8)),
+                'property_id' => $property->id,
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'monthly_rent' => $monthlyRent,
+                'move_in_date' => $data['move_in_date'],
+                'status' => 'active',
+            ];
+
+            $tenant = Tenant::create($tenantData);
 
             Log::info('New tenant registered', [
                 'tenant_id' => $tenant->id,
                 'property_id' => $property->id,
+                'monthly_rent' => $tenant->monthly_rent,
+                'rent_option' => $data['rent_option'],
                 'phone' => $tenant->phone
             ]);
 
@@ -136,7 +150,6 @@ class TenantRegistrationController extends Controller
         $phone = $request->phone;
         $propertyId = $request->property_id;
 
-        // ✅ ONLY check if phone exists for THIS SPECIFIC property
         $exists = Tenant::where('phone', $phone)
             ->where('property_id', $propertyId)
             ->whereNull('deleted_at')
@@ -149,7 +162,6 @@ class TenantRegistrationController extends Controller
             ]);
         }
 
-        // ✅ Phone is available for this property
         return response()->json([
             'exists' => false,
             'message' => 'Phone number is available for this property.'

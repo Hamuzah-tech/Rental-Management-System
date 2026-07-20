@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
 {
-    use SoftDeletes; // ← ADD THIS
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_code',
@@ -23,7 +23,12 @@ class Tenant extends Model
         'status',
     ];
 
-    protected $dates = ['deleted_at']; // ← ADD THIS
+    protected $casts = [
+        'monthly_rent' => 'decimal:2',
+        'move_in_date' => 'date',
+    ];
+
+    protected $dates = ['deleted_at'];
 
     /**
      * Tenant belongs to a property.
@@ -47,5 +52,30 @@ class Tenant extends Model
     public function moveOutNotices(): HasMany
     {
         return $this->hasMany(MoveOutNotice::class);
+    }
+
+    /**
+     * Get formatted monthly rent with currency.
+     */
+    public function getFormattedRentAttribute(): string
+    {
+        return 'MK ' . number_format($this->monthly_rent ?? 0, 2);
+    }
+
+    /**
+     * Get the effective rent (tenant's rent or property default).
+     */
+    public function getEffectiveRentAttribute(): float
+    {
+        return $this->monthly_rent ?? $this->property->monthly_rent ?? 0;
+    }
+
+    /**
+     * Check if tenant has a custom rent different from property default.
+     */
+    public function hasCustomRent(): bool
+    {
+        if (!$this->property) return false;
+        return $this->monthly_rent != $this->property->monthly_rent;
     }
 }

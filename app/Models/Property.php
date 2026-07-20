@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class Property extends Model
 {
-    use SoftDeletes; // ← ADD THIS
+    use SoftDeletes;
 
     protected $fillable = [
         'landlord_id',
@@ -28,7 +28,7 @@ class Property extends Model
         'status' => 'boolean',
     ];
 
-    protected $dates = ['deleted_at']; // ← ADD THIS
+    protected $dates = ['deleted_at'];
 
     // Relationships
     public function landlord()
@@ -119,5 +119,38 @@ class Property extends Model
     {
         if ($this->max_tenants == 0) return 0;
         return round(($this->currentTenantCount() / $this->max_tenants) * 100);
+    }
+
+    /**
+     * Get all tenants with their individual rents.
+     */
+    public function tenantsWithRent()
+    {
+        return $this->hasMany(Tenant::class)->select([
+            'id', 'name', 'email', 'phone', 'monthly_rent', 'status'
+        ]);
+    }
+
+    /**
+     * Get the default rent for new tenants.
+     */
+    public function getDefaultRentAttribute(): float
+    {
+        return $this->monthly_rent ?? 0;
+    }
+
+    /**
+     * Get rent statistics for this property.
+     */
+    public function getRentStatsAttribute(): array
+    {
+        $tenants = $this->tenants()->whereNull('deleted_at')->get();
+        
+        return [
+            'min' => $tenants->min('monthly_rent') ?? 0,
+            'max' => $tenants->max('monthly_rent') ?? 0,
+            'avg' => $tenants->avg('monthly_rent') ?? 0,
+            'count' => $tenants->count(),
+        ];
     }
 }

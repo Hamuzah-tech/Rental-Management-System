@@ -25,63 +25,102 @@
         </div>
     </div>
 
+    <!-- Error Display -->
+    @if($errors->any())
+        <div class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <ul class="text-red-600 text-sm list-disc list-inside">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('landlord.tenants.store') }}" id="tenantForm">
         @csrf
 
         <div class="p-6 space-y-5">
+            <!-- Property Selection -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Full Name
+                    Property <span class="text-red-500">*</span>
+                </label>
+                <select
+                    name="property_id"
+                    id="propertySelect"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('property_id') border-red-500 @enderror"
+                    required>
+                    <option value="">Select a property</option>
+                    @foreach($properties as $property)
+                        <option value="{{ $property->id }}" 
+                                data-rent="{{ $property->monthly_rent ?? 0 }}"
+                                {{ old('property_id') == $property->id ? 'selected' : '' }}>
+                            {{ $property->name }} (Default: MK {{ number_format($property->monthly_rent ?? 0) }})
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-blue-600 mt-1" id="defaultRentHint">
+                    Property default: MK 0
+                </p>
+                @error('property_id')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Full Name -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Full Name <span class="text-red-500">*</span>
                 </label>
                 <input
+                    type="text"
                     name="name"
                     value="{{ old('name') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('name') border-red-500 @enderror"
                     required>
+                @error('name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
+            <!-- Phone Number -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Phone Number
+                    Phone Number <span class="text-red-500">*</span>
                 </label>
                 <input
+                    type="tel"
                     name="phone"
+                    id="phone"
                     value="{{ old('phone') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('phone') border-red-500 @enderror"
+                    placeholder="0977123456"
                     required>
+                @error('phone')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
+            <!-- Email -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Email
+                    Email <span class="text-red-500">*</span>
                 </label>
                 <input
                     type="email"
                     name="email"
                     value="{{ old('email') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('email') border-red-500 @enderror"
+                    required>
+                @error('email')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
+            <!-- Monthly Rent - Tenant Specific -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Property
-                </label>
-                <select
-                    name="property_id"
-                    id="propertySelect"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400">
-                    <option value="">Select a property</option>
-                    @foreach($properties as $property)
-                        <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}" {{ old('property_id') == $property->id ? 'selected' : '' }}>
-                            {{ $property->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Monthly Rent
+                    Monthly Rent (MK) <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
@@ -90,23 +129,33 @@
                         id="monthlyRent"
                         name="monthly_rent"
                         value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-12"
+                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-12 @error('monthly_rent') border-red-500 @enderror"
                         required
                         placeholder="0">
                 </div>
-                <p class="text-xs text-slate-500 mt-1">Amount will be automatically filled from property selection</p>
+                <p class="text-xs text-slate-500 mt-1">Enter the specific rent amount for this tenant</p>
+                <p class="text-xs text-blue-600 mt-1" id="rentHint">
+                    Amount will be automatically filled from property selection
+                </p>
+                @error('monthly_rent')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
+            <!-- Move In Date -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Move In Date
+                    Move In Date <span class="text-red-500">*</span>
                 </label>
                 <input
                     type="date"
                     name="move_in_date"
-                    value="{{ old('move_in_date') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                    value="{{ old('move_in_date', date('Y-m-d')) }}"
+                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('move_in_date') border-red-500 @enderror"
                     required>
+                @error('move_in_date')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
         </div>
 
@@ -130,7 +179,7 @@
                     type="submit"
                     class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl transition flex items-center justify-center gap-2">
                     <x-heroicon-o-check class="w-4 h-4"/>
-                    Save Tenant
+                    Add Tenant
                 </button>
             </div>
         </div>
@@ -185,7 +234,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Monthly Rent
+                        Monthly Rent (MK)
                     </label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
@@ -285,6 +334,8 @@
     const errorMessage = document.getElementById('errorMessage');
     const errorText = document.getElementById('errorText');
     const copySuccessMessage = document.getElementById('copySuccessMessage');
+    const defaultRentHint = document.getElementById('defaultRentHint');
+    const rentHint = document.getElementById('rentHint');
 
     // Format number with commas
     function formatNumberWithCommas(number) {
@@ -306,9 +357,17 @@
             const rent = parseFloat(selectedOption.dataset.rent) || 0;
             targetInput.value = formatNumberWithCommas(rent);
             targetInput.dataset.rawValue = rent;
+            
+            // Update hint
+            if (defaultRentHint) {
+                defaultRentHint.textContent = 'Property default: MK ' + Number(rent).toLocaleString();
+            }
         } else {
             targetInput.value = '';
             targetInput.dataset.rawValue = '';
+            if (defaultRentHint) {
+                defaultRentHint.textContent = 'Property default: MK 0';
+            }
         }
     }
 
@@ -536,7 +595,7 @@
     });
 
     // Initialize rent from property on page load
-    if (propertySelect) {
+    if (propertySelect && propertySelect.value) {
         setRentFromProperty(propertySelect, monthlyRentInput);
     }
 
