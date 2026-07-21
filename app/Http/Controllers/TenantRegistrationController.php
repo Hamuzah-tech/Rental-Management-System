@@ -20,7 +20,6 @@ class TenantRegistrationController extends Controller
             ->where('status', true)
             ->firstOrFail();
 
-        // Check if property is full
         if ($property->isFull()) {
             return view('tenant.registration.full', compact('property'));
         }
@@ -37,7 +36,6 @@ class TenantRegistrationController extends Controller
             ->where('status', true)
             ->firstOrFail();
 
-        // Check if property is full
         if ($property->isFull()) {
             return redirect()
                 ->route('tenant.registration.full', $property)
@@ -45,8 +43,8 @@ class TenantRegistrationController extends Controller
         }
 
         try {
-            // Validate with rent option logic
-            $rules = [
+            // Validate - REMOVE rent_option requirement
+            $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
                 'phone' => [
@@ -64,22 +62,16 @@ class TenantRegistrationController extends Controller
                         }
                     }
                 ],
-                'rent_option' => 'required|in:default,custom',
+                'custom_monthly_rent' => 'nullable|numeric|min:0',
                 'move_in_date' => 'required|date',
-            ];
+            ]);
 
-            // Add conditional validation for custom rent
-            if ($request->rent_option === 'custom') {
-                $rules['custom_monthly_rent'] = 'required|numeric|min:0';
-            }
-
-            $data = $request->validate($rules);
-
-            // Determine monthly rent
-            if ($data['rent_option'] === 'default') {
-                $monthlyRent = $property->monthly_rent ?? 0;
-            } else {
-                $monthlyRent = $data['custom_monthly_rent'];
+            // Determine monthly rent - check both custom and default
+            $monthlyRent = $property->monthly_rent ?? 0;
+            
+            // If custom rent was provided and has a value, use it
+            if ($request->filled('custom_monthly_rent') && $request->custom_monthly_rent > 0) {
+                $monthlyRent = $request->custom_monthly_rent;
             }
 
             // Generate tenant code
@@ -100,7 +92,8 @@ class TenantRegistrationController extends Controller
                 'tenant_id' => $tenant->id,
                 'property_id' => $property->id,
                 'monthly_rent' => $tenant->monthly_rent,
-                'rent_option' => $data['rent_option'],
+                'custom_monthly_rent' => $request->custom_monthly_rent,
+                'property_default_rent' => $property->monthly_rent,
                 'phone' => $tenant->phone
             ]);
 

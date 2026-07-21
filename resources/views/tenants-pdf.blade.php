@@ -62,24 +62,54 @@
             color: #475569;
             font-size: 11px;
         }
+        .filters {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 11px;
+            border: 1px solid #e2e8f0;
+        }
+        .filters strong {
+            color: #1e293b;
+        }
+        .badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Tenants List</h1>
-        <p>Generated on {{ now()->format('F d, Y') }}</p>
+        <h1>@if(isset($property)) {{ $property->name }} - @endif Tenants List</h1>
+        <p>Generated on {{ $generatedAt->format('F d, Y H:i') }}</p>
+        @if(isset($landlord))
+            <p>Landlord: {{ $landlord->name }}</p>
+        @endif
     </div>
+
+    @if(isset($month) || (isset($paymentStatus) && $paymentStatus != 'all'))
+        <div class="filters">
+            <strong>Filters Applied:</strong>
+            @if(isset($month) && $month)
+                <span class="badge">{{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('M Y') }}</span>
+            @endif
+            @if(isset($paymentStatus) && $paymentStatus != 'all')
+                <span class="badge">{{ ucfirst($paymentStatus) }}</span>
+            @endif
+        </div>
+    @endif
 
     <table>
         <thead>
             <tr>
                 <th>#</th>
                 <th>Tenant Code</th>
-                <th>Name</th>
+                <th>Tenant Name</th>
                 <th>Phone</th>
                 <th>Property</th>
-                <th>Monthly Rent (MK)</th>
-                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -89,15 +119,11 @@
                     <td>{{ $tenant->tenant_code }}</td>
                     <td>{{ $tenant->name }}</td>
                     <td>{{ $tenant->phone }}</td>
-                    <td>{{ $tenant->property->name ?? 'N/A' }}</td>
-                    <td>{{ number_format($tenant->monthly_rent, 2) }}</td>
-                    <td>
-                        <span class="status-badge">{{ $tenant->status }}</span>
-                    </td>
+                    <td>{{ $tenant->property->name ?? $property->name ?? 'N/A' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" style="text-align: center; color: #94a3b8;">
+                    <td colspan="5" style="text-align: center; color: #94a3b8;">
                         No tenants found
                     </td>
                 </tr>

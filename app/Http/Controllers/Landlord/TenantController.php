@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TenantController extends Controller
 {
@@ -27,9 +28,34 @@ class TenantController extends Controller
             $query->where('property_id', $request->property_id);
         }
 
-        // Filter by status
+        // Filter by tenant status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        // Filter by payment status (paid/unpaid)
+        if ($request->filled('payment_status')) {
+            $paymentStatus = $request->payment_status;
+            
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) {
+                    $q->where('status', 'Approved');
+                });
+            } elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) {
+                    $q->where('status', 'Approved');
+                });
+            }
+        }
+
+        // Filter by specific month
+        if ($request->filled('month')) {
+            $month = $request->month;
+            $query->whereHas('payments', function ($q) use ($month) {
+                $q->where('payment_month', 'LIKE', $month . '%')
+                  ->orWhere('payment_month', 'LIKE', '%,' . $month . '%')
+                  ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%');
+            });
         }
 
         // Search
@@ -320,19 +346,66 @@ class TenantController extends Controller
     }
 
     /**
+     * Export tenants to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        // Get filter parameters
+        $paymentStatus = $request->payment_status ?? 'all';
+        $month = $request->month ?? null;
+
+        // Build query with filters
+        $query = Tenant::whereHas('property', function ($q) {
+            $q->where('landlord_id', Auth::id());
+        });
+
+        // Filter by payment status
+        if ($paymentStatus === 'paid') {
+            $query->whereHas('payments', function ($q) {
+                $q->where('status', 'Approved');
+            });
+        } elseif ($paymentStatus === 'unpaid') {
+            $query->whereDoesntHave('payments', function ($q) {
+                $q->where('status', 'Approved');
+            });
+        }
+
+        // Filter by month
+        if ($month) {
+            $query->whereHas('payments', function ($q) use ($month) {
+                $q->where('payment_month', 'LIKE', $month . '%')
+                  ->orWhere('payment_month', 'LIKE', '%,' . $month . '%')
+                  ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%');
+            });
+        }
+
+        $tenants = $query->with(['property', 'payments' => function ($q) {
+            $q->where('status', 'Approved');
+        }])->get();
+
+        // Generate PDF
+        $pdf = Pdf::loadView('exports.tenants-pdf', [
+            'tenants' => $tenants,
+            'paymentStatus' => $paymentStatus,
+            'month' => $month,
+            'landlord' => Auth::user(),
+            'generatedAt' => now()
+        ]);
+
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'landscape');
+
+        // Download the PDF
+        $filename = 'tenants_export_' . date('Y-m-d_H-i-s') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
      * Export tenants to Excel.
      */
     public function exportExcel()
     {
         // Implementation for Excel export
-    }
-
-    /**
-     * Export tenants to PDF.
-     */
-    public function exportPdf()
-    {
-        // Implementation for PDF export
     }
 
     /**

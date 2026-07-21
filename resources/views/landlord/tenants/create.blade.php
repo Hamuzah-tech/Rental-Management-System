@@ -4,21 +4,21 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-4xl mx-auto">
 
 <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-    <!-- Header -->
-    <div class="px-6 py-4 border-b border-slate-200">
+    <!-- Header - More Compact -->
+    <div class="px-5 py-3 border-b border-slate-200">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
                 <x-heroicon-o-user-plus class="w-5 h-5 text-slate-400"/>
             </div>
             <div>
-                <h2 class="text-xl font-bold text-slate-800">
+                <h2 class="text-base font-semibold text-slate-800">
                     Add Tenant
                 </h2>
-                <p class="text-sm text-slate-500">
+                <p class="text-xs text-slate-500">
                     Create a new tenant account.
                 </p>
             </div>
@@ -27,7 +27,7 @@
 
     <!-- Error Display -->
     @if($errors->any())
-        <div class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
             <ul class="text-red-600 text-sm list-disc list-inside">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -39,16 +39,16 @@
     <form method="POST" action="{{ route('landlord.tenants.store') }}" id="tenantForm">
         @csrf
 
-        <div class="p-6 space-y-5">
+        <div class="p-5 space-y-4">
             <!-- Property Selection -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
                     Property <span class="text-red-500">*</span>
                 </label>
                 <select
                     name="property_id"
                     id="propertySelect"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('property_id') border-red-500 @enderror"
+                    class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('property_id') border-red-500 @enderror"
                     required>
                     <option value="">Select a property</option>
                     @foreach($properties as $property)
@@ -69,115 +69,119 @@
 
             <!-- Full Name -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
                     Full Name <span class="text-red-500">*</span>
                 </label>
                 <input
                     type="text"
                     name="name"
                     value="{{ old('name') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('name') border-red-500 @enderror"
+                    class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('name') border-red-500 @enderror"
                     required>
                 @error('name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
-            <!-- Phone Number -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Phone Number <span class="text-red-500">*</span>
-                </label>
-                <input
-                    type="tel"
-                    name="phone"
-                    id="phone"
-                    value="{{ old('phone') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('phone') border-red-500 @enderror"
-                    placeholder="0977123456"
-                    required>
-                @error('phone')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Email -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Email <span class="text-red-500">*</span>
-                </label>
-                <input
-                    type="email"
-                    name="email"
-                    value="{{ old('email') }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('email') border-red-500 @enderror"
-                    required>
-                @error('email')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Monthly Rent - Tenant Specific -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Monthly Rent (MK) <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
+            <!-- Phone Number & Email - Side by Side -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Phone Number -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Phone Number <span class="text-red-500">*</span>
+                    </label>
                     <input
-                        type="text"
-                        id="monthlyRent"
-                        name="monthly_rent"
-                        value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-12 @error('monthly_rent') border-red-500 @enderror"
-                        required
-                        placeholder="0">
+                        type="tel"
+                        name="phone"
+                        id="phone"
+                        value="{{ old('phone') }}"
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('phone') border-red-500 @enderror"
+                        required>
+                    @error('phone')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
-                <p class="text-xs text-slate-500 mt-1">Enter the specific rent amount for this tenant</p>
-                <p class="text-xs text-blue-600 mt-1" id="rentHint">
-                    Amount will be automatically filled from property selection
-                </p>
-                @error('monthly_rent')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Email <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('email') border-red-500 @enderror"
+                        required>
+                    @error('email')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
-            <!-- Move In Date -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Move In Date <span class="text-red-500">*</span>
-                </label>
-                <input
-                    type="date"
-                    name="move_in_date"
-                    value="{{ old('move_in_date', date('Y-m-d')) }}"
-                    class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('move_in_date') border-red-500 @enderror"
-                    required>
-                @error('move_in_date')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+            <!-- Monthly Rent & Move In Date - Side by Side -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Monthly Rent - Tenant Specific -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Monthly Rent (MK) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">MK</span>
+                        <input
+                            type="text"
+                            id="monthlyRent"
+                            name="monthly_rent"
+                            value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
+                            class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-9 @error('monthly_rent') border-red-500 @enderror"
+                            required>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Enter the specific rent amount for this tenant</p>
+                    <p class="text-xs text-blue-600 mt-1" id="rentHint">
+                        Amount will be automatically filled from property selection
+                    </p>
+                    @error('monthly_rent')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Move In Date -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Move In Date <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        name="move_in_date"
+                        value="{{ old('move_in_date', date('Y-m-d')) }}"
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('move_in_date') border-red-500 @enderror"
+                        required>
+                    @error('move_in_date')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="border-t border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-end gap-3">
+        <!-- Footer - More Compact -->
+        <div class="border-t border-slate-200 px-5 py-3 flex flex-col sm:flex-row justify-end gap-2.5">
             <a href="{{ route('landlord.tenants.index') }}"
-               class="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-center">
+               class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-center text-sm">
                 Cancel
             </a>
 
-            <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex flex-col sm:flex-row gap-2.5">
                 <button
                     type="button"
                     id="shareRegistrationBtn"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl transition flex items-center justify-center gap-2">
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
                     <x-heroicon-o-share class="w-4 h-4"/>
                     Share Registration Link
                 </button>
 
                 <button
                     type="submit"
-                    class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl transition flex items-center justify-center gap-2">
+                    class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
                     <x-heroicon-o-check class="w-4 h-4"/>
                     Add Tenant
                 </button>
@@ -195,35 +199,35 @@
     <div class="fixed inset-0 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+            <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                         <x-heroicon-o-link class="w-5 h-5 text-blue-600"/>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800">
+                        <h3 class="text-base font-bold text-slate-800">
                             Share Registration Link
                         </h3>
-                        <p class="text-sm text-slate-500">
+                        <p class="text-xs text-slate-500">
                             Generate a registration link for a tenant
                         </p>
                     </div>
                 </div>
                 <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-slate-600 transition">
-                    <x-heroicon-o-x-mark class="w-6 h-6"/>
+                    <x-heroicon-o-x-mark class="w-5 h-5"/>
                 </button>
             </div>
 
             <!-- Modal Body -->
-            <div class="p-6 space-y-5">
+            <div class="p-5 space-y-4">
                 <!-- Property Selection -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Select Property
                     </label>
                     <select
                         id="modalPropertySelect"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400">
                         @foreach($properties as $property)
                             <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}">
                                 {{ $property->name }} (MK {{ number_format($property->monthly_rent ?? 0) }})
@@ -233,16 +237,16 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Monthly Rent (MK)
                     </label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">MK</span>
                         <input
                             type="text"
                             id="modalMonthlyRent"
                             readonly
-                            class="w-full rounded-xl border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 pl-12 cursor-default">
+                            class="w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 pl-9 cursor-default">
                     </div>
                     <p class="text-xs text-slate-500 mt-1">This rent amount will be pre-filled for the tenant</p>
                 </div>
@@ -251,7 +255,7 @@
                 <div>
                     <button
                         id="generateLinkBtn"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition flex items-center justify-center gap-2">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
                         <x-heroicon-o-arrow-path class="w-4 h-4"/>
                         Generate Link
                     </button>
@@ -261,24 +265,24 @@
                 <div id="loadingIndicator" class="hidden">
                     <div class="flex items-center justify-center py-4">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <span class="ml-2 text-slate-600">Generating link...</span>
+                        <span class="ml-2 text-slate-600 text-sm">Generating link...</span>
                     </div>
                 </div>
 
                 <!-- Generated Link -->
                 <div id="linkContainer" class="hidden">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Registration Link
                     </label>
-                    <div class="flex gap-3">
+                    <div class="flex gap-2.5">
                         <input
                             id="registrationLink"
                             type="text"
                             readonly
-                            class="flex-1 rounded-xl border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 cursor-default">
+                            class="flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 cursor-default text-sm">
                         <button
                             id="copyLinkBtn"
-                            class="flex-shrink-0 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl transition flex items-center gap-2">
+                            class="flex-shrink-0 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm">
                             <x-heroicon-o-clipboard class="w-4 h-4"/>
                             Copy
                         </button>
@@ -291,17 +295,17 @@
 
                 <!-- Error Message -->
                 <div id="errorMessage" class="hidden">
-                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
                         <p id="errorText">Failed to generate registration link. Please try again.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Modal Footer -->
-            <div class="border-t border-slate-200 px-6 py-4 flex justify-end">
+            <div class="border-t border-slate-200 px-5 py-3 flex justify-end">
                 <button
                     onclick="closeRegistrationModal()"
-                    class="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+                    class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm">
                     Close
                 </button>
             </div>

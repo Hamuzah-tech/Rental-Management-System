@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-4xl mx-auto">
 
     <!-- Display Success Message -->
     @if(session('success'))
@@ -26,13 +26,13 @@
 
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-        <!-- Header -->
-        <div class="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                <x-heroicon-o-building-office class="w-6 h-6 text-slate-400"/>
+        <!-- Header - More Compact -->
+        <div class="px-5 py-3 border-b border-slate-200 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                <x-heroicon-o-building-office class="w-5 h-5 text-slate-400"/>
             </div>
             <div>
-                <h2 class="text-lg font-semibold text-slate-800">
+                <h2 class="text-base font-semibold text-slate-800">
                     Add Hostel
                 </h2>
             </div>
@@ -41,19 +41,18 @@
         <form method="POST" action="{{ route('landlord.properties.store') }}" id="propertyForm">
             @csrf
 
-            <div class="p-6 space-y-5">
+            <div class="p-5 space-y-4">
 
                 <!-- Property Name -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Hostel Name <span class="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
                         name="name"
                         value="{{ old('name') }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('name') border-red-500 @enderror"
-                        placeholder="Example: Sunrise Hostel"
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('name') border-red-500 @enderror"
                         required>
                     @error('name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -62,7 +61,7 @@
 
                 <!-- Address -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Address
                         <span class="text-slate-400 font-normal">(Optional)</span>
                     </label>
@@ -70,65 +69,64 @@
                         type="text"
                         name="address"
                         value="{{ old('address') }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('address') border-red-500 @enderror"
-                        placeholder="Example: Chikanda">
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('address') border-red-500 @enderror">
                     @error('address')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Monthly Rent -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Monthly Rent (MK) <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">MK</span>
-                        <input
-                            type="text"
-                            id="monthlyRent"
-                            name="monthly_rent"
-                            value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
-                            class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-12 @error('monthly_rent') border-red-500 @enderror"
-                            placeholder="0"
-                            required>
+                <!-- Monthly Rent & Max Tenants - Side by Side -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Monthly Rent -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Monthly Rent (MK) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">MK</span>
+                            <input
+                                type="text"
+                                id="monthlyRent"
+                                name="monthly_rent"
+                                value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
+                                class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-9 @error('monthly_rent') border-red-500 @enderror"
+                                required>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">Monthly rent amount</p>
+                        @error('monthly_rent')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <p class="text-xs text-slate-500 mt-1">Enter the monthly rent amount for this property</p>
-                    @error('monthly_rent')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <!-- Max Tenants -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Maximum Tenants <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="number"
-                        name="max_tenants"
-                        value="{{ old('max_tenants', 10) }}"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('max_tenants') border-red-500 @enderror"
-                        placeholder="Example: 10"
-                        min="1"
-                        required>
-                    <p class="text-xs text-slate-500 mt-1">Maximum number of tenants allowed for this property</p>
-                    @error('max_tenants')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <!-- Max Tenants -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Max Tenants <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="max_tenants"
+                            value="{{ old('max_tenants', 10) }}"
+                            class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('max_tenants') border-red-500 @enderror"
+                            min="1"
+                            required>
+                        <p class="text-xs text-slate-500 mt-1">Maximum tenants allowed</p>
+                        @error('max_tenants')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Description
                         <span class="text-slate-400 font-normal">(Optional)</span>
                     </label>
                     <textarea
                         name="description"
-                        rows="4"
-                        class="w-full rounded-xl border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('description') border-red-500 @enderror"
-                        placeholder="Hostel description">{{ old('description') }}</textarea>
+                        rows="3"
+                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
                     @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -136,16 +134,16 @@
 
             </div>
 
-            <!-- Footer -->
-            <div class="border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+            <!-- Footer - More Compact -->
+            <div class="border-t border-slate-200 px-5 py-3 flex justify-end gap-2.5">
                 <a href="{{ route('landlord.properties.index') }}"
-                   class="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm transition">
+                   class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm transition">
                     Cancel
                 </a>
 
                 <button
                     type="submit"
-                    class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl text-sm transition flex items-center gap-2">
+                    class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg text-sm transition flex items-center gap-2">
                     <x-heroicon-o-check class="w-4 h-4"/>
                     Save
                 </button>

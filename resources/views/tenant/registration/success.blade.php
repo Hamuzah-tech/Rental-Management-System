@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="min-h-screen bg-slate-100 py-12">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             
             <!-- Header -->

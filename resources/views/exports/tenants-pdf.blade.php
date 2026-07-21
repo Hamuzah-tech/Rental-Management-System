@@ -1,175 +1,146 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <title>Tenants Report</title>
-
     <style>
-        @page{
-            margin:25px;
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            padding: 20px;
         }
-
-        body{
-            font-family: DejaVu Sans, sans-serif;
-            font-size:11px;
-            color:#333;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0F172A;
         }
-
-        h2{
-            text-align:center;
-            margin:0;
-            color:#0d47a1;
+        .header h1 {
+            font-size: 22px;
+            margin: 0;
+            color: #0F172A;
         }
-
-        .subtitle{
-            text-align:center;
-            margin:6px 0 20px;
-            color:#666;
-            font-size:11px;
+        .header p {
+            color: #6B7280;
+            margin: 5px 0 0;
+            font-size: 11px;
         }
-
-        table{
-            width:100%;
-            border-collapse:collapse;
-            margin:auto;
+        .filters {
+            background: #F8FAFC;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 11px;
+            border: 1px solid #E5E7EB;
         }
-
-        th{
-            background:#0d47a1;
-            color:white;
-            border:1px solid #444;
-            padding:9px;
-            text-align:center;
-            font-size:11px;
+        .filters strong {
+            color: #111827;
         }
-
-        td{
-            border:1px solid #bbb;
-            padding:8px;
-            text-align:center;
-            vertical-align:middle;
+        .badge {
+            background: #E5E7EB;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
         }
-
-        tbody tr:nth-child(even){
-            background:#f7f9fc;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
-
-        .paid{
-            color:#0a8f08;
-            font-weight:bold;
+        th {
+            background-color: #F8FAFC;
+            color: #111827;
+            font-weight: 600;
+            padding: 10px 12px;
+            text-align: left;
+            border: 1px solid #E5E7EB;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
-        .partial{
-            color:#d48806;
-            font-weight:bold;
+        td {
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            color: #374151;
+            font-size: 11px;
         }
-
-        .unpaid{
-            color:#d32f2f;
-            font-weight:bold;
+        tr:nth-child(even) {
+            background-color: #FAFBFC;
         }
-
-        .footer{
-            margin-top:20px;
-            text-align:right;
-            font-size:10px;
-            color:#777;
+        .footer {
+            text-align: center;
+            color: #6B7280;
+            font-size: 10px;
+            margin-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            padding-top: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            background-color: #F3F4F6;
+            color: #374151;
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>Tenant List</h1>
+        <p>Alendi: For Landlords. For Tenants.</p>
+        <p>Generated on {{ $generatedAt->format('d M Y, H:i') }}</p>
+        @if(isset($landlord))
+            <p>Landlord: {{ $landlord->name }}</p>
+        @endif
+        @if(isset($property))
+            <p>Property: {{ $property->name }}</p>
+        @endif
+    </div>
 
-<h2>Tenant Report</h2>
+    @if(isset($month) || (isset($paymentStatus) && $paymentStatus != 'all'))
+        <div class="filters">
+            <strong>Filters Applied:</strong>
+            @if(isset($month) && $month)
+                <span class="badge">{{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('M Y') }}</span>
+            @endif
+            @if(isset($paymentStatus) && $paymentStatus != 'all')
+                <span class="badge">{{ ucfirst($paymentStatus) }}</span>
+            @endif
+        </div>
+    @endif
 
-<div class="subtitle">
-    Rental Management System<br>
-    Generated on {{ now()->format('d M Y, H:i') }}
-</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Tenant Code</th>
+                <th>Tenant Name</th>
+                <th>Phone</th>
+                <th>Property</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($tenants as $index => $tenant)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $tenant->tenant_code }}</td>
+                    <td>{{ $tenant->name }}</td>
+                    <td>{{ $tenant->phone }}</td>
+                    <td>{{ $tenant->property->name ?? $property->name ?? 'N/A' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #6B7280; padding: 20px;">
+                        No tenants found matching the filters.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 
-<table>
-
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Tenant Code</th>
-            <th>Tenant Name</th>
-            <th>Phone</th>
-            <th>Property</th>
-            <th>Monthly Rent (MWK)</th>
-            <th>Total Paid</th>
-            <th>Balance</th>
-            <th>Payment Status</th>
-            <th>Tenant Status</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-    @forelse($tenants as $tenant)
-
-        @php
-            // Adjust these relationships/fields to match your models
-            $paid = $tenant->payments->sum('amount') ?? 0;
-            $rent = $tenant->monthly_rent ?? 0;
-            $balance = max($rent - $paid, 0);
-
-            if($paid >= $rent && $rent > 0){
-                $paymentStatus = 'Paid';
-                $class = 'paid';
-            }elseif($paid > 0){
-                $paymentStatus = 'Partial';
-                $class = 'partial';
-            }else{
-                $paymentStatus = 'Unpaid';
-                $class = 'unpaid';
-            }
-        @endphp
-
-        <tr>
-
-            <td>{{ $loop->iteration }}</td>
-
-            <td>{{ $tenant->tenant_code }}</td>
-
-            <td>{{ $tenant->name }}</td>
-
-            <td>{{ $tenant->phone }}</td>
-
-            <td>{{ $tenant->property->name ?? '-' }}</td>
-
-            <td>{{ number_format($rent) }}</td>
-
-            <td>{{ number_format($paid) }}</td>
-
-            <td>{{ number_format($balance) }}</td>
-
-            <td class="{{ $class }}">
-                {{ $paymentStatus }}
-            </td>
-
-            <td>
-                {{ ucfirst($tenant->status) }}
-            </td>
-
-        </tr>
-
-    @empty
-
-        <tr>
-            <td colspan="10">
-                No tenant records found.
-            </td>
-        </tr>
-
-    @endforelse
-
-    </tbody>
-
-</table>
-
-<div class="footer">
-    Total Tenants: <strong>{{ $tenants->count() }}</strong>
-</div>
-
+    <div class="footer">
+        Total Tenants: {{ $tenants->count() }}
+    </div>
 </body>
 </html>

@@ -23,7 +23,6 @@ use App\Http\Controllers\Landlord\PaymentController as LandlordPaymentController
 
 // Tenant Controllers
 use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
-use App\Http\Controllers\Tenant\MoveOutNoticeController as TenantMoveOutNoticeController;
 use App\Http\Controllers\TenantRegistrationController;
 
 /*
@@ -93,6 +92,7 @@ Route::post('/tenant/check-phone', [TenantRegistrationController::class, 'checkP
 |--------------------------------------------------------------------------
 */
 Route::prefix('tenant')->name('tenant.')->group(function () {
+    // Payment Routes
     Route::get('/payments', [TenantPaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/create', [TenantPaymentController::class, 'create'])->name('payments.create');
     Route::post('/payments', [TenantPaymentController::class, 'store'])->name('payments.store');
@@ -100,9 +100,6 @@ Route::prefix('tenant')->name('tenant.')->group(function () {
     Route::post('/payments/search', [TenantPaymentController::class, 'search'])->name('payments.search');
     Route::post('/payments/public-search', [TenantPaymentController::class, 'publicSearch'])->name('payments.public-search');
     Route::get('/payments/history/{reference}', [TenantPaymentController::class, 'publicHistory'])->name('payments.public-history');
-    Route::get('/move-out', [TenantMoveOutNoticeController::class, 'create'])->name('moveout.create');
-    Route::post('/move-out', [TenantMoveOutNoticeController::class, 'store'])->name('moveout.store');
-    Route::get('/move-out/success', [TenantMoveOutNoticeController::class, 'success'])->name('moveout.success');
 });
 
 /*
@@ -131,9 +128,7 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
 
-            // ============================================
             // PROPERTIES with Soft Delete
-            // ============================================
             Route::get('/properties/trashed', [PropertyController::class, 'trashed'])
                 ->name('trash.properties');
             Route::patch('/properties/trashed/{id}/restore', [PropertyController::class, 'restore'])
@@ -142,9 +137,7 @@ Route::middleware('auth')->group(function () {
                 ->name('trash.properties.force-delete');
             Route::resource('properties', PropertyController::class);
 
-            // ============================================
             // TENANTS with Soft Delete
-            // ============================================
             Route::get('/tenants/trashed', [TenantController::class, 'trashed'])
                 ->name('trash.tenants');
             Route::patch('/tenants/trashed/{id}/restore', [TenantController::class, 'restore'])
@@ -153,9 +146,7 @@ Route::middleware('auth')->group(function () {
                 ->name('trash.tenants.force-delete');
             Route::resource('tenants', TenantController::class);
 
-            // ============================================
             // LANDLORDS with Soft Delete
-            // ============================================
             Route::get('/landlords/trashed', [LandlordController::class, 'trashed'])
                 ->name('trash.landlords');
             Route::patch('/landlords/trashed/{id}/restore', [LandlordController::class, 'restore'])
@@ -169,11 +160,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/landlords/{landlord}/reset-password', [LandlordController::class, 'resetPassword'])
                 ->name('landlords.reset-password');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Admin Settings
-            |--------------------------------------------------------------------------
-            */
+            // Admin Settings
             Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
             Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup');
             Route::get('/settings/download/{file}', [SettingsController::class, 'download'])->name('settings.download');
@@ -189,18 +176,10 @@ Route::middleware('auth')->group(function () {
         ->prefix('landlord')
         ->name('landlord.')
         ->group(function () {
-            /*
-            |--------------------------------------------------------------------------
-            | Dashboard
-            |--------------------------------------------------------------------------
-            */
+            // Dashboard
             Route::get('/dashboard', [LandlordDashboard::class, 'index'])->name('dashboard');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Properties with Soft Delete
-            |--------------------------------------------------------------------------
-            */
+            // Properties with Soft Delete & PDF Export
             Route::get('/properties/trashed', [LandlordPropertyController::class, 'trashed'])
                 ->name('properties.trashed');
             Route::patch('/properties/{id}/restore', [LandlordPropertyController::class, 'restore'])
@@ -208,12 +187,10 @@ Route::middleware('auth')->group(function () {
             Route::resource('properties', LandlordPropertyController::class);
             Route::patch('/properties/{property}/status', [LandlordPropertyController::class, 'toggleStatus'])
                 ->name('properties.status');
+            Route::get('/properties/{property}/export-pdf', [LandlordPropertyController::class, 'exportPdf'])
+                ->name('properties.export.pdf');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Tenants with Soft Delete
-            |--------------------------------------------------------------------------
-            */
+            // Tenants with Soft Delete
             Route::get('/tenants/trashed', [LandlordTenantController::class, 'trashed'])
                 ->name('tenants.trashed');
             Route::patch('/tenants/{id}/restore', [LandlordTenantController::class, 'restore'])
@@ -228,21 +205,13 @@ Route::middleware('auth')->group(function () {
             Route::patch('/tenants/{tenant}/reactivate', [LandlordTenantController::class, 'reactivate'])
                 ->name('tenants.reactivate');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Tenant Exports
-            |--------------------------------------------------------------------------
-            */
+            // Tenant Exports
             Route::get('/tenants/export/excel', [LandlordTenantController::class, 'exportExcel'])
                 ->name('tenants.export.excel');
             Route::get('/tenants/export/pdf', [LandlordTenantController::class, 'exportPdf'])
                 ->name('tenants.export.pdf');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Payments
-            |--------------------------------------------------------------------------
-            */
+            // Payments
             Route::get('/payments', [LandlordPaymentController::class, 'index'])
                 ->name('payments.index');
             Route::get('/payments/{payment}', [LandlordPaymentController::class, 'show'])

@@ -8,12 +8,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Property;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf; // ADD THIS
 
 class PropertyController extends Controller
 {
+    /**
+     * Display a listing of properties.
+     */
     public function index()
     {
-        // Only show non-deleted properties
         $properties = Property::where('landlord_id', Auth::id())
             ->latest()
             ->paginate(10);
@@ -34,11 +38,17 @@ class PropertyController extends Controller
         return view('landlord.properties.trashed', compact('properties'));
     }
 
+    /**
+     * Show the form for creating a new property.
+     */
     public function create()
     {
         return view('landlord.properties.create');
     }
 
+    /**
+     * Store a newly created property in storage.
+     */
     public function store(Request $request)
     {
         Log::info('Property store called', $request->all());
@@ -78,12 +88,131 @@ class PropertyController extends Controller
         }
     }
 
+    /**
+     * Display the specified property with its tenants.
+     */
+    public function show(Request $request, Property $property)
+    {
+        $this->authorizeProperty($property);
+        
+        // Get filter parameters
+        $month = $request->month ?? null;
+        $paymentStatus = $request->payment_status ?? 'all';
+        
+        // Load tenants with payments
+        $property->load(['tenants' => function ($q) {
+            $q->with(['payments' => function ($pq) {
+                $pq->where('status', 'Approved');
+            }]);
+        }]);
+        
+        // Filter tenants by month and payment status
+        $tenants = $property->tenants;
+        
+        // Filter by month
+        if ($month) {
+            $tenants = $tenants->filter(function ($tenant) use ($month) {
+                $hasPaymentForMonth = $tenant->payments->filter(function ($payment) use ($month) {
+                    $months = explode(',', $payment->payment_month);
+                    return in_array($month, array_map('trim', $months));
+                })->count() > 0;
+                
+                return $hasPaymentForMonth;
+            });
+        }
+        
+        // Filter by payment status
+        if ($paymentStatus === 'paid') {
+            $tenants = $tenants->filter(function ($tenant) {
+                return $tenant->payments->count() > 0;
+            });
+        } elseif ($paymentStatus === 'unpaid') {
+            $tenants = $tenants->filter(function ($tenant) {
+                return $tenant->payments->count() === 0;
+            });
+        }
+        
+        // Generate month options: August 2026 to December 2027
+        $months = [];
+        $startDate = Carbon::createFromDate(2026, 8, 1);
+        $endDate = Carbon::createFromDate(2027, 12, 1);
+        
+        for ($date = clone $startDate; $date <= $endDate; $date->addMonth()) {
+            $months[$date->format('Y-m')] = $date->format('F Y');
+        }
+        
+        return view('landlord.properties.show', compact('property', 'tenants', 'months', 'month', 'paymentStatus'));
+    }
+
+    /**
+     * Export property tenants to PDF.
+     */
+    public function exportPdf(Request $request, Property $property)
+    {
+        $this->authorizeProperty($property);
+        
+        // Get filter parameters
+        $month = $request->month ?? null;
+        $paymentStatus = $request->payment_status ?? 'all';
+        
+        // Load tenants with payments
+        $property->load(['tenants' => function ($q) {
+            $q->with(['payments' => function ($pq) {
+                $pq->where('status', 'Approved');
+            }]);
+        }]);
+        
+        // Filter tenants by month and payment status
+        $tenants = $property->tenants;
+        
+        if ($month) {
+            $tenants = $tenants->filter(function ($tenant) use ($month) {
+                $hasPaymentForMonth = $tenant->payments->filter(function ($payment) use ($month) {
+                    $months = explode(',', $payment->payment_month);
+                    return in_array($month, array_map('trim', $months));
+                })->count() > 0;
+                return $hasPaymentForMonth;
+            });
+        }
+        
+        if ($paymentStatus === 'paid') {
+            $tenants = $tenants->filter(function ($tenant) {
+                return $tenant->payments->count() > 0;
+            });
+        } elseif ($paymentStatus === 'unpaid') {
+            $tenants = $tenants->filter(function ($tenant) {
+                return $tenant->payments->count() === 0;
+            });
+        }
+        
+        // Generate PDF using existing view
+        $pdf = Pdf::loadView('exports.tenants-pdf', [
+            'tenants' => $tenants,
+            'property' => $property,
+            'paymentStatus' => $paymentStatus,
+            'month' => $month,
+            'landlord' => Auth::user(),
+            'generatedAt' => now()
+        ]);
+        
+        $pdf->setPaper('A4', 'landscape');
+        
+        $filename = 'property_tenants_' . $property->id . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Show the form for editing the specified property.
+     */
     public function edit(Property $property)
     {
         $this->authorizeProperty($property);
         return view('landlord.properties.edit', compact('property'));
     }
 
+    /**
+     * Update the specified property in storage.
+     */
     public function update(Request $request, Property $property)
     {
         $this->authorizeProperty($property);
@@ -145,6 +274,9 @@ class PropertyController extends Controller
             ->with('success', 'Property restored successfully.');
     }
 
+    /**
+     * Toggle property status (Active/Inactive).
+     */
     public function toggleStatus(Property $property)
     {
         $this->authorizeProperty($property);
@@ -156,6 +288,9 @@ class PropertyController extends Controller
         return back()->with('success', 'Property status updated.');
     }
 
+    /**
+     * Authorize that the property belongs to the current landlord.
+     */
     private function authorizeProperty(Property $property)
     {
         abort_if(

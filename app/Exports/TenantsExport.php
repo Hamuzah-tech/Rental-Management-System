@@ -25,15 +25,11 @@ class TenantsExport implements FromCollection, WithHeadings, WithMapping, WithSt
     public function headings(): array
     {
         return [
-            'ID',
+            '#',
             'Tenant Code',
-            'Name',
-            'Email',
+            'Tenant Name',
             'Phone',
-            'Property',
-            'Monthly Rent (MK)',
-            'Status',
-            'Created At'
+            'Property'
         ];
     }
 
@@ -43,12 +39,8 @@ class TenantsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $tenant->id,
             $tenant->tenant_code,
             $tenant->name,
-            $tenant->email ?? 'N/A',
             $tenant->phone,
-            $tenant->property->name ?? 'N/A',
-            number_format($tenant->monthly_rent, 2),
-            $tenant->status,
-            $tenant->created_at->format('Y-m-d H:i')
+            $tenant->property->name ?? 'N/A'
         ];
     }
 
