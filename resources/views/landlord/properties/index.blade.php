@@ -4,93 +4,86 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
 
 <!-- Header -->
-<div class="bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div class="bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
     <div>
-        <h2 class="text-xl font-bold text-[#111827]">
+        <h2 class="text-lg sm:text-xl font-bold text-[#111827]">
            Hostels
         </h2>
-        <p class="text-sm text-[#6B7280] mt-1">
+        <p class="text-xs sm:text-sm text-[#6B7280] mt-0.5">
             Manage your Hostel(s).
         </p>
     </div>
 
     <a href="{{ route('landlord.properties.create') }}"
-       class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2 w-full sm:w-auto justify-center">
-        <x-heroicon-o-building-office-2 class="w-4 h-4"/>
+       class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto text-center">
         Add Hostel
     </a>
 </div>
 
 <!-- Success -->
 @if(session('success'))
-    <div class="bg-[#F3F4F6] border border-[#E5E7EB] text-[#111827] px-4 py-3 rounded-lg text-sm">
+    <div class="bg-[#F3F4F6] border border-[#E5E7EB] text-[#111827] px-3 py-2.5 rounded-lg text-sm">
         {{ session('success') }}
     </div>
 @endif
 
 <!-- Table -->
 <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+
     <!-- Mobile Card View -->
     <div class="block sm:hidden divide-y divide-[#E5E7EB]">
         @forelse($properties as $index => $property)
-            <div class="p-4 hover:bg-[#F8FAFC] transition">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <h3 class="font-semibold text-[#111827] text-sm">
+            <div class="p-3 hover:bg-[#F8FAFC] transition">
+                <div class="flex justify-between items-start mb-1.5">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-[#111827] text-sm truncate">
                             {{ $property->name }}
                         </h3>
-                        <p class="text-xs text-[#6B7280] mt-0.5">
-                            {{ $property->address }}
-                        </p>
                     </div>
-                    <span class="text-xs text-[#9CA3AF]">
+                    <span class="text-xs text-[#9CA3AF] flex-shrink-0 ml-2">
                         #{{ $properties->firstItem() + $index }}
                     </span>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-2 mt-2">
+                <div class="grid grid-cols-2 gap-1.5 mt-1.5">
                     <div class="text-xs">
                         <span class="text-[#6B7280]">Rent:</span>
                         <span class="font-medium text-[#111827]">MK {{ number_format($property->monthly_rent ?? 0) }}</span>
                     </div>
-                    <div class="text-xs">
-                        <span class="text-[#6B7280]">Tenants:</span>
-                        <span class="font-medium text-[#111827]">{{ $property->currentTenantCount() }}/{{ $property->max_tenants ?? 0 }}</span>
-                    </div>
                 </div>
                 
-                <div class="flex justify-between items-center mt-3">
+                <div class="flex justify-between items-center mt-2.5">
                     <div>
                         @if($property->status)
-                            <span class="px-2 py-1 rounded-full bg-[#F3F4F6] text-[#374151] text-xs">
+                            <span class="px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#374151] text-[10px] font-medium">
                                 Active
                             </span>
                         @else
-                            <span class="px-2 py-1 rounded-full bg-[#F3F4F6] text-[#6B7280] text-xs">
+                            <span class="px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#6B7280] text-[10px] font-medium">
                                 Inactive
                             </span>
                         @endif
+                        @if($property->isFull())
+                            <span class="ml-1 px-1.5 py-0.5 bg-[#E5E7EB] text-[#374151] text-[10px] rounded-full">Full</span>
+                        @endif
                     </div>
                     
-                    <div class="flex gap-1">
-                        <!-- View -->
+                    <div class="flex gap-0.5">
                         <a href="{{ route('landlord.properties.show', $property) }}"
                            title="View Tenants"
-                           class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                            <x-heroicon-o-eye class="w-5 h-5"/>
+                           class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                            <x-heroicon-o-eye class="w-4 h-4"/>
                         </a>
 
-                        <!-- Edit -->
                         <a href="{{ route('landlord.properties.edit', $property) }}"
                            title="Edit"
-                           class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                            <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                           class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                            <x-heroicon-o-pencil-square class="w-4 h-4"/>
                         </a>
 
-                        <!-- Delete -->
                         <form method="POST"
                               action="{{ route('landlord.properties.destroy',$property) }}"
                               id="delete-property-mobile-{{ $property->id }}">
@@ -101,88 +94,81 @@
                                 title="Delete"
                                 onclick="openConfirmModal(
                                     'delete-property-mobile-{{ $property->id }}',
-                                    'Delete Property',
-                                    'Are you sure you want to delete this property? This action cannot be undone.'
+                                    'Delete Hostel',
+                                    'Are you sure you want to delete this Hostel? This action cannot be undone.'
                                 )"
-                                class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                <x-heroicon-o-trash class="w-5 h-5"/>
+                                class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                <x-heroicon-o-trash class="w-4 h-4"/>
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="p-8 text-center text-[#6B7280]">
-                No properties found.
+            <div class="p-6 text-center text-[#6B7280] text-sm">
+                No Hostels found.
             </div>
         @endforelse
     </div>
 
     <!-- Desktop Table View -->
     <div class="hidden sm:block overflow-x-auto">
-        <table class="w-full text-sm min-w-[700px]">
+        <table class="w-full text-sm min-w-[600px]">
             <thead class="bg-[#F8FAFC]">
                 <tr class="text-[#6B7280]">
-                    <th class="px-4 py-3 text-left">#</th>
-                    <th class="px-4 py-3 text-left">Name</th>
-                    <th class="px-4 py-3 text-left">Address</th>
-                    <th class="px-4 py-3 text-left">Rent (MK)</th>
-                    <th class="px-4 py-3 text-left">Tenants</th>
-                    <th class="px-4 py-3 text-left">Status</th>
-                    <th class="px-4 py-3 text-right">Actions</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">#</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Rent (MK)</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Tenants</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($properties as $index => $property)
                     <tr class="border-t border-[#E5E7EB] hover:bg-[#F8FAFC] transition">
-                        <td class="px-4 py-3 text-[#9CA3AF]">
+                        <td class="px-4 py-2.5 text-[#9CA3AF] text-center">
                             {{ $properties->firstItem() + $index }}
                         </td>
-                        <td class="px-4 py-3 font-medium text-[#111827]">
+                        <td class="px-4 py-2.5 font-medium text-[#111827]">
                             {{ $property->name }}
                         </td>
-                        <td class="px-4 py-3 text-[#374151]">
-                            {{ $property->address }}
-                        </td>
-                        <td class="px-4 py-3 text-[#111827]">
+                        <td class="px-4 py-2.5 text-[#111827]">
                             {{ number_format($property->monthly_rent ?? 0) }}
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-2.5">
                             <span class="text-[#111827]">
                                 {{ $property->currentTenantCount() }}/{{ $property->max_tenants ?? 0 }}
                             </span>
                             @if($property->isFull())
-                                <span class="ml-1 px-1.5 py-0.5 bg-[#E5E7EB] text-[#374151] text-xs rounded-full">Full</span>
+                                <span class="ml-1 px-1.5 py-0.5 bg-[#E5E7EB] text-[#374151] text-[10px] rounded-full">Full</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-2.5">
                             @if($property->status)
-                                <span class="px-2 py-1 rounded-full bg-[#F3F4F6] text-[#374151] text-xs">
+                                <span class="px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#374151] text-[10px] font-medium">
                                     Active
                                 </span>
                             @else
-                                <span class="px-2 py-1 rounded-full bg-[#F3F4F6] text-[#6B7280] text-xs">
+                                <span class="px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#6B7280] text-[10px] font-medium">
                                     Inactive
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
-                            <div class="flex justify-end gap-1">
-                                <!-- View -->
+                        <td class="px-4 py-2.5">
+                            <div class="flex justify-end gap-0.5">
                                 <a href="{{ route('landlord.properties.show', $property) }}"
                                    title="View Tenants"
-                                   class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                    <x-heroicon-o-eye class="w-5 h-5"/>
+                                   class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                    <x-heroicon-o-eye class="w-4 h-4"/>
                                 </a>
 
-                                <!-- Edit -->
                                 <a href="{{ route('landlord.properties.edit', $property) }}"
                                    title="Edit"
-                                   class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                    <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                                   class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                    <x-heroicon-o-pencil-square class="w-4 h-4"/>
                                 </a>
 
-                                <!-- Delete -->
                                 <form method="POST"
                                       action="{{ route('landlord.properties.destroy',$property) }}"
                                       id="delete-property-{{ $property->id }}">
@@ -196,8 +182,8 @@
                                             'Delete Property',
                                             'Are you sure you want to delete this property? This action cannot be undone.'
                                         )"
-                                        class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                        <x-heroicon-o-trash class="w-5 h-5"/>
+                                        class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                        <x-heroicon-o-trash class="w-4 h-4"/>
                                     </button>
                                 </form>
                             </div>
@@ -205,8 +191,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-[#6B7280]">
-                            No properties found.
+                        <td colspan="6" class="px-4 py-6 text-center text-[#6B7280] text-sm">
+                            No Hostels found.
                         </td>
                     </tr>
                 @endforelse
@@ -227,13 +213,11 @@
      class="fixed inset-0 z-50 flex items-center justify-center p-4" 
      style="display: none;"
      x-cloak>
-    <!-- Backdrop -->
     <div id="modalBackdrop" 
          class="absolute inset-0 bg-black/30 transition-opacity duration-300"
          style="opacity: 0;">
     </div>
 
-    <!-- Modal Box -->
     <div id="modalBox" 
          class="relative bg-white rounded-xl border border-[#E5E7EB] w-full max-w-md p-6 transform transition-all duration-300"
          style="opacity: 0; transform: translateY(20px) scale(0.95);">

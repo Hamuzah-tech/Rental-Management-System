@@ -31,24 +31,29 @@
                 </div>
             </div>
 
+            <!-- Success Message -->
+            @if(session('success'))
+                <div class="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-green-700 text-sm">{{ session('success') }}</p>
+                </div>
+            @endif
+
+            <!-- Error Message -->
+            @if(session('error'))
+                <div class="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-700 text-sm">{{ session('error') }}</p>
+                </div>
+            @endif
+
             <!-- Form -->
             <form method="POST"
                   action="{{ route('tenant.registration.store', $property->registration_token) }}"
-                  id="registrationForm">
+                  id="registrationForm"
+                  novalidate>
 
                 @csrf
 
                 <div class="p-6 space-y-4">
-
-                    @if ($errors->any())
-                        <div class="rounded-xl border border-red-200 bg-red-50 p-3">
-                            <ul class="list-disc list-inside text-red-600 text-xs space-y-0.5">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
                     <!-- Name & Email - Side by Side -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -59,9 +64,11 @@
                             <input
                                 type="text"
                                 name="name"
+                                id="name"
                                 value="{{ old('name') }}"
                                 required
-                                class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827]">
+                                maxlength="255"
+                                class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827] @error('name') border-red-500 @enderror">
 
                             @error('name')
                                 <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -75,9 +82,11 @@
                             <input
                                 type="email"
                                 name="email"
+                                id="email"
                                 value="{{ old('email') }}"
                                 required
-                                class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827]">
+                                maxlength="255"
+                                class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827] @error('email') border-red-500 @enderror">
 
                             @error('email')
                                 <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -91,15 +100,19 @@
                             Phone Number <span class="text-red-500">*</span>
                         </label>
                         <input
-                            type="text"
+                            type="tel"
                             name="phone"
+                            id="phone"
                             value="{{ old('phone') }}"
+                            maxlength="15"
+                            placeholder="0999552309"
                             required
-                            class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827]">
+                            class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827] @error('phone') border-red-500 @enderror">
 
                         @error('phone')
                             <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
                         @enderror
+                        <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a valid Malawi phone number (e.g., 0999552309)</p>
                     </div>
 
                     <!-- Monthly Rent with Default/Custom Toggle -->
@@ -130,24 +143,24 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-[#6B7280]">Property Default Rent</span>
                                     <span class="text-base font-bold text-[#111827]">
-                                        MK {{ number_format($property->monthly_rent ?? 0, 2) }}
+                                        MK {{ number_format($property->monthly_rent ?? 0) }}
                                     </span>
                                 </div>
                                 <p class="text-[10px] text-[#6B7280] mt-0.5">Using the default rent set by the landlord</p>
                                 <input type="hidden" name="monthly_rent" id="defaultRentInput" value="{{ $property->monthly_rent ?? 0 }}">
                             </div>
 
-                            <!-- Custom Rent Input -->
+                            <!-- Custom Rent Input with Currency Formatting -->
                             <div id="customRentContainer" class="hidden">
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-medium text-[#6B7280]">MK</span>
-                                    <input type="number" 
-                                           step="0.01" 
+                                    <input type="text" 
                                            name="custom_monthly_rent" 
                                            id="customRentInput"
-                                           value="{{ old('custom_monthly_rent') }}"
-                                           class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] pl-10 pr-3 py-1.5 text-sm bg-white text-[#111827]"
-                                           placeholder="Enter your specific rent amount">
+                                           value="{{ old('custom_monthly_rent') ? number_format(old('custom_monthly_rent'), 0, '', ',') : '' }}"
+                                           class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] pl-10 pr-3 py-1.5 text-sm bg-white text-[#111827] currency-input @error('custom_monthly_rent') border-red-500 @enderror"
+                                           placeholder="Enter your specific rent amount (e.g., 30,000)"
+                                           autocomplete="off">
                                 </div>
                                 <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a specific rent amount if you have a different agreement</p>
                             </div>
@@ -168,9 +181,10 @@
                         <input
                             type="date"
                             name="move_in_date"
+                            id="move_in_date"
                             value="{{ old('move_in_date', date('Y-m-d')) }}"
                             required
-                            class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827]">
+                            class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827] @error('move_in_date') border-red-500 @enderror">
 
                         @error('move_in_date')
                             <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -183,10 +197,9 @@
                 <div class="border-t border-[#E5E7EB] bg-[#F8FAFC] px-6 py-3">
                     <button
                         type="submit"
+                        id="submitBtn"
                         class="w-full bg-[#0F172A] hover:bg-[#1a2a4a] text-white py-2 rounded-lg font-medium text-sm transition">
-
                         Register
-
                     </button>
                 </div>
 
@@ -199,6 +212,34 @@
 </div>
 
 <script>
+    // Currency formatting function
+    function formatCurrency(input) {
+        let value = input.value.replace(/\D/g, '');
+        
+        if (value === '') {
+            input.value = '';
+            return;
+        }
+        
+        let number = parseInt(value);
+        if (!isNaN(number)) {
+            input.value = number.toLocaleString('en-US');
+        }
+    }
+
+    // Handle paste events to clean up pasted values
+    function handlePaste(e) {
+        e.preventDefault();
+        let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        let cleaned = pastedText.replace(/\D/g, '');
+        if (cleaned) {
+            let number = parseInt(cleaned);
+            if (!isNaN(number)) {
+                e.target.value = number.toLocaleString('en-US');
+            }
+        }
+    }
+
     // Toggle between default and custom rent
     function toggleRent(type) {
         const defaultContainer = document.getElementById('defaultRentContainer');
@@ -217,6 +258,7 @@
             customInput.disabled = true;
             customInput.value = '';
             customInput.removeAttribute('required');
+            customInput.classList.remove('border-red-500');
         } else {
             defaultContainer.classList.add('hidden');
             customContainer.classList.remove('hidden');
@@ -226,10 +268,19 @@
             customInput.disabled = false;
             defaultInput.value = '';
             customInput.setAttribute('required', 'required');
+            customInput.focus();
         }
     }
 
-    // Handle form submission - FIXED
+    // Phone input validation - only allow digits and + sign
+    document.getElementById('phone')?.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9+]/g, '');
+        if (this.value.length > 15) {
+            this.value = this.value.slice(0, 15);
+        }
+    });
+
+    // Handle form submission - ensure monthly_rent is set
     document.getElementById('registrationForm')?.addEventListener('submit', function(e) {
         const defaultContainer = document.getElementById('defaultRentContainer');
         const customInput = document.getElementById('customRentInput');
@@ -241,23 +292,117 @@
             defaultInput.disabled = false;
             defaultInput.value = defaultInput.value || '{{ $property->monthly_rent ?? 0 }}';
         } else {
-            // Custom rent selected - use custom value
-            const customValue = customInput.value;
-            if (customValue) {
-                // Create or update the monthly_rent field with custom value
+            // Custom rent selected - use custom value (remove commas for backend)
+            let customValue = customInput.value.replace(/,/g, '');
+            if (customValue && parseInt(customValue) > 0) {
                 defaultInput.disabled = false;
                 defaultInput.value = customValue;
+            } else {
+                // If custom rent is invalid, prevent submission
+                e.preventDefault();
+                customInput.classList.add('border-red-500');
+                customInput.focus();
+                
+                // Show error message if not already shown
+                let errorEl = document.getElementById('customRentError');
+                if (!errorEl) {
+                    errorEl = document.createElement('p');
+                    errorEl.id = 'customRentError';
+                    errorEl.className = 'text-red-500 text-xs mt-0.5';
+                    errorEl.textContent = 'Please enter a valid rent amount.';
+                    customInput.parentElement.parentElement.appendChild(errorEl);
+                }
+                return;
             }
         }
     });
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
+        // Set up currency formatting on the custom input
+        const customInput = document.getElementById('customRentInput');
+        if (customInput) {
+            customInput.addEventListener('input', function() {
+                formatCurrency(this);
+                // Remove error message when user types
+                const errorEl = document.getElementById('customRentError');
+                if (errorEl) errorEl.remove();
+                this.classList.remove('border-red-500');
+            });
+            customInput.addEventListener('paste', handlePaste);
+            
+            customInput.addEventListener('blur', function() {
+                if (this.value) {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value) {
+                        let number = parseInt(value);
+                        if (!isNaN(number) && number > 0) {
+                            this.value = number.toLocaleString('en-US');
+                            this.classList.remove('border-red-500');
+                        }
+                    }
+                }
+            });
+        }
+
         @if(old('custom_monthly_rent'))
             toggleRent('custom');
-            document.getElementById('customRentInput').value = '{{ old('custom_monthly_rent') }}';
+            const customInputField = document.getElementById('customRentInput');
+            if (customInputField) {
+                const value = '{{ old('custom_monthly_rent') }}';
+                if (value) {
+                    const number = parseInt(value);
+                    if (!isNaN(number) && number > 0) {
+                        customInputField.value = number.toLocaleString('en-US');
+                        customInputField.classList.remove('border-red-500');
+                    }
+                }
+            }
         @endif
+
+        // If there are validation errors, scroll to the first error
+        const firstError = document.querySelector('.border-red-500');
+        if (firstError) {
+            firstError.focus();
+            setTimeout(() => {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
     });
 </script>
+
+<style>
+    .currency-input {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    .currency-input::placeholder {
+        font-weight: normal;
+        letter-spacing: normal;
+        color: #9CA3AF;
+    }
+
+    .currency-input:focus {
+        border-color: #0F172A;
+        ring: 2px solid rgba(15, 23, 42, 0.1);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .transition {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .border-red-500 {
+        border-color: #EF4444 !important;
+    }
+
+    .border-red-500:focus {
+        ring-color: #EF4444 !important;
+    }
+</style>
 
 @endsection

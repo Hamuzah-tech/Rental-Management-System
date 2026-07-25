@@ -1,6 +1,6 @@
 @extends('layouts.landlord')
 
-@section('title','Add Property')
+@section('title','Add Hostel')
 
 @section('content')
 
@@ -27,15 +27,10 @@
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
         <!-- Header - More Compact -->
-        <div class="px-5 py-3 border-b border-slate-200 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                <x-heroicon-o-building-office class="w-5 h-5 text-slate-400"/>
-            </div>
-            <div>
-                <h2 class="text-base font-semibold text-slate-800">
-                    Add Hostel
-                </h2>
-            </div>
+        <div class="px-5 py-3 border-b border-slate-200">
+            <h2 class="text-base font-semibold text-slate-800">
+                Add Hostel
+            </h2>
         </div>
 
         <form method="POST" action="{{ route('landlord.properties.store') }}" id="propertyForm">
@@ -43,7 +38,7 @@
 
             <div class="p-5 space-y-4">
 
-                <!-- Property Name -->
+                <!-- Hostel Name -->
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         Hostel Name <span class="text-red-500">*</span>
@@ -55,22 +50,6 @@
                         class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('name') border-red-500 @enderror"
                         required>
                     @error('name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Address -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Address
-                        <span class="text-slate-400 font-normal">(Optional)</span>
-                    </label>
-                    <input
-                        type="text"
-                        name="address"
-                        value="{{ old('address') }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('address') border-red-500 @enderror">
-                    @error('address')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -115,21 +94,6 @@
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Description
-                        <span class="text-slate-400 font-normal">(Optional)</span>
-                    </label>
-                    <textarea
-                        name="description"
-                        rows="3"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
-                    @error('description')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
             </div>

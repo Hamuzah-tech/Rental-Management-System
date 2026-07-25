@@ -190,6 +190,16 @@ Route::middleware('auth')->group(function () {
             Route::get('/properties/{property}/export-pdf', [LandlordPropertyController::class, 'exportPdf'])
                 ->name('properties.export.pdf');
 
+            // ========== NEW ROUTES FOR PROPERTY TENANTS ==========
+            // Show property with tenants (with filters)
+            Route::get('/properties/{property}/show', [LandlordTenantController::class, 'showProperty'])
+                ->name('properties.show');
+            
+            // Export property tenants to PDF
+            Route::get('/properties/{property}/export-property-pdf', [LandlordTenantController::class, 'exportPropertyPdf'])
+                ->name('properties.export.property.pdf');
+            // ========== END NEW ROUTES ==========
+
             // Tenants with Soft Delete
             Route::get('/tenants/trashed', [LandlordTenantController::class, 'trashed'])
                 ->name('tenants.trashed');

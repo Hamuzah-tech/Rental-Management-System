@@ -7,21 +7,13 @@
 <div class="space-y-6">
 
     {{-- Header --}}
-    <div class="bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h2 class="text-xl font-bold text-[#111827]">
-                {{ $property->name }}
-            </h2>
-            <p class="text-sm text-[#6B7280] mt-1">
-                Manage tenants for this hostel.
-            </p>
-        </div>
+    <div class="bg-white border border-[#E5E7EB] rounded-xl p-5 flex flex-row justify-between items-center gap-4">
+        <h2 class="text-xl font-bold text-[#111827]">
+            {{ $property->name }}
+        </h2>
         <div class="flex items-center gap-3">
-            <span class="text-sm text-[#6B7280]">
-                Tenants: {{ $property->currentTenantCount() }}/{{ $property->max_tenants ?? 0 }}
-            </span>
             <a href="{{ route('landlord.properties.index') }}"
-               class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+               class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2 whitespace-nowrap">
                 <x-heroicon-o-arrow-left class="w-4 h-4"/>
                 Back
             </a>
@@ -33,6 +25,43 @@
         <div class="bg-[#F3F4F6] border border-[#E5E7EB] text-[#111827] px-4 py-3 rounded-lg text-sm">
             {{ session('success') }}
         </div>
+    @endif
+
+    {{-- Success Modal --}}
+    @if(session('success'))
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 transform transition-all scale-100">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-[#F3F4F6] flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-[#0F172A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-[#111827] mb-2">
+                    @if(str_contains(session('success'), 'created'))
+                        Tenant Created Successfully
+                    @elseif(str_contains(session('success'), 'updated'))
+                        Tenant Updated Successfully
+                    @elseif(str_contains(session('success'), 'restored'))
+                        Tenant Restored Successfully
+                    @elseif(str_contains(session('success'), 'moved out'))
+                        Tenant Moved Out Successfully
+                    @elseif(str_contains(session('success'), 'deleted'))
+                        Tenant Deleted Successfully
+                    @else
+                        Success
+                    @endif
+                </h2>
+                <p class="text-sm text-[#6B7280] mb-6">
+                    {{ session('success') }}
+                </p>
+                <a href="{{ route('landlord.properties.show', $property->id) }}"
+                   class="w-full inline-flex items-center justify-center rounded-lg bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-6 py-2.5 text-sm font-medium transition">
+                    Continue
+                </a>
+            </div>
+        </div>
+    </div>
     @endif
 
     {{-- Filters --}}
@@ -84,17 +113,16 @@
                 </div>
             </form>
 
-            {{-- PDF Download Button --}}
+            {{-- PDF Text Button --}}
             <a href="{{ route('landlord.properties.export.pdf', [
                 'property' => $property->id,
                 'month' => request('month'),
                 'payment_status' => request('payment_status', 'all')
             ]) }}"
-               class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2 flex-shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Download PDF
+               target="_blank"
+               rel="noopener noreferrer"
+               class="text-sm text-[#0F172A] hover:text-[#1a2a4a] font-medium transition">
+                Download Tenants List
             </a>
         </div>
         
@@ -117,16 +145,16 @@
     </div>
 
     {{-- Tenants Table --}}
-    <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+    <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-x-auto">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm" style="min-width: 900px;">
                 <thead class="bg-[#F8FAFC]">
                     <tr class="text-[#6B7280]">
                         <th class="px-4 py-3 text-left">#</th>
                         <th class="px-4 py-3 text-left">Tenant Code</th>
                         <th class="px-4 py-3 text-left">Name</th>
-                        <th class="px-4 py-3 text-left hidden sm:table-cell">Phone</th>
-                        <th class="px-4 py-3 text-left hidden md:table-cell">Rent (MK)</th>
+                        <th class="px-4 py-3 text-left">Phone</th>
+                        <th class="px-4 py-3 text-left">Rent (MK)</th>
                         <th class="px-4 py-3 text-left">Payment</th>
                         <th class="px-4 py-3 text-left">Status</th>
                         <th class="px-4 py-3 text-right">Actions</th>
@@ -147,14 +175,12 @@
                             $paymentMonthsList = array_unique($paymentMonthsList);
                             sort($paymentMonthsList);
                             
-                            // Check if paid for selected month
                             $paidForSelectedMonth = false;
                             if (request('month')) {
                                 $selectedMonth = request('month');
                                 $paidForSelectedMonth = in_array($selectedMonth, $paymentMonthsList);
                             }
                             
-                            // Check if tenant has custom rent
                             $hasCustomRent = $tenant->monthly_rent != $property->monthly_rent;
                         @endphp
                         <tr class="border-t border-[#E5E7EB] hover:bg-[#F8FAFC] transition">
@@ -167,10 +193,10 @@
                             <td class="px-4 py-3 font-medium text-[#111827]">
                                 {{ $tenant->name }}
                             </td>
-                            <td class="px-4 py-3 text-[#374151] hidden sm:table-cell">
+                            <td class="px-4 py-3 text-[#374151]">
                                 {{ $tenant->phone }}
                             </td>
-                            <td class="px-4 py-3 text-[#111827] hidden md:table-cell">
+                            <td class="px-4 py-3 text-[#111827]">
                                 {{ number_format($tenant->monthly_rent ?? 0) }}
                                 @if($hasCustomRent)
                                     <span class="text-[10px] text-[#6B7280] ml-1">(custom)</span>
@@ -223,21 +249,18 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1">
-                                    <!-- Edit Tenant -->
                                     <a href="{{ route('landlord.tenants.edit', $tenant) }}"
                                        title="Edit Tenant"
                                        class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                        <x-heroicon-o-pencil-square class="w-4 h-4"/>
+                                        <x-heroicon-o-pencil-square class="w-5 h-5"/>
                                     </a>
 
-                                    <!-- View Tenant -->
                                     <a href="{{ route('landlord.tenants.show', $tenant) }}"
                                        title="View Tenant"
                                        class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                        <x-heroicon-o-eye class="w-4 h-4"/>
+                                        <x-heroicon-o-eye class="w-5 h-5"/>
                                     </a>
 
-                                    <!-- Delete Tenant -->
                                     <form method="POST"
                                           action="{{ route('landlord.tenants.destroy', $tenant) }}"
                                           id="delete-tenant-{{ $tenant->id }}">
@@ -252,7 +275,7 @@
                                                 'Are you sure you want to delete this tenant? This action cannot be undone.'
                                             )"
                                             class="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
-                                            <x-heroicon-o-trash class="w-4 h-4"/>
+                                            <x-heroicon-o-trash class="w-5 h-5"/>
                                         </button>
                                     </form>
                                 </div>
@@ -309,6 +332,33 @@
         </div>
     </div>
 </div>
+
+<style>
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #successModal {
+        animation: modalFadeIn 0.3s ease-out;
+    }
+    #successModal > div {
+        animation: modalSlideIn 0.3s ease-out;
+    }
+    @keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+</style>
 
 <script>
 let selectedForm = null;
@@ -375,6 +425,30 @@ document.addEventListener('click', function(event) {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape' && isModalOpen) {
         closeConfirmModal();
+    }
+});
+
+// Success Modal Auto-close
+document.addEventListener('DOMContentLoaded', function() {
+    const successModal = document.getElementById('successModal');
+    if (successModal) {
+        setTimeout(function() {
+            successModal.style.opacity = '0';
+            successModal.style.transition = 'opacity 0.5s ease';
+            setTimeout(function() {
+                successModal.style.display = 'none';
+            }, 500);
+        }, 5000);
+
+        successModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.opacity = '0';
+                this.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    this.style.display = 'none';
+                }, 300);
+            }
+        });
     }
 });
 </script>

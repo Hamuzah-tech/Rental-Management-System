@@ -18,10 +18,10 @@
             </p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('landlord.tenants.index') }}"
+            <a href="{{ route('landlord.properties.show', $tenant->property_id) }}"
                class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
                 <x-heroicon-o-arrow-left class="w-4 h-4"/>
-                Back
+                Back to Property
             </a>
         </div>
     </div>

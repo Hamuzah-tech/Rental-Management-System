@@ -8,8 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Property;
+use App\Models\Tenant;
+use App\Models\Payment;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf; // ADD THIS
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PropertyController extends Controller
 {
@@ -54,6 +56,7 @@ class PropertyController extends Controller
         Log::info('Property store called', $request->all());
         
         try {
+            // Validate - address and description are now optional
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'address' => 'nullable|string|max:255',
@@ -62,6 +65,9 @@ class PropertyController extends Controller
                 'max_tenants' => 'required|integer|min:1',
             ]);
 
+            // Set default values for nullable fields if not provided
+            $data['address'] = $data['address'] ?? '';
+            $data['description'] = $data['description'] ?? '';
             $data['landlord_id'] = Auth::id();
             $data['status'] = true;
             $data['registration_token'] = \Illuminate\Support\Str::random(40);
@@ -99,46 +105,86 @@ class PropertyController extends Controller
         $month = $request->month ?? null;
         $paymentStatus = $request->payment_status ?? 'all';
         
-        // Load tenants with payments
-        $property->load(['tenants' => function ($q) {
-            $q->with(['payments' => function ($pq) {
-                $pq->where('status', 'Approved');
-            }]);
-        }]);
+        // Start with base query for tenants
+        $query = Tenant::where('property_id', $property->id);
         
-        // Filter tenants by month and payment status
-        $tenants = $property->tenants;
-        
-        // Filter by month
-        if ($month) {
-            $tenants = $tenants->filter(function ($tenant) use ($month) {
-                $hasPaymentForMonth = $tenant->payments->filter(function ($payment) use ($month) {
-                    $months = explode(',', $payment->payment_month);
-                    return in_array($month, array_map('trim', $months));
-                })->count() > 0;
-                
-                return $hasPaymentForMonth;
+        // Apply filters based on payment status and month
+        if ($paymentStatus !== 'all' && $month) {
+            // PAID: Tenants who have a payment record for the selected month
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) use ($month) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($month) {
+                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                                   ->orWhere('payment_month', '=', $month);
+                      });
+                });
+            } 
+            // UNPAID: Tenants who DO NOT have a payment record for the selected month
+            elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) use ($month) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($month) {
+                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                                   ->orWhere('payment_month', '=', $month);
+                      });
+                });
+            }
+        } elseif ($paymentStatus !== 'all' && !$month) {
+            // If no month selected, use current month
+            $currentMonth = date('Y-m');
+            
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) use ($currentMonth) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($currentMonth) {
+                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
+                                   ->orWhere('payment_month', '=', $currentMonth);
+                      });
+                });
+            } elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) use ($currentMonth) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($currentMonth) {
+                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
+                                   ->orWhere('payment_month', '=', $currentMonth);
+                      });
+                });
+            }
+        } elseif ($paymentStatus === 'all' && $month) {
+            // Month only filter - show tenants who have paid for this month
+            $query->whereHas('payments', function ($q) use ($month) {
+                $q->where('status', 'Approved')
+                  ->where(function ($subQuery) use ($month) {
+                      $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                               ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                               ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                               ->orWhere('payment_month', '=', $month);
+                  });
             });
         }
         
-        // Filter by payment status
-        if ($paymentStatus === 'paid') {
-            $tenants = $tenants->filter(function ($tenant) {
-                return $tenant->payments->count() > 0;
-            });
-        } elseif ($paymentStatus === 'unpaid') {
-            $tenants = $tenants->filter(function ($tenant) {
-                return $tenant->payments->count() === 0;
-            });
-        }
+        // Get tenants with their payments
+        $tenants = $query->with(['payments' => function ($q) {
+            $q->where('status', 'Approved')->orderBy('created_at', 'desc');
+        }])->get();
         
-        // Generate month options: August 2026 to December 2027
+        // Generate month options for dropdown - Show 2026 and 2027 months
         $months = [];
-        $startDate = Carbon::createFromDate(2026, 8, 1);
-        $endDate = Carbon::createFromDate(2027, 12, 1);
+        $startDate = Carbon::create(2026, 1, 1);
+        $endDate = Carbon::create(2027, 12, 1);
         
-        for ($date = clone $startDate; $date <= $endDate; $date->addMonth()) {
-            $months[$date->format('Y-m')] = $date->format('F Y');
+        while ($startDate <= $endDate) {
+            $months[$startDate->format('Y-m')] = $startDate->format('F Y');
+            $startDate->addMonth();
         }
         
         return view('landlord.properties.show', compact('property', 'tenants', 'months', 'month', 'paymentStatus'));
@@ -155,37 +201,79 @@ class PropertyController extends Controller
         $month = $request->month ?? null;
         $paymentStatus = $request->payment_status ?? 'all';
         
-        // Load tenants with payments
-        $property->load(['tenants' => function ($q) {
-            $q->with(['payments' => function ($pq) {
-                $pq->where('status', 'Approved');
-            }]);
-        }]);
+        // Start with base query for tenants
+        $query = Tenant::where('property_id', $property->id);
         
-        // Filter tenants by month and payment status
-        $tenants = $property->tenants;
-        
-        if ($month) {
-            $tenants = $tenants->filter(function ($tenant) use ($month) {
-                $hasPaymentForMonth = $tenant->payments->filter(function ($payment) use ($month) {
-                    $months = explode(',', $payment->payment_month);
-                    return in_array($month, array_map('trim', $months));
-                })->count() > 0;
-                return $hasPaymentForMonth;
+        // Apply filters based on payment status and month
+        if ($paymentStatus !== 'all' && $month) {
+            // PAID: Tenants who have a payment record for the selected month
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) use ($month) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($month) {
+                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                                   ->orWhere('payment_month', '=', $month);
+                      });
+                });
+            } 
+            // UNPAID: Tenants who DO NOT have a payment record for the selected month
+            elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) use ($month) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($month) {
+                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                                   ->orWhere('payment_month', '=', $month);
+                      });
+                });
+            }
+        } elseif ($paymentStatus !== 'all' && !$month) {
+            // If no month selected, use current month
+            $currentMonth = date('Y-m');
+            
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) use ($currentMonth) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($currentMonth) {
+                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
+                                   ->orWhere('payment_month', '=', $currentMonth);
+                      });
+                });
+            } elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) use ($currentMonth) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($currentMonth) {
+                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
+                                   ->orWhere('payment_month', '=', $currentMonth);
+                      });
+                });
+            }
+        } elseif ($paymentStatus === 'all' && $month) {
+            // Month only filter - show tenants who have paid for this month
+            $query->whereHas('payments', function ($q) use ($month) {
+                $q->where('status', 'Approved')
+                  ->where(function ($subQuery) use ($month) {
+                      $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                               ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                               ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                               ->orWhere('payment_month', '=', $month);
+                  });
             });
         }
         
-        if ($paymentStatus === 'paid') {
-            $tenants = $tenants->filter(function ($tenant) {
-                return $tenant->payments->count() > 0;
-            });
-        } elseif ($paymentStatus === 'unpaid') {
-            $tenants = $tenants->filter(function ($tenant) {
-                return $tenant->payments->count() === 0;
-            });
-        }
+        // Get tenants with their payments
+        $tenants = $query->with(['payments' => function ($q) {
+            $q->where('status', 'Approved');
+        }])->get();
         
-        // Generate PDF using existing view
+        // Generate PDF
         $pdf = Pdf::loadView('exports.tenants-pdf', [
             'tenants' => $tenants,
             'property' => $property,
@@ -225,6 +313,10 @@ class PropertyController extends Controller
                 'monthly_rent' => 'required|numeric|min:0',
                 'max_tenants' => 'required|integer|min:1',
             ]);
+
+            // Set default values for nullable fields if not provided
+            $data['address'] = $data['address'] ?? '';
+            $data['description'] = $data['description'] ?? '';
 
             $property->update($data);
 

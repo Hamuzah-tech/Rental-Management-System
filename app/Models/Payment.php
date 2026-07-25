@@ -85,4 +85,25 @@ class Payment extends Model
         }
         return $this->amount / $count;
     }
+
+    /**
+     * Check if this payment covers a specific month.
+     */
+    public function coversMonth(string $month): bool
+    {
+        $months = $this->months_array;
+        return in_array($month, array_map('trim', $months));
+    }
+
+    /**
+     * Scope to get payments for a specific month.
+     */
+    public function scopeForMonth($query, string $month)
+    {
+        return $query->where(function ($q) use ($month) {
+            $q->where('payment_month', 'LIKE', $month . '%')
+              ->orWhere('payment_month', 'LIKE', '%,' . $month . '%')
+              ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%');
+        });
+    }
 }

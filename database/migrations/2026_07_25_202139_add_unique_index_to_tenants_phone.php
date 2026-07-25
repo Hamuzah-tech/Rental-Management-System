@@ -1,5 +1,4 @@
 <?php
-// database/migrations/2026_07_20_000003_add_soft_deletes_to_tenants_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -7,17 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            $table->softDeletes();
+            $table->unique('phone');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            $table->dropSoftDeletes();
+            $table->dropUnique(['phone']);
         });
     }
 };

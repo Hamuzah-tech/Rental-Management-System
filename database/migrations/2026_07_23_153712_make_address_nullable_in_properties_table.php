@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('properties', function (Blueprint $table) {
-            if (!Schema::hasColumn('properties', 'monthly_rent')) {
-                $table->decimal('monthly_rent', 10, 2)->default(0)->after('address');
-            }
+            $table->string('address')->nullable()->change();
         });
     }
 
@@ -24,9 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('properties', function (Blueprint $table) {
-            if (Schema::hasColumn('properties', 'monthly_rent')) {
-                $table->dropColumn('monthly_rent');
-            }
+            $table->string('address')->nullable(false)->change();
         });
     }
 };

@@ -10,12 +10,12 @@
         });
      ">
 
-    <!-- Mobile Hamburger -->
-    <button @click="open = !open" class="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+    <!-- Mobile Hamburger - White lines, no background -->
+    <button @click="open = !open" class="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg transition">
         <div class="space-y-1.5">
-            <span class="block w-8 h-0.5 bg-gray-700 rounded-full"></span>
-            <span class="block w-5 h-0.5 bg-gray-700 rounded-full"></span>
-            <span class="block w-6 h-0.5 bg-gray-700 rounded-full"></span>
+            <span class="block w-8 h-0.5 bg-white rounded-full"></span>
+            <span class="block w-5 h-0.5 bg-white rounded-full"></span>
+            <span class="block w-6 h-0.5 bg-white rounded-full"></span>
         </div>
     </button>
 
@@ -32,7 +32,7 @@
          x-cloak>
     </div>
 
-    <!-- Sidebar - Sticky, Never Disappears on Desktop with Shadow -->
+    <!-- Sidebar -->
     <aside x-show="open" 
            x-transition:enter.duration.300ms
            x-transition:leave.duration.300ms
@@ -59,10 +59,10 @@
         </div>
 
         <!-- Navigation - Scrollable middle section -->
-        <nav class="flex-1 overflow-y-auto py-3 space-y-0.5">
+        <nav class="flex-1 overflow-y-auto py-4 space-y-1">
             <!-- Dashboard -->
             <a href="{{ route('landlord.dashboard') }}"
-               class="flex items-center gap-3 mx-2 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm
+               class="flex items-center gap-3 mx-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm
                {{ request()->routeIs('landlord.dashboard') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
                 <x-heroicon-o-home class="w-5 h-5 {{ request()->routeIs('landlord.dashboard') ? 'text-white' : 'text-slate-400' }}" />
                 Dashboard
@@ -70,23 +70,23 @@
 
             <!-- Properties (Hostels) -->
             <a href="{{ route('landlord.properties.index') }}"
-               class="flex items-center gap-3 mx-2 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm
+               class="flex items-center gap-3 mx-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm
                {{ request()->routeIs('landlord.properties.*') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
                 <x-heroicon-o-building-office-2 class="w-5 h-5 {{ request()->routeIs('landlord.properties.*') ? 'text-white' : 'text-slate-400' }}" />
                 Hostels
             </a>
 
-            <!-- Tenants -->
-            <a href="{{ route('landlord.tenants.index') }}"
-               class="flex items-center gap-3 mx-2 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm
-               {{ request()->routeIs('landlord.tenants.*') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
-                <x-heroicon-o-users class="w-5 h-5 {{ request()->routeIs('landlord.tenants.*') ? 'text-white' : 'text-slate-400' }}" />
-                Tenants
+            <!-- Tenants - Link to Create Page -->
+            <a href="{{ route('landlord.tenants.create') }}"
+               class="flex items-center gap-3 mx-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm
+               {{ request()->routeIs('landlord.tenants.create') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
+                <x-heroicon-o-users class="w-5 h-5 {{ request()->routeIs('landlord.tenants.create') ? 'text-white' : 'text-slate-400' }}" />
+                Add Tenant
             </a>
 
             <!-- Payments -->
             <a href="{{ route('landlord.payments.index') }}"
-               class="flex items-center gap-3 mx-2 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm
+               class="flex items-center gap-3 mx-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm
                {{ request()->routeIs('landlord.payments.*') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
                 <x-heroicon-o-banknotes class="w-5 h-5 {{ request()->routeIs('landlord.payments.*') ? 'text-white' : 'text-slate-400' }}" />
                 Payments
@@ -102,12 +102,12 @@
 
             <!-- Archived Hostels -->
             <a href="{{ route('landlord.properties.trashed') }}"
-               class="flex items-center gap-3 mx-2 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm
+               class="flex items-center gap-3 mx-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm
                {{ request()->routeIs('landlord.properties.trashed') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
                 <svg class="w-5 h-5 {{ request()->routeIs('landlord.properties.trashed') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                Hostels
+                Deleted Hostels
                 @php 
                     $propertyCount = \App\Models\Property::where('landlord_id', auth()->id())->onlyTrashed()->count(); 
                 @endphp
@@ -118,12 +118,12 @@
 
             <!-- Archived Tenants -->
             <a href="{{ route('landlord.tenants.trashed') }}"
-               class="flex items-center gap-3 mx-2 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm
+               class="flex items-center gap-3 mx-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm
                {{ request()->routeIs('landlord.tenants.trashed') ? 'bg-[#1A2A4A] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800' }}">
                 <svg class="w-5 h-5 {{ request()->routeIs('landlord.tenants.trashed') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                Tenants
+                Deleted Tenants
                 @php 
                     $tenantCount = \App\Models\Tenant::whereHas('property', function($q) {
                         $q->where('landlord_id', auth()->id());
@@ -139,7 +139,7 @@
         <div class="flex-shrink-0 p-4 border-t border-slate-200 bg-white">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button class="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 text-sm">
+                <button class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 text-sm">
                     <x-heroicon-o-arrow-right-on-rectangle class="w-5 h-5" />
                     Logout
                 </button>

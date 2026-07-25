@@ -1,3 +1,4 @@
+{{-- resources/views/landlord/tenants/create.blade.php --}}
 @extends('layouts.landlord')
 
 @section('title','Add Tenant')
@@ -8,24 +9,30 @@
 
 <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-    <!-- Header - More Compact -->
+    <!-- Header -->
     <div class="px-5 py-3 border-b border-slate-200">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                <x-heroicon-o-user-plus class="w-5 h-5 text-slate-400"/>
-            </div>
-            <div>
-                <h2 class="text-base font-semibold text-slate-800">
-                    Add Tenant
-                </h2>
-                <p class="text-xs text-slate-500">
-                    Create a new tenant account.
-                </p>
-            </div>
+        <div>
+            <h2 class="text-base font-semibold text-slate-800">
+                Add Tenant
+            </h2>
         </div>
     </div>
 
-    <!-- Error Display -->
+    <!-- Success Message -->
+    @if(session('success'))
+        <div class="mx-5 mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p class="text-green-700 text-sm">{{ session('success') }}</p>
+        </div>
+    @endif
+
+    <!-- General Error Message -->
+    @if(session('error'))
+        <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-700 text-sm">{{ session('error') }}</p>
+        </div>
+    @endif
+
+    <!-- Validation Errors Summary -->
     @if($errors->any())
         <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
             <ul class="text-red-600 text-sm list-disc list-inside">
@@ -36,32 +43,28 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('landlord.tenants.store') }}" id="tenantForm">
+    <form method="POST" action="{{ route('landlord.tenants.store') }}" id="tenantForm" novalidate>
         @csrf
 
         <div class="p-5 space-y-4">
             <!-- Property Selection -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Property <span class="text-red-500">*</span>
+                    Hostel <span class="text-red-500">*</span>
                 </label>
                 <select
                     name="property_id"
                     id="propertySelect"
                     class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('property_id') border-red-500 @enderror"
                     required>
-                    <option value="">Select a property</option>
+                    <option value="">Select a hostel</option>
                     @foreach($properties as $property)
                         <option value="{{ $property->id }}" 
-                                data-rent="{{ $property->monthly_rent ?? 0 }}"
                                 {{ old('property_id') == $property->id ? 'selected' : '' }}>
-                            {{ $property->name }} (Default: MK {{ number_format($property->monthly_rent ?? 0) }})
+                            {{ $property->name }}
                         </option>
                     @endforeach
                 </select>
-                <p class="text-xs text-blue-600 mt-1" id="defaultRentHint">
-                    Property default: MK 0
-                </p>
                 @error('property_id')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -75,7 +78,9 @@
                 <input
                     type="text"
                     name="name"
+                    id="name"
                     value="{{ old('name') }}"
+                    maxlength="255"
                     class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('name') border-red-500 @enderror"
                     required>
                 @error('name')
@@ -95,11 +100,14 @@
                         name="phone"
                         id="phone"
                         value="{{ old('phone') }}"
+                        maxlength="15"
+                        placeholder="0999552309"
                         class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('phone') border-red-500 @enderror"
                         required>
                     @error('phone')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-slate-500 mt-1">Enter a valid Malawi phone number (e.g., 0999552309)</p>
                 </div>
 
                 <!-- Email -->
@@ -110,7 +118,9 @@
                     <input
                         type="email"
                         name="email"
+                        id="email"
                         value="{{ old('email') }}"
+                        maxlength="255"
                         class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('email') border-red-500 @enderror"
                         required>
                     @error('email')
@@ -119,51 +129,25 @@
                 </div>
             </div>
 
-            <!-- Monthly Rent & Move In Date - Side by Side -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Monthly Rent - Tenant Specific -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Monthly Rent (MK) <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">MK</span>
-                        <input
-                            type="text"
-                            id="monthlyRent"
-                            name="monthly_rent"
-                            value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
-                            class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 pl-9 @error('monthly_rent') border-red-500 @enderror"
-                            required>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-1">Enter the specific rent amount for this tenant</p>
-                    <p class="text-xs text-blue-600 mt-1" id="rentHint">
-                        Amount will be automatically filled from property selection
-                    </p>
-                    @error('monthly_rent')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Move In Date -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Move In Date <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="date"
-                        name="move_in_date"
-                        value="{{ old('move_in_date', date('Y-m-d')) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('move_in_date') border-red-500 @enderror"
-                        required>
-                    @error('move_in_date')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+            <!-- Move In Date -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                    Move In Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="date"
+                    name="move_in_date"
+                    id="move_in_date"
+                    value="{{ old('move_in_date', date('Y-m-d')) }}"
+                    class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('move_in_date') border-red-500 @enderror"
+                    required>
+                @error('move_in_date')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
         </div>
 
-        <!-- Footer - More Compact -->
+        <!-- Footer -->
         <div class="border-t border-slate-200 px-5 py-3 flex flex-col sm:flex-row justify-end gap-2.5">
             <a href="{{ route('landlord.tenants.index') }}"
                class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-center text-sm">
@@ -174,15 +158,20 @@
                 <button
                     type="button"
                     id="shareRegistrationBtn"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
-                    <x-heroicon-o-share class="w-4 h-4"/>
+                    class="bg-[#C80B6D] hover:bg-[#a8095e] text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.368-2.684 3 3 0 00-5.368 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
                     Share Registration Link
                 </button>
 
                 <button
                     type="submit"
+                    id="submitBtn"
                     class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
-                    <x-heroicon-o-check class="w-4 h-4"/>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
                     Add Tenant
                 </button>
             </div>
@@ -192,88 +181,51 @@
 
 <!-- Registration Link Modal -->
 <div id="registrationModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
-    <!-- Overlay -->
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" id="modalOverlay"></div>
-
-    <!-- Modal -->
     <div class="fixed inset-0 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <!-- Modal Header -->
             <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <x-heroicon-o-link class="w-5 h-5 text-blue-600"/>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-slate-800">
-                            Share Registration Link
-                        </h3>
-                        <p class="text-xs text-slate-500">
-                            Generate a registration link for a tenant
-                        </p>
-                    </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800">Share Registration Link</h3>
+                    <p class="text-xs text-slate-500">Generate a registration link for a tenant</p>
                 </div>
                 <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-slate-600 transition">
-                    <x-heroicon-o-x-mark class="w-5 h-5"/>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
             </div>
 
-            <!-- Modal Body -->
             <div class="p-5 space-y-4">
-                <!-- Property Selection -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Select Property
-                    </label>
-                    <select
-                        id="modalPropertySelect"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Select Hostel</label>
+                    <select id="modalPropertySelect" class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400">
                         @foreach($properties as $property)
-                            <option value="{{ $property->id }}" data-rent="{{ $property->monthly_rent ?? 0 }}">
-                                {{ $property->name }} (MK {{ number_format($property->monthly_rent ?? 0) }})
-                            </option>
+                            <option value="{{ $property->id }}">{{ $property->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Monthly Rent (MK)
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">MK</span>
-                        <input
-                            type="text"
-                            id="modalMonthlyRent"
-                            readonly
-                            class="w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 pl-9 cursor-default">
-                    </div>
-                    <p class="text-xs text-slate-500 mt-1">This rent amount will be pre-filled for the tenant</p>
-                </div>
-
-                <!-- Generate Button -->
-                <div>
                     <button
                         id="generateLinkBtn"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
-                        <x-heroicon-o-arrow-path class="w-4 h-4"/>
+                        class="w-full bg-[#C80B6D] hover:bg-[#a8095e] text-white px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                        </svg>
                         Generate Link
                     </button>
                 </div>
 
-                <!-- Loading Indicator -->
                 <div id="loadingIndicator" class="hidden">
                     <div class="flex items-center justify-center py-4">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C80B6D]"></div>
                         <span class="ml-2 text-slate-600 text-sm">Generating link...</span>
                     </div>
                 </div>
 
-                <!-- Generated Link -->
                 <div id="linkContainer" class="hidden">
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Registration Link
-                    </label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Registration Link</label>
                     <div class="flex gap-2.5">
                         <input
                             id="registrationLink"
@@ -283,17 +235,20 @@
                         <button
                             id="copyLinkBtn"
                             class="flex-shrink-0 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm">
-                            <x-heroicon-o-clipboard class="w-4 h-4"/>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                            </svg>
                             Copy
                         </button>
                     </div>
                     <p id="copySuccessMessage" class="text-sm text-green-600 mt-2 hidden">
-                        <x-heroicon-o-check-circle class="w-4 h-4 inline-block mr-1"/>
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                         Registration link copied successfully.
                     </p>
                 </div>
 
-                <!-- Error Message -->
                 <div id="errorMessage" class="hidden">
                     <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
                         <p id="errorText">Failed to generate registration link. Please try again.</p>
@@ -301,11 +256,8 @@
                 </div>
             </div>
 
-            <!-- Modal Footer -->
             <div class="border-t border-slate-200 px-5 py-3 flex justify-end">
-                <button
-                    onclick="closeRegistrationModal()"
-                    class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm">
+                <button onclick="closeRegistrationModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm">
                     Close
                 </button>
             </div>
@@ -319,10 +271,17 @@
 
 @push('scripts')
 <script>
-    // Get CSRF token from meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-    // DOM Elements
+    // Phone input validation - only allow digits and + sign
+    document.getElementById('phone')?.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9+]/g, '');
+        if (this.value.length > 15) {
+            this.value = this.value.slice(0, 15);
+        }
+    });
+
+    // Modal elements
     const shareBtn = document.getElementById('shareRegistrationBtn');
     const modal = document.getElementById('registrationModal');
     const overlay = document.getElementById('modalOverlay');
@@ -330,113 +289,21 @@
     const copyBtn = document.getElementById('copyLinkBtn');
     const propertySelect = document.getElementById('propertySelect');
     const modalPropertySelect = document.getElementById('modalPropertySelect');
-    const monthlyRentInput = document.getElementById('monthlyRent');
-    const modalMonthlyRent = document.getElementById('modalMonthlyRent');
     const linkInput = document.getElementById('registrationLink');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const linkContainer = document.getElementById('linkContainer');
     const errorMessage = document.getElementById('errorMessage');
     const errorText = document.getElementById('errorText');
     const copySuccessMessage = document.getElementById('copySuccessMessage');
-    const defaultRentHint = document.getElementById('defaultRentHint');
-    const rentHint = document.getElementById('rentHint');
 
-    // Format number with commas
-    function formatNumberWithCommas(number) {
-        if (!number && number !== 0) return '';
-        const num = number.toString().replace(/,/g, '');
-        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
-    // Parse number from formatted string
-    function parseNumberFromFormatted(formatted) {
-        if (!formatted) return 0;
-        return parseFloat(formatted.replace(/,/g, '')) || 0;
-    }
-
-    // Set rent amount from property selection
-    function setRentFromProperty(selectElement, targetInput) {
-        const selectedOption = selectElement.options[selectElement.selectedIndex];
-        if (selectedOption && selectedOption.dataset.rent !== undefined) {
-            const rent = parseFloat(selectedOption.dataset.rent) || 0;
-            targetInput.value = formatNumberWithCommas(rent);
-            targetInput.dataset.rawValue = rent;
-            
-            // Update hint
-            if (defaultRentHint) {
-                defaultRentHint.textContent = 'Property default: MK ' + Number(rent).toLocaleString();
-            }
-        } else {
-            targetInput.value = '';
-            targetInput.dataset.rawValue = '';
-            if (defaultRentHint) {
-                defaultRentHint.textContent = 'Property default: MK 0';
-            }
-        }
-    }
-
-    // Handle rent input with commas
-    function handleRentInput(e) {
-        const input = e.target;
-        const cursorPosition = input.selectionStart;
-        const oldLength = input.value.length;
-        
-        // Remove non-numeric characters
-        let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
-        
-        if (value === '') {
-            input.value = '';
-            input.dataset.rawValue = '';
-            return;
-        }
-        
-        const numericValue = parseFloat(value);
-        if (!isNaN(numericValue)) {
-            input.value = formatNumberWithCommas(numericValue);
-            input.dataset.rawValue = numericValue;
-            
-            // Adjust cursor position
-            const newLength = input.value.length;
-            const diff = newLength - oldLength;
-            input.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
-        }
-    }
-
-    // Handle rent input blur - ensure proper formatting
-    function handleRentBlur(e) {
-        const input = e.target;
-        let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
-        
-        if (value !== '') {
-            const numericValue = parseFloat(value);
-            if (!isNaN(numericValue)) {
-                input.value = formatNumberWithCommas(numericValue);
-                input.dataset.rawValue = numericValue;
-            }
-        }
-    }
-
-    // Get raw numeric value from input
-    function getRawRentValue(input) {
-        const value = input.dataset.rawValue || input.value.replace(/,/g, '');
-        return parseFloat(value) || 0;
-    }
-
-    // Open modal
     function openRegistrationModal() {
-        // Sync property selection with main form
         const mainPropertyId = propertySelect.value;
         if (mainPropertyId) {
             modalPropertySelect.value = mainPropertyId;
         }
         
-        // Set rent in modal
-        setRentFromProperty(modalPropertySelect, modalMonthlyRent);
-        
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        
-        // Reset state
         linkContainer.classList.add('hidden');
         errorMessage.classList.add('hidden');
         copySuccessMessage.classList.add('hidden');
@@ -444,7 +311,6 @@
         linkInput.value = '';
     }
 
-    // Close modal
     function closeRegistrationModal() {
         modal.classList.add('hidden');
         document.body.style.overflow = '';
@@ -455,23 +321,21 @@
         linkInput.value = '';
     }
 
-    // Generate link
     function generateRegistrationLink() {
         const propertyId = modalPropertySelect.value;
         
         if (!propertyId) {
-            errorText.textContent = 'Please select a property first.';
+            errorText.textContent = 'Please select a hostel first.';
             errorMessage.classList.remove('hidden');
             return;
         }
         
-        // Hide previous results
         linkContainer.classList.add('hidden');
         errorMessage.classList.add('hidden');
         copySuccessMessage.classList.add('hidden');
         loadingIndicator.classList.remove('hidden');
+        generateBtn.disabled = true;
 
-        // Make AJAX request
         fetch('{{ route("landlord.tenants.generate-link") }}', {
             method: 'POST',
             headers: {
@@ -479,9 +343,7 @@
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                property_id: propertyId
-            })
+            body: JSON.stringify({ property_id: propertyId })
         })
         .then(response => {
             if (!response.ok) {
@@ -493,6 +355,7 @@
         })
         .then(data => {
             loadingIndicator.classList.add('hidden');
+            generateBtn.disabled = false;
             
             if (data.success) {
                 linkInput.value = data.link;
@@ -504,29 +367,23 @@
         .catch(error => {
             console.error('Error generating link:', error);
             loadingIndicator.classList.add('hidden');
+            generateBtn.disabled = false;
             errorText.textContent = error.message || 'Failed to generate registration link. Please try again.';
             errorMessage.classList.remove('hidden');
         });
     }
 
-    // Copy link
     function copyRegistrationLink() {
         const link = linkInput.value;
-
         if (!link) {
             alert('No link to copy. Please generate a link first.');
             return;
         }
 
-        // Use the Clipboard API
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(link)
-                .then(() => {
-                    showCopySuccess();
-                })
-                .catch(() => {
-                    fallbackCopy(link);
-                });
+                .then(() => showCopySuccess())
+                .catch(() => fallbackCopy(link));
         } else {
             fallbackCopy(link);
         }
@@ -552,57 +409,31 @@
 
     function showCopySuccess() {
         copySuccessMessage.classList.remove('hidden');
-        // Auto-hide after 3 seconds
         setTimeout(() => {
             copySuccessMessage.classList.add('hidden');
         }, 3000);
     }
 
-    // Update rent when property changes in main form
-    propertySelect?.addEventListener('change', function() {
-        setRentFromProperty(this, monthlyRentInput);
-    });
-
-    // Update rent when property changes in modal
-    modalPropertySelect?.addEventListener('change', function() {
-        setRentFromProperty(this, modalMonthlyRent);
-    });
-
-    // Format rent input as user types
-    monthlyRentInput?.addEventListener('input', handleRentInput);
-    monthlyRentInput?.addEventListener('blur', handleRentBlur);
-
-    // Prevent form submission with commas
-    document.getElementById('tenantForm')?.addEventListener('submit', function(e) {
-        const rentInput = document.getElementById('monthlyRent');
-        if (rentInput) {
-            // Remove commas before submitting
-            const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');
-            // Update the input value to raw number without commas
-            rentInput.value = rawValue;
-        }
-    });
-
-    // Event Listeners
     shareBtn?.addEventListener('click', openRegistrationModal);
     generateBtn?.addEventListener('click', generateRegistrationLink);
     copyBtn?.addEventListener('click', copyRegistrationLink);
-
-    // Close modal on overlay click
     overlay?.addEventListener('click', closeRegistrationModal);
 
-    // Close modal on Escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeRegistrationModal();
         }
     });
 
-    // Initialize rent from property on page load
-    if (propertySelect && propertySelect.value) {
-        setRentFromProperty(propertySelect, monthlyRentInput);
-    }
-
-    console.log('Registration modal script loaded successfully');
+    // If there are validation errors, scroll to the first error
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstError = document.querySelector('.border-red-500');
+        if (firstError) {
+            firstError.focus();
+            setTimeout(() => {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    });
 </script>
 @endpush
