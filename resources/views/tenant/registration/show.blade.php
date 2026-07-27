@@ -105,14 +105,13 @@
                             id="phone"
                             value="{{ old('phone') }}"
                             maxlength="15"
-                            placeholder="0999552309"
                             required
                             class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827] @error('phone') border-red-500 @enderror">
 
                         @error('phone')
                             <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
                         @enderror
-                        <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a valid Malawi phone number (e.g., 0999552309)</p>
+                        <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a valid Malawi phone number</p>
                     </div>
 
                     <!-- Monthly Rent with Default/Custom Toggle -->
@@ -162,7 +161,7 @@
                                            placeholder="Enter your specific rent amount (e.g., 30,000)"
                                            autocomplete="off">
                                 </div>
-                                <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a specific rent amount if you have a different agreement</p>
+                                <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a specific rent amount if you have a different agreement e.g single room</p>
                             </div>
                         </div>
                         @error('monthly_rent')

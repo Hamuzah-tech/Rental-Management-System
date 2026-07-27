@@ -87,7 +87,9 @@
             </svg>
             <span>Landlords</span>
             @php 
-                $landlordCount = \App\Models\User::role('Landlord')->onlyTrashed()->count(); 
+                $landlordCount = \App\Models\User::where('role', 'landlord')
+                    ->onlyTrashed()
+                        ->count();
             @endphp
             @if($landlordCount > 0)
                 <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $landlordCount }}</span>

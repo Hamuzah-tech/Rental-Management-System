@@ -1,5 +1,4 @@
 <?php
-// app/Models/User.php
 
 namespace App\Models;
 
@@ -7,19 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, SoftDeletes; // ← ADD SoftDeletes
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
+        'username',
         'name',
         'email',
         'password',
-        'phone',
         'role',
-        'status',
+        'landlord_id',
+        'is_active',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -27,24 +27,44 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $dates = ['deleted_at']; // ← ADD THIS
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'is_active' => 'boolean',
+    ];
 
-    protected function casts(): array
+    public function landlord()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasOne(Landlord::class);
     }
 
-    // Relationships
+    public function tenant()
+    {
+        return $this->hasOne(Tenant::class);
+    }
+
     public function properties()
     {
-        return $this->hasMany(Property::class, 'landlord_id');
+        return $this->hasMany(\App\Models\Property::class, 'landlord_id');
     }
 
-    public function tenants()
+    public function hasRole($role)
     {
-        return $this->hasMany(Tenant::class);
+        return strtolower($this->role) === strtolower($role);
+    }
+
+    public function isActive()
+    {
+        return $this->is_active;
+    }
+
+    public function getEmailForPasswordReset()
+    {
+        return $this->email;
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\LandlordResetPasswordNotification($token));
     }
 }

@@ -5,21 +5,99 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Models\User;
+use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\View;
+use Spatie\Permission\Models\Role;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TenantController extends Controller
 {
     /**
      * Display a listing of tenants.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tenants = Tenant::with('property')
-            ->latest()
-            ->paginate(20);
+        // Get all landlords (users with role 'landlord')
+        $landlords = User::where('role', 'landlord')
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.tenants.index', compact('tenants'));
+        // Start query for tenants with eager loading
+        $query = Tenant::with(['property', 'property.landlord']);
+
+        // Filter by landlord if selected
+        if ($request->filled('landlord')) {
+            $query->whereHas('property', function($q) use ($request) {
+                $q->where('landlord_id', $request->landlord);
+            });
+        }
+
+        // Apply search filter if provided
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('tenant_code', 'like', "%{$search}%")
+                  ->orWhereHas('property', function($subQuery) use ($search) {
+                      $subQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Get paginated results
+        $tenants = $query->latest()->paginate(20);
+
+        return view('admin.tenants.index', compact('tenants', 'landlords'));
+    }
+
+    /**
+     * Export tenants to PDF
+     */
+    public function export(Request $request)
+    {
+        // Start query for tenants with eager loading
+        $query = Tenant::with(['property', 'property.landlord']);
+
+        // Apply the same filters as the index page
+        if ($request->filled('landlord')) {
+            $query->whereHas('property', function($q) use ($request) {
+                $q->where('landlord_id', $request->landlord);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('tenant_code', 'like', "%{$search}%")
+                  ->orWhereHas('property', function($subQuery) use ($search) {
+                      $subQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Get all tenants (no pagination for export)
+        $tenants = $query->latest()->get();
+
+        // Get filter info for the report
+        $filters = [
+            'landlord' => $request->filled('landlord') ? User::find($request->landlord) : null,
+            'search' => $request->filled('search') ? $request->search : null,
+        ];
+
+        // Generate PDF
+        $pdf = Pdf::loadView('admin.tenants.export', compact('tenants', 'filters'));
+        $pdf->setPaper('A4', 'landscape');
+
+        // Return the PDF for download
+        return $pdf->download('tenant-report-' . date('Y-m-d') . '.pdf');
     }
 
     /**
@@ -28,7 +106,7 @@ class TenantController extends Controller
     public function trashed()
     {
         $tenants = Tenant::onlyTrashed()
-            ->with('property')
+            ->with(['property', 'property.landlord'])
             ->latest('deleted_at')
             ->paginate(20);
 
@@ -90,5 +168,25 @@ class TenantController extends Controller
         return redirect()
             ->route('admin.tenants.index')
             ->with('success', 'Tenant moved to archive.');
+    }
+
+    /**
+     * Show the form for editing the specified tenant.
+     */
+    public function edit(Tenant $tenant)
+    {
+        // This is a placeholder - implement as needed
+        return view('admin.tenants.edit', compact('tenant'));
+    }
+
+    /**
+     * Update the specified tenant in storage.
+     */
+    public function update(Request $request, Tenant $tenant)
+    {
+        // This is a placeholder - implement as needed
+        // For now, just redirect back
+        return redirect()->route('admin.tenants.index')
+            ->with('success', 'Tenant updated successfully.');
     }
 }

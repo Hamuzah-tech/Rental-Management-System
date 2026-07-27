@@ -12,7 +12,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Total landlords
-        $totalLandlords = User::role('Landlord')->count();
+        $totalLandlords = User::where('role', 'landlord')->count();
 
         // Total properties
         $totalProperties = Property::count();

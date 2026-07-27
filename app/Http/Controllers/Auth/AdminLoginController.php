@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AdminLoginController extends Controller
 {
     /**
-     * Show the admin login page.
+     * Show the admin login form.
      */
     public function create()
     {
@@ -21,32 +22,42 @@ class AdminLoginController extends Controller
      */
     public function store(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        $remember = $request->boolean('remember');
+        if (!Auth::guard('admin')->attempt([
+            'email' => $request->email,
+            'password' => $request->password,
+            'role' => 'super_admin',
+            'is_active' => 1,
+        ], $request->boolean('remember'))) {
 
-        if (! Auth::attempt($credentials, $remember)) {
-            return back()
-                ->withErrors([
-                    'email' => 'Invalid login credentials.',
-                ])
-                ->onlyInput('email');
+            throw ValidationException::withMessages([
+                'email' => 'Invalid administrator credentials.',
+            ]);
         }
 
         $request->session()->regenerate();
 
-        if (! auth()->user()->hasRole('Super Admin')) {
+        $user = Auth::guard('admin')->user();
+        $user->last_login_at = now();
+        $user->save();
 
-            Auth::logout();
+        return redirect()->route('admin.dashboard');
+    }
 
-            return back()->withErrors([
-                'email' => 'You are not authorized to access the Admin Portal.',
-            ]);
-        }
+    /**
+     * Logout admin.
+     */
+    public function destroy(Request $request)
+    {
+        Auth::guard('admin')->logout();
 
-        return redirect('/admin/dashboard');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
     }
 }

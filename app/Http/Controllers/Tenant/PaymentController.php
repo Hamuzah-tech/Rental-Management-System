@@ -113,8 +113,12 @@ class PaymentController extends Controller
                 'months' => $paymentMonths
             ]);
 
+            // Store data in session for the success message
+            session()->flash('payment_success', true);
+            session()->flash('payment_month_count', $monthCount);
+            
             return redirect()
-                ->route('tenant.payments.index')
+                ->route('tenant.payments.create')
                 ->with('success', 'Payment recorded successfully!');
 
         } catch (\Illuminate\Validation\ValidationException $e) {

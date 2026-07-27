@@ -101,13 +101,12 @@
                         id="phone"
                         value="{{ old('phone') }}"
                         maxlength="15"
-                        placeholder="0999552309"
                         class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('phone') border-red-500 @enderror"
                         required>
                     @error('phone')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-slate-500 mt-1">Enter a valid Malawi phone number (e.g., 0999552309)</p>
+                    <p class="text-xs text-slate-500 mt-1">Enter a valid Malawi phone number</p>
                 </div>
 
                 <!-- Email -->

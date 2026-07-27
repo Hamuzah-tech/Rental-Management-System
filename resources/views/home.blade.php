@@ -9,12 +9,28 @@
 <body class="bg-white">
 <div class="min-h-screen flex items-center justify-center px-6">
     <div class="w-full max-w-md">
-        <h1 class="text-3xl font-bold text-[#111827]">
-           Welcome
-        </h1>
-        <p class="mt-2 text-[#6B7280]">
-            Choose your workspace to continue.
-        </p>
+        
+        <!-- Logo -->
+        <div class="flex justify-center mb-4">
+            @php
+                $logoPath = public_path('images/alendi_logo.jpg');
+                $logoUrl = file_exists($logoPath) ? asset('images/alendi_logo.jpg') : 'https://via.placeholder.com/150x50?text=Alendi';
+            @endphp
+            <img src="{{ $logoUrl }}" 
+                 alt="Alendi Logo" 
+                 class="h-14 w-auto">
+        </div>
+
+        <!-- Centered Welcome Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-[#111827]">
+                Welcome
+            </h1>
+            <p class="mt-2 text-[#6B7280]">
+                Choose your workspace to continue.
+            </p>
+        </div>
+
         <div class="mt-10 space-y-4">
             <!-- Landlord -->
             <a href="{{ route('landlord.login') }}"

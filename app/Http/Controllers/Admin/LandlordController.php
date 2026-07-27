@@ -20,10 +20,10 @@ class LandlordController extends Controller
      */
     public function index()
     {
-        $landlords = User::role('Landlord')
-            ->withCount('properties')
-            ->latest()
-            ->paginate(20);
+        $landlords = User::where('role', 'landlord')
+    ->withCount('properties')
+    ->latest()
+    ->paginate(20);
 
         return view('admin.landlords.index', compact('landlords'));
     }
@@ -33,7 +33,7 @@ class LandlordController extends Controller
      */
     public function trashed()
     {
-        $landlords = User::role('Landlord')
+        $landlords = User::where('role', 'landlord')
             ->onlyTrashed()
             ->withCount('properties')
             ->latest('deleted_at')

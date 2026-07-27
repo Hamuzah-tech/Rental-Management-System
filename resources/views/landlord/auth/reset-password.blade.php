@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - Landlord</title>
-
+    <title>Create New Password - ALENDI</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -14,70 +13,107 @@
 
     <div class="w-full max-w-md">
 
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">
-                Reset Password
-            </h1>
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+            @php
+                $logoPath = public_path('images/alendi_logo.jpg');
+                $logoUrl = file_exists($logoPath) ? asset('images/alendi_logo.jpg') : 'https://via.placeholder.com/150x50?text=ALENDI';
+            @endphp
+            <img src="{{ $logoUrl }}" 
+                 alt="ALENDI" 
+                 class="h-14 w-auto">
+        </div>
 
-            <p class="text-slate-500 mt-2">
-                Enter your new password.
+        <!-- Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800">
+                Create New Password
+            </h1>
+            <p class="text-slate-500 mt-2 text-sm">
+                Enter your new password below.
             </p>
         </div>
 
+        <!-- Error Messages -->
         @if ($errors->any())
             <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
-                {{ $errors->first() }}
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
             </div>
         @endif
 
+        <!-- 
+            IMPORTANT: This form MUST use method="POST" 
+            and action MUST point to route('landlord.password.update')
+        -->
         <form method="POST" action="{{ route('landlord.password.update') }}">
             @csrf
 
+            <!-- Hidden token field - REQUIRED for password reset -->
             <input type="hidden" name="token" value="{{ $token }}">
 
             <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium text-slate-700">
+                <label for="email" class="block mb-1 text-sm font-medium text-slate-700">
                     Email Address
                 </label>
                 <input
+                    id="email"
                     type="email"
                     name="email"
-                    value="{{ $email ?? old('email') }}"
+                    value="{{ old('email', $email ?? '') }}"
                     required
-                    readonly
-                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 bg-slate-50 outline-none">
+                    autocomplete="email"
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none text-sm"
+                    placeholder="your@email.com">
             </div>
 
             <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium text-slate-700">
+                <label for="password" class="block mb-1 text-sm font-medium text-slate-700">
                     New Password
                 </label>
                 <input
+                    id="password"
                     type="password"
                     name="password"
                     required
-                    autofocus
-                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none">
+                    autocomplete="new-password"
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none text-sm"
+                    placeholder="Enter new password">
+                <p class="mt-1 text-xs text-slate-500">
+                    Password must be at least 8 characters.
+                </p>
             </div>
 
             <div class="mb-6">
-                <label class="block mb-2 text-sm font-medium text-slate-700">
-                    Confirm New Password
+                <label for="password_confirmation" class="block mb-1 text-sm font-medium text-slate-700">
+                    Confirm Password
                 </label>
                 <input
+                    id="password_confirmation"
                     type="password"
                     name="password_confirmation"
                     required
-                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none">
+                    autocomplete="new-password"
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none text-sm"
+                    placeholder="Confirm new password">
             </div>
 
             <button
                 type="submit"
-                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl transition">
+                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-lg transition text-sm font-medium">
                 Reset Password
             </button>
 
         </form>
+
+        <!-- Links -->
+        <div class="mt-6 text-center">
+            <a href="{{ route('landlord.login') }}" 
+               class="text-sm text-slate-500 hover:text-slate-700 transition">
+                Back to Login
+            </a>
+        </div>
 
     </div>
 

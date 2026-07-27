@@ -6,29 +6,22 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ResetPasswordController extends Controller
 {
     /**
-     * Where to redirect users after resetting their password.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/landlord/dashboard';
-
-    /**
      * Display the password reset view for the given token.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string|null  $token
+     * @param  string  $token
      * @return \Illuminate\View\View
      */
-    public function showResetForm(Request $request, $token = null)
+    public function showResetForm($token)
     {
-        return view('landlord.auth.reset-password')->with(
-            ['token' => $token, 'email' => $request->email]
-        );
+        return view('landlord.auth.reset-password', [
+            'token' => $token,
+            'email' => request()->input('email', ''),
+        ]);
     }
 
     /**
@@ -36,32 +29,39 @@ class ResetPasswordController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
+     * 
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function reset(Request $request)
     {
+        // 1. Validate the request
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|confirmed|min:8',
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::broker('landlords')->reset(
+        // 2. Attempt to reset the password using the 'users' broker
+        $status = Password::broker('users')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
-                $user->password = Hash::make($password);
-                $user->setRememberToken(Str::random(60));
-                $user->save();
+                // 3. Update the password
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        return $status === Password::PASSWORD_RESET
-            ? redirect()->route('landlord.login')->with('status', __($status))
-            : back()->withErrors(['email' => [__($status)]]);
+        // 4. Handle the response
+        if ($status === Password::PASSWORD_RESET) {
+            return redirect()
+                ->route('landlord.login')
+                ->with('status', __($status));
+        }
+
+        // 5. If something went wrong, throw validation error
+        throw ValidationException::withMessages([
+            'email' => [trans($status)],
+        ]);
     }
 }

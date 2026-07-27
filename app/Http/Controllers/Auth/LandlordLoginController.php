@@ -5,54 +5,72 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class LandlordLoginController extends Controller
 {
-    /**
-     * Show the landlord login page.
-     */
     public function create()
     {
         return view('auth.landlord-login');
     }
 
-    /**
-     * Handle landlord login.
-     */
     public function store(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'username' => ['required', 'string'],
-            'password' => ['required'],
+            'password' => ['required', 'string'],
         ]);
 
-        $remember = $request->boolean('remember');
+        $loginField = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        
+        $credentials = [
+            $loginField => $request->username,
+            'password' => $request->password,
+        ];
 
-        if (! Auth::attempt([
-            'username' => $credentials['username'],
-            'password' => $credentials['password'],
-        ], $remember)) {
-
-            return back()
-                ->withErrors([
-                    'username' => 'Invalid username or password.',
-                ])
-                ->onlyInput('username');
-        }
-
-        $request->session()->regenerate();
-
-        if (! auth()->user()->hasRole('Landlord')) {
-
-            Auth::logout();
-
-            return back()
-                ->withErrors([
+        if (Auth::guard('landlord')->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            $user = Auth::guard('landlord')->user();
+            
+            if ($user->role !== 'landlord') {
+                Auth::guard('landlord')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                
+                throw ValidationException::withMessages([
                     'username' => 'You are not authorized to access the Landlord Portal.',
-                ])
-                ->onlyInput('username');
+                ]);
+            }
+            
+            if (!$user->is_active) {
+                Auth::guard('landlord')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                
+                throw ValidationException::withMessages([
+                    'username' => 'Your account is deactivated.',
+                ]);
+            }
+            
+            $user->last_login_at = now();
+            $user->save();
+
+            return redirect()->intended(route('landlord.dashboard'));
         }
 
-            return redirect()->route('landlord.dashboard');
+        throw ValidationException::withMessages([
+            'username' => trans('auth.failed'),
+        ]);
+    }
+
+    public function destroy(Request $request)
+    {
+        Auth::guard('landlord')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('landlord.login');
     }
 }

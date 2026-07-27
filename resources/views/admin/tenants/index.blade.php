@@ -40,14 +40,269 @@
 
         </select>
 
-        <button
-            class="px-5 bg-slate-800 text-white rounded-xl">
+        <div class="flex gap-2">
+            <button class="px-5 bg-slate-800 text-white rounded-xl">
+                Search
+            </button>
 
-            Search
-
-        </button>
+            <!-- Export Button -->
+            <a href="{{ route('admin.tenants.export', request()->query()) }}"
+               class="px-5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export PDF
+            </a>
+        </div>
 
     </form>
+
+</div>
+
+
+<!-- Table -->
+
+
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+
+
+    <table class="w-full text-sm">
+
+
+
+        <thead class="bg-slate-50">
+
+
+            <tr class="text-slate-500">
+
+
+                <th class="px-4 py-3 text-left">
+                    #
+                </th>
+
+
+                <th class="px-4 py-3 text-left">
+                    Tenant
+                </th>
+
+
+                <th class="px-4 py-3 text-left">
+                    Phone
+                </th>
+
+
+                <th class="px-4 py-3 text-left">
+                    Property
+                </th>
+
+
+                <th class="px-4 py-3 text-left">
+                    Move In
+                </th>
+
+
+                <th class="px-4 py-3 text-right">
+                    Actions
+                </th>
+
+
+            </tr>
+
+
+        </thead>
+
+
+        <tbody>
+
+
+
+        @forelse($tenants as $index => $tenant)
+
+
+
+        <tr class="border-t border-slate-100 hover:bg-slate-50">
+
+
+
+            <td class="px-4 py-3 text-slate-400">
+
+
+                {{ $tenants->firstItem() + $index }}
+
+
+            </td>
+
+
+
+
+            <td class="px-4 py-3 font-medium text-slate-700">
+
+
+                {{ $tenant->name }}
+
+
+            </td>
+
+
+
+
+
+            <td class="px-4 py-3 text-slate-600">
+
+
+                {{ $tenant->phone }}
+
+
+            </td>
+
+
+
+
+
+            <td class="px-4 py-3 text-slate-600">
+
+
+                {{ $tenant->property->name ?? 'N/A' }}
+
+
+            </td>
+
+
+
+
+
+            <td class="px-4 py-3 text-slate-600">
+
+
+                {{ $tenant->move_in_date }}
+
+
+            </td>
+
+
+
+
+
+
+            <td class="px-4 py-3">
+
+
+
+                <div class="flex justify-end gap-1">
+
+
+
+
+
+                    <!-- Edit -->
+
+
+                    <a href="{{ route('admin.tenants.edit',$tenant) }}"
+                       title="Edit"
+                       class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+
+
+                        <x-heroicon-o-pencil-square class="w-5 h-5"/>
+
+
+                    </a>
+
+
+
+
+
+
+                    <!-- Delete -->
+
+
+                    <form method="POST"
+                          action="{{ route('admin.tenants.destroy',$tenant) }}"
+                          id="delete-tenant-{{ $tenant->id }}">
+
+
+                        @csrf
+                        @method('DELETE')
+
+
+
+                        <button
+                            type="button"
+                            title="Delete"
+                            onclick="openConfirmModal(
+                            'delete-tenant-{{ $tenant->id }}',
+                            'Delete Tenant',
+                            'Are you sure you want to delete this tenant? This action cannot be undone.'
+                            )"
+                            class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+
+
+
+                            <x-heroicon-o-trash class="w-5 h-5"/>
+
+
+
+                        </button>
+
+
+
+                    </form>
+
+
+
+
+
+                </div>
+
+
+
+            </td>
+
+
+
+        </tr>
+
+
+
+
+        @empty
+
+
+
+        <tr>
+
+
+            <td colspan="6"
+                class="px-6 py-8 text-center text-slate-500">
+
+
+                No tenants found.
+
+
+            </td>
+
+
+        </tr>
+
+
+
+
+        @endforelse
+
+
+
+
+
+        </tbody>
+
+
+
+
+    </table>
+
+
+
 
 </div>
 
@@ -56,268 +311,14 @@
 
 
 
+<!-- Pagination -->
 
-    <!-- Table -->
 
+<div>
 
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    {{ $tenants->links() }}
 
-
-
-        <table class="w-full text-sm">
-
-
-
-            <thead class="bg-slate-50">
-
-
-                <tr class="text-slate-500">
-
-
-                    <th class="px-4 py-3 text-left">
-                        #
-                    </th>
-
-
-                    <th class="px-4 py-3 text-left">
-                        Tenant
-                    </th>
-
-
-                    <th class="px-4 py-3 text-left">
-                        Phone
-                    </th>
-
-
-                    <th class="px-4 py-3 text-left">
-                        Property
-                    </th>
-
-
-                    <th class="px-4 py-3 text-left">
-                        Move In
-                    </th>
-
-
-                    <th class="px-4 py-3 text-right">
-                        Actions
-                    </th>
-
-
-                </tr>
-
-
-            </thead>
-
-
-
-
-
-            <tbody>
-
-
-
-            @forelse($tenants as $index => $tenant)
-
-
-
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-
-
-
-                <td class="px-4 py-3 text-slate-400">
-
-
-                    {{ $tenants->firstItem() + $index }}
-
-
-                </td>
-
-
-
-
-                <td class="px-4 py-3 font-medium text-slate-700">
-
-
-                    {{ $tenant->name }}
-
-
-                </td>
-
-
-
-
-
-                <td class="px-4 py-3 text-slate-600">
-
-
-                    {{ $tenant->phone }}
-
-
-                </td>
-
-
-
-
-
-                <td class="px-4 py-3 text-slate-600">
-
-
-                    {{ $tenant->property->name ?? 'N/A' }}
-
-
-                </td>
-
-
-
-
-
-                <td class="px-4 py-3 text-slate-600">
-
-
-                    {{ $tenant->move_in_date }}
-
-
-                </td>
-
-
-
-
-
-
-                <td class="px-4 py-3">
-
-
-
-                    <div class="flex justify-end gap-1">
-
-
-
-
-
-                        <!-- Edit -->
-
-
-                        <a href="{{ route('admin.tenants.edit',$tenant) }}"
-                           title="Edit"
-                           class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
-
-
-                            <x-heroicon-o-pencil-square class="w-5 h-5"/>
-
-
-                        </a>
-
-
-
-
-
-
-                        <!-- Delete -->
-
-
-                        <form method="POST"
-                              action="{{ route('admin.tenants.destroy',$tenant) }}"
-                              id="delete-tenant-{{ $tenant->id }}">
-
-
-                            @csrf
-                            @method('DELETE')
-
-
-
-                            <button
-                                type="button"
-                                title="Delete"
-                                onclick="openConfirmModal(
-                                'delete-tenant-{{ $tenant->id }}',
-                                'Delete Tenant',
-                                'Are you sure you want to delete this tenant? This action cannot be undone.'
-                                )"
-                                class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
-
-
-
-                                <x-heroicon-o-trash class="w-5 h-5"/>
-
-
-
-                            </button>
-
-
-
-                        </form>
-
-
-
-
-
-                    </div>
-
-
-
-                </td>
-
-
-
-            </tr>
-
-
-
-
-            @empty
-
-
-
-            <tr>
-
-
-                <td colspan="6"
-                    class="px-6 py-8 text-center text-slate-500">
-
-
-                    No tenants found.
-
-
-                </td>
-
-
-            </tr>
-
-
-
-
-            @endforelse
-
-
-
-
-
-            </tbody>
-
-
-
-
-        </table>
-
-
-
-
-    </div>
-
-
-
-
-
-
-    <!-- Pagination -->
-
-
-    <div>
-
-        {{ $tenants->links() }}
-
-    </div>
+</div>
 
 
 

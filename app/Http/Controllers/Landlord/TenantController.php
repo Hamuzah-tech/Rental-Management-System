@@ -105,6 +105,17 @@ class TenantController extends Controller
 
         $query = Tenant::where('property_id', $property->id);
 
+        // Search by name, email, phone, or tenant_code
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhere('tenant_code', 'LIKE', "%{$search}%");
+            });
+        }
+
         // Filter by payment status (paid/unpaid) for specific month/year
         if ($request->filled('payment_status') && $request->payment_status !== 'all') {
             $paymentStatus = $request->payment_status;
@@ -146,17 +157,7 @@ class TenantController extends Controller
             }
         }
 
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('phone', 'LIKE', "%{$search}%")
-                  ->orWhere('tenant_code', 'LIKE', "%{$search}%");
-            });
-        }
-
+        // Eager load payments and get results
         $tenants = $query->with(['payments' => function ($q) {
             $q->where('status', 'Approved')->orderBy('created_at', 'desc');
         }])->get();
@@ -182,8 +183,19 @@ class TenantController extends Controller
 
         $paymentStatus = $request->payment_status ?? 'all';
         $month = $request->month ?? null;
+        $search = $request->search ?? null;
 
         $query = Tenant::where('property_id', $property->id);
+
+        // Search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhere('tenant_code', 'LIKE', "%{$search}%");
+            });
+        }
 
         // Filter by payment status (paid/unpaid) for specific month/year
         if ($paymentStatus !== 'all') {
@@ -231,6 +243,7 @@ class TenantController extends Controller
             'tenants' => $tenants,
             'paymentStatus' => $paymentStatus,
             'month' => $month,
+            'search' => $search,
             'landlord' => Auth::user(),
             'generatedAt' => now()
         ]);
@@ -376,14 +389,29 @@ class TenantController extends Controller
     /**
      * Display the specified tenant.
      */
-    public function show(Tenant $tenant)
+    public function show(Request $request, Tenant $tenant)
     {
         $this->authorizeTenant($tenant);
-        $tenant->load(['property', 'payments' => function ($q) {
-            $q->latest()->limit(10);
-        }]);
+        
+        // Start query for payments
+        $query = $tenant->payments();
+        
+        // Search by payment month or amount
+        if ($request->filled('search_payment')) {
+            $search = $request->search_payment;
+            $query->where(function($q) use ($search) {
+                $q->where('payment_month', 'LIKE', "%{$search}%")
+                  ->orWhere('amount', 'LIKE', "%{$search}%")
+                  ->orWhere('status', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Get payments with pagination
+        $payments = $query->latest()->paginate(10);
+        
+        $tenant->load('property');
 
-        return view('landlord.tenants.show', compact('tenant'));
+        return view('landlord.tenants.show', compact('tenant', 'payments'));
     }
 
     /**
@@ -634,10 +662,21 @@ class TenantController extends Controller
     {
         $paymentStatus = $request->payment_status ?? 'all';
         $month = $request->month ?? null;
+        $search = $request->search ?? null;
 
         $query = Tenant::whereHas('property', function ($q) {
             $q->where('landlord_id', Auth::id());
         });
+
+        // Search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhere('tenant_code', 'LIKE', "%{$search}%");
+            });
+        }
 
         // Filter by payment status (paid/unpaid) for specific month/year
         if ($paymentStatus !== 'all') {
@@ -684,6 +723,7 @@ class TenantController extends Controller
             'tenants' => $tenants,
             'paymentStatus' => $paymentStatus,
             'month' => $month,
+            'search' => $search,
             'landlord' => Auth::user(),
             'generatedAt' => now()
         ]);
