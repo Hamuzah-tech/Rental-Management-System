@@ -156,9 +156,9 @@
                                     <input type="text" 
                                            name="custom_monthly_rent" 
                                            id="customRentInput"
-                                           value="{{ old('custom_monthly_rent') ? number_format(old('custom_monthly_rent'), 0, '', ',') : '' }}"
+                                           value="{{ old('custom_monthly_rent') ? number_format((float) str_replace(',', '', old('custom_monthly_rent')), 0, '.', ',') : '' }}"
                                            class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] pl-10 pr-3 py-1.5 text-sm bg-white text-[#111827] currency-input @error('custom_monthly_rent') border-red-500 @enderror"
-                                           placeholder="Enter your specific rent amount (e.g., 30,000)"
+
                                            autocomplete="off">
                                 </div>
                                 <p class="text-[10px] text-[#6B7280] mt-0.5">Enter a specific rent amount if you have a different agreement e.g single room</p>

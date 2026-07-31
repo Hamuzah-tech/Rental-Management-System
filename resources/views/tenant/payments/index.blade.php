@@ -31,18 +31,12 @@
             Tenant
         </h1>
 
-
         <p class="mt-2 text-slate-500">
-            Manage your rent payments and move-out requests.
+            Manage your rent payments.
         </p>
 
-
-
-
         <div class="mt-10 space-y-4">
-
-
-
+            
             <!-- Record Payment -->
 
             <a href="{{ route('tenant.payments.create') }}"
@@ -62,7 +56,7 @@
 
 
                     <p class="text-sm text-slate-500">
-                        Submit your rent payment with proof.
+                        Submit your rent payment record with proof (screenshot).
                     </p>
 
 

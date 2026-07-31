@@ -257,25 +257,6 @@ Route::middleware(['auth:landlord', 'role:landlord'])
     });
 
 /*
-|--------------------------------------------------------------------------
-| Tenant Routes (Authenticated)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:tenant'])
-    ->prefix('tenant')
-    ->name('tenant.')
-    ->group(function () {
-        // Tenant Dashboard (if exists)
-        Route::get('/dashboard', function () {
-            return view('tenant.dashboard');
-        })->name('dashboard');
-        
-        // Payment Routes
-        Route::get('/payments', [TenantPaymentController::class, 'index'])->name('payments.index');
-        Route::get('/payments/create', [TenantPaymentController::class, 'create'])->name('payments.create');
-        Route::post('/payments', [TenantPaymentController::class, 'store'])->name('payments.store');
-        Route::get('/payments/history', [TenantPaymentController::class, 'history'])->name('payments.history');
-    });
 
 /*
 |--------------------------------------------------------------------------

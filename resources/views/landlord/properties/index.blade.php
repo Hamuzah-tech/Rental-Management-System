@@ -18,14 +18,14 @@
     </div>
 
     <a href="{{ route('landlord.properties.create') }}"
-       class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto text-center">
+       class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto text-center">
         Add Hostel
     </a>
 </div>
 
 <!-- Success -->
 @if(session('success'))
-    <div class="bg-[#F3F4F6] border border-[#E5E7EB] text-[#111827] px-3 py-2.5 rounded-lg text-sm">
+    <div class="bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] px-3 py-2.5 rounded-lg text-sm">
         {{ session('success') }}
     </div>
 @endif
@@ -40,7 +40,7 @@
                 <div class="flex justify-between items-start mb-1.5">
                     <div class="flex-1">
                         <h3 class="font-semibold text-[#111827] text-sm truncate">
-                            {{ $property->name }}
+                            {{ e($property->name) }}
                         </h3>
                     </div>
                     <span class="text-xs text-[#9CA3AF] flex-shrink-0 ml-2">
@@ -51,14 +51,14 @@
                 <div class="grid grid-cols-2 gap-1.5 mt-1.5">
                     <div class="text-xs">
                         <span class="text-[#6B7280]">Rent:</span>
-                        <span class="font-medium text-[#111827]">MK {{ number_format($property->monthly_rent ?? 0) }}</span>
+                        <span class="font-medium text-[#111827]">MK {{ number_format((float)($property->monthly_rent ?? 0)) }}</span>
                     </div>
                 </div>
                 
                 <div class="flex justify-between items-center mt-2.5">
                     <div>
                         @if($property->status)
-                            <span class="px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#374151] text-[10px] font-medium">
+                            <span class="px-2 py-0.5 rounded-full bg-[#ca0251] text-white text-[10px] font-medium">
                                 Active
                             </span>
                         @else
@@ -67,20 +67,20 @@
                             </span>
                         @endif
                         @if($property->isFull())
-                            <span class="ml-1 px-1.5 py-0.5 bg-[#E5E7EB] text-[#374151] text-[10px] rounded-full">Full</span>
+                            <span class="ml-1 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] rounded-full">Full</span>
                         @endif
                     </div>
                     
                     <div class="flex gap-0.5">
                         <a href="{{ route('landlord.properties.show', $property) }}"
                            title="View Tenants"
-                           class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                           class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
                             <x-heroicon-o-eye class="w-4 h-4"/>
                         </a>
 
                         <a href="{{ route('landlord.properties.edit', $property) }}"
                            title="Edit"
-                           class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                           class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
                             <x-heroicon-o-pencil-square class="w-4 h-4"/>
                         </a>
 
@@ -97,7 +97,7 @@
                                     'Delete Hostel',
                                     'Are you sure you want to delete this Hostel? This action cannot be undone.'
                                 )"
-                                class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                class="p-1.5 rounded-lg text-[#6B7280] hover:bg-red-50 hover:text-red-600 transition">
                                 <x-heroicon-o-trash class="w-4 h-4"/>
                             </button>
                         </form>
@@ -131,22 +131,22 @@
                             {{ $properties->firstItem() + $index }}
                         </td>
                         <td class="px-4 py-2.5 font-medium text-[#111827]">
-                            {{ $property->name }}
+                            {{ e($property->name) }}
                         </td>
                         <td class="px-4 py-2.5 text-[#111827]">
-                            {{ number_format($property->monthly_rent ?? 0) }}
+                            {{ number_format((float)($property->monthly_rent ?? 0)) }}
                         </td>
                         <td class="px-4 py-2.5">
                             <span class="text-[#111827]">
-                                {{ $property->currentTenantCount() }}/{{ $property->max_tenants ?? 0 }}
+                                {{ (int)$property->currentTenantCount() }}/{{ (int)($property->max_tenants ?? 0) }}
                             </span>
                             @if($property->isFull())
-                                <span class="ml-1 px-1.5 py-0.5 bg-[#E5E7EB] text-[#374151] text-[10px] rounded-full">Full</span>
+                                <span class="ml-1 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] rounded-full">Full</span>
                             @endif
                         </td>
                         <td class="px-4 py-2.5">
                             @if($property->status)
-                                <span class="px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#374151] text-[10px] font-medium">
+                                <span class="px-2 py-0.5 rounded-full bg-[#ca0251] text-white text-[10px] font-medium">
                                     Active
                                 </span>
                             @else
@@ -159,13 +159,13 @@
                             <div class="flex justify-end gap-0.5">
                                 <a href="{{ route('landlord.properties.show', $property) }}"
                                    title="View Tenants"
-                                   class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                   class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
                                     <x-heroicon-o-eye class="w-4 h-4"/>
                                 </a>
 
                                 <a href="{{ route('landlord.properties.edit', $property) }}"
                                    title="Edit"
-                                   class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                   class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
                                     <x-heroicon-o-pencil-square class="w-4 h-4"/>
                                 </a>
 
@@ -182,7 +182,7 @@
                                             'Delete Property',
                                             'Are you sure you want to delete this property? This action cannot be undone.'
                                         )"
-                                        class="p-1.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition">
+                                        class="p-1.5 rounded-lg text-[#6B7280] hover:bg-red-50 hover:text-red-600 transition">
                                         <x-heroicon-o-trash class="w-4 h-4"/>
                                     </button>
                                 </form>
@@ -241,7 +241,7 @@
             </button>
             <button
                 onclick="submitConfirmAction()"
-                class="px-4 py-2 rounded-lg bg-[#0F172A] hover:bg-[#1a2a4a] text-white w-full sm:w-auto transition-colors">
+                class="px-4 py-2 rounded-lg bg-[#ca0251] hover:bg-[#a80244] text-white w-full sm:w-auto transition-colors">
                 Confirm
             </button>
         </div>
@@ -259,8 +259,12 @@ function openConfirmModal(formId, title, message) {
         return;
     }
     
-    document.getElementById('modalTitle').innerText = title;
-    document.getElementById('modalMessage').innerText = message;
+    // Sanitize inputs to prevent XSS
+    const safeTitle = String(title).replace(/[<>]/g, '');
+    const safeMessage = String(message).replace(/[<>]/g, '');
+    
+    document.getElementById('modalTitle').innerText = safeTitle;
+    document.getElementById('modalMessage').innerText = safeMessage;
 
     const modal = document.getElementById('confirmModal');
     const backdrop = document.getElementById('modalBackdrop');

@@ -1,61 +1,27 @@
 <x-mail::layout>
-    {{-- Greeting --}}
-    @if (! empty($greeting))
-        <div class="greeting">
-            {{ $greeting }}
-        </div>
-    @else
-        @php
-            $isError = isset($level) && $level === 'error';
-            $greetingText = $isError ? __('Whoops!') : __('Hello!');
-        @endphp
-        <div class="greeting">
-            {{ $greetingText }}
-        </div>
-    @endif
+{{-- Header --}}
+<x-slot:header>
+<x-mail::header :url="config('app.url')">
+{{ config('app.name') }}
+</x-mail::header>
+</x-slot:header>
 
-    {{-- Intro Lines --}}
-    @if (! empty($introLines))
-        @foreach ($introLines as $line)
-            <p>{{ $line }}</p>
-        @endforeach
-    @endif
+{{-- Body --}}
+{!! $slot !!}
 
-    {{-- Action Button --}}
-    @if (! empty($actionText))
-        <x-mail::button :url="$actionUrl" :color="$color ?? 'primary'">
-            {{ $actionText }}
-        </x-mail::button>
-    @endif
+{{-- Subcopy --}}
+@isset($subcopy)
+<x-slot:subcopy>
+<x-mail::subcopy>
+{!! $subcopy !!}
+</x-mail::subcopy>
+</x-slot:subcopy>
+@endisset
 
-    {{-- Outro Lines --}}
-    @if (! empty($outroLines))
-        @foreach ($outroLines as $line)
-            <p>{{ $line }}</p>
-        @endforeach
-    @endif
-
-    {{-- Salutation --}}
-    @if (! empty($salutation))
-        <p>{{ $salutation }}</p>
-    @else
-        <p>Regards,<br>{{ config('app.name', 'ALENDI') }}</p>
-    @endif
-
-    {{-- Subcopy --}}
-    @if (! empty($actionText))
-        <x-slot:subcopy>
-            @lang(
-                "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\n".
-                'into your web browser:',
-                [
-                    'actionText' => $actionText,
-                ]
-            ) 
-            <br>
-            <span class="break-all">
-                <a href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer">{{ $displayableActionUrl }}</a>
-            </span>
-        </x-slot:subcopy>
-    @endif
+{{-- Footer --}}
+<x-slot:footer>
+<x-mail::footer>
+© {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
+</x-mail::footer>
+</x-slot:footer>
 </x-mail::layout>

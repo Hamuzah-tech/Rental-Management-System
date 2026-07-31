@@ -40,7 +40,12 @@ class TenantRegistrationController extends Controller
         if ($property->isFull()) {
             return back()->with('error', 'This property is full.');
         }
-
+        // Remove commas from the custom rent before validation
+        $request->merge([
+            'custom_monthly_rent' => $request->filled('custom_monthly_rent')
+                ? str_replace(',', '', $request->custom_monthly_rent)
+                : null,
+        ]);
         // Validate the request with custom messages
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -91,9 +96,9 @@ class TenantRegistrationController extends Controller
             $monthlyRent = $property->monthly_rent ?? 0;
             
             // If custom rent was provided and has a value, use it
-            if ($request->filled('custom_monthly_rent') && $request->custom_monthly_rent > 0) {
-                $monthlyRent = $request->custom_monthly_rent;
-            }
+            if (!empty($validated['custom_monthly_rent']) && $validated['custom_monthly_rent'] > 0) {
+    $monthlyRent = $validated['custom_monthly_rent'];
+}
 
             // Generate tenant code
             $tenantData = [

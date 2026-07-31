@@ -18,7 +18,7 @@
             <h2 class="text-base font-semibold text-[#111827]">Payment Information</h2>
             <p class="text-[#6B7280] text-xs">Review this tenant payment.</p>
         </div>
-        <a href="{{ route('landlord.payments.index') }}" class="text-[#0F172A] hover:text-[#1a2a4a] text-sm">
+        <a href="{{ route('landlord.payments.index') }}" class="text-[#ca0251] hover:text-[#a80244] text-sm transition">
             ← Back to Payments
         </a>
     </div>
@@ -78,9 +78,9 @@
                     <p class="text-[#6B7280] text-xs mb-0.5">Status</p>
                     @php
                         $statusClasses = [
-                            'Approved' => 'bg-[#F3F4F6] text-[#111827]',
-                            'Rejected' => 'bg-[#F3F4F6] text-[#6B7280]',
-                            'Pending' => 'bg-[#F3F4F6] text-[#6B7280]'
+                            'Approved' => 'bg-green-600 text-white',
+                            'Rejected' => 'bg-red-600 text-white',
+                            'Pending' => 'bg-[#ca0251] text-white'
                         ];
                     @endphp
                     <span class="{{ $statusClasses[$payment->status] ?? 'bg-[#F3F4F6] text-[#374151]' }} px-2 py-0.5 rounded-full text-xs font-medium inline-block">
@@ -100,7 +100,7 @@
                     onclick="openModal('{{ asset('storage/'.$payment->screenshot) }}')">
                 <button 
                     onclick="openModal('{{ asset('storage/'.$payment->screenshot) }}')"
-                    class="mt-2 text-[#0F172A] hover:underline text-sm text-center">
+                    class="mt-2 text-[#ca0251] hover:text-[#a80244] text-sm text-center transition">
                     Open Full Image
                 </button>
             @else
@@ -121,8 +121,8 @@
                     @click="activeTab = 'approve'"
                     class="flex-1 px-4 py-3 text-sm font-medium transition-all duration-200"
                     :class="activeTab === 'approve' 
-                        ? 'bg-[#0F172A] text-white' 
-                        : 'text-[#374151] hover:bg-[#F3F4F6]'">
+                        ? 'bg-[#ca0251] text-white' 
+                        : 'text-[#374151] hover:bg-[#ca0251]/10 hover:text-[#ca0251]'">
                     <span class="flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -134,8 +134,8 @@
                     @click="activeTab = 'reject'"
                     class="flex-1 px-4 py-3 text-sm font-medium transition-all duration-200"
                     :class="activeTab === 'reject' 
-                        ? 'bg-[#0F172A] text-white' 
-                        : 'text-[#374151] hover:bg-[#F3F4F6]'">
+                        ? 'bg-[#ca0251] text-white' 
+                        : 'text-[#374151] hover:bg-[#ca0251]/10 hover:text-[#ca0251]'">
                     <span class="flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -155,7 +155,7 @@
                         </p>
                         <form method="POST" action="{{ route('landlord.payments.approve', $payment) }}">
                             @csrf @method('PATCH')
-                            <button class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-6 py-2.5 rounded-lg text-sm transition w-full sm:w-auto">
+                            <button class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 rounded-lg text-sm transition w-full sm:w-auto">
                                 Confirm Approval
                             </button>
                         </form>
@@ -178,10 +178,10 @@
                                 <textarea 
                                     name="remarks" 
                                     rows="3" 
-                                    class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] text-sm"
+                                    class="w-full rounded-lg border-[#E5E7EB] focus:border-[#ca0251] focus:ring-[#ca0251] text-sm"
                                     placeholder="Provide a reason for rejecting this payment..."></textarea>
                             </div>
-                            <button class="mt-2 bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-6 py-2.5 rounded-lg text-sm transition w-full sm:w-auto">
+                            <button class="mt-2 bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 rounded-lg text-sm transition w-full sm:w-auto">
                                 Confirm Rejection
                             </button>
                         </form>

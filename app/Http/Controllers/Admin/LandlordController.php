@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
+use App\Mail\LandlordWelcomeMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class LandlordController extends Controller
 {
@@ -53,60 +56,60 @@ class LandlordController extends Controller
     /**
      * Store a newly created landlord in storage.
      */
-    public function store(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'phone' => 'required|string|unique:users,phone|max:15',
-                'password' => 'required|string|min:8|confirmed',
+   public function store(Request $request)
+{
+    $data = $request->validate([
+        'name'         => 'required|string|max:255',
+        'username'     => 'required|string|max:255|unique:users,username',
+        'email'        => 'required|email|unique:users,email',
+        'phone'        => 'required|string|max:15|unique:users,phone',
+        'second_phone' => 'nullable|string|max:15',
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        // Generate a secure temporary password
+        $plainPassword = Str::random(10);
+
+        $user = User::create([
+            'name'         => $data['name'],
+            'username'     => $data['username'],
+            'email'        => $data['email'],
+            'phone'        => $data['phone'],
+            'second_phone' => $data['second_phone'],
+            'password'     => Hash::make($plainPassword),
+            'role'         => 'landlord',
+            'status'       => true,
+            'is_active'    => true,
+        ]);
+
+        // Send welcome email
+        Mail::to($user->email)
+            ->send(new LandlordWelcomeMail($user, $plainPassword));
+
+        DB::commit();
+
+        return redirect()
+            ->route('admin.landlords.index')
+            ->with('success', 'Landlord created successfully and login details emailed.');
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        Log::error('Landlord creation failed', [
+            'message' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->withInput()
+            ->withErrors([
+                'error' => $e->getMessage()
             ]);
-
-            // Generate a username from email
-            $username = explode('@', $data['email'])[0];
-            
-            // Check if username exists, if so append random numbers
-            $baseUsername = $username;
-            $counter = 1;
-            while (User::where('username', $username)->exists()) {
-                $username = $baseUsername . $counter;
-                $counter++;
-            }
-
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'username' => $username,
-                'phone' => $data['phone'],
-                'password' => Hash::make($data['password']),
-                'status' => true,
-            ]);
-
-            $user->assignRole('Landlord');
-
-            Log::info('Landlord created by admin', [
-                'landlord_id' => $user->id,
-                'admin_id' => auth()->id()
-            ]);
-
-            // Store credentials to show to admin
-            return redirect()
-                ->route('admin.landlords.index')
-                ->with('success', 'Landlord created successfully.')
-                ->with('credentials', [
-                    'username' => $username,
-                    'password' => $data['password']
-                ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error creating landlord: ' . $e->getMessage());
-            return back()
-                ->withInput()
-                ->withErrors(['error' => 'Failed to create landlord: ' . $e->getMessage()]);
-        }
     }
-
+}
     /**
      * Display the specified landlord.
      */
@@ -158,9 +161,12 @@ class LandlordController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error updating landlord: ' . $e->getMessage());
+
             return back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to update landlord: ' . $e->getMessage()]);
+                ->withErrors([
+                    'error' => 'Failed to update landlord: ' . $e->getMessage()
+                ]);
         }
     }
 
@@ -169,10 +175,12 @@ class LandlordController extends Controller
      */
     public function destroy(User $landlord)
     {
-        // Check if landlord has properties
         if ($landlord->properties()->count() > 0) {
             return back()->withErrors([
-                'error' => 'Cannot delete landlord with active properties. Archive properties first.'
+                'error' => 'This landlord cannot be deleted because they currently own ' .
+                    $landlord->properties()->count() .
+                    ' propert' . ($landlord->properties()->count() == 1 ? 'y' : 'ies') .
+                    '. Please transfer or remove the properties before deleting the landlord.'
             ]);
         }
 

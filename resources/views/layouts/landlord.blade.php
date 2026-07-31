@@ -46,7 +46,7 @@
                     </p>
                     <div class="flex items-center gap-1 text-xs text-[#6B7280]">
                         <span>Need help?</span>
-                        <a href="https://wa.me/260990705194?text=Hi%2C%20I%20need%20help%20with%20Alendi" 
+                        <a href="https://wa.me/0990705194?text=Hi%2C%20I%20need%20help%20with%20Alendi" 
                            target="_blank"
                            rel="noopener noreferrer"
                            class="font-medium text-[#0F172A] hover:text-[#C80B6D] transition hover:underline">

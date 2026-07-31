@@ -24,7 +24,7 @@
                     <select
                         id="property_id"
                         name="property_id"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#0F172A] focus:border-[#0F172A] py-1.5 px-3 min-w-[160px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[160px] bg-white text-[#111827]"
                     >
                         <option value="">All Hostels</option>
                         @foreach($properties as $property)
@@ -41,7 +41,7 @@
                     <select
                         id="month"
                         name="month"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#0F172A] focus:border-[#0F172A] py-1.5 px-3 min-w-[160px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[160px] bg-white text-[#111827]"
                     >
                         <option value="">All Months</option>
                         @if(isset($months) && count($months) > 0)
@@ -62,7 +62,7 @@
                     <select
                         id="status"
                         name="status"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#0F172A] focus:border-[#0F172A] py-1.5 px-3 min-w-[140px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[140px] bg-white text-[#111827]"
                     >
                         <option value="">All Status</option>
                         <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
@@ -73,12 +73,12 @@
 
                 {{-- Action Buttons --}}
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-6 py-1.5 rounded-lg text-sm transition">
+                    <button type="submit" class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition">
                         Search
                     </button>
                     
                     @if(request('property_id') || request('month') || request('status'))
-                        <a href="{{ route('landlord.payments.index') }}" class="text-sm text-[#6B7280] hover:text-[#111827] transition">
+                        <a href="{{ route('landlord.payments.index') }}" class="text-sm text-[#6B7280] hover:text-[#ca0251] transition">
                             Clear
                         </a>
                     @endif
@@ -183,19 +183,19 @@
                         </td>
                         <td class="px-6 py-4">
                             @if($payment->status == 'Pending')
-                                <span class="inline-block bg-[#F3F4F6] text-[#6B7280] px-3 py-1 rounded-full text-xs font-medium">
-                                    Pending
+                                <span class="inline-flex items-center justify-center bg-[#ca0251] text-white px-3 py-1.5 rounded-md text-xs font-semibold">
+                                Pending
                                 </span>
                             @elseif($payment->status == 'Approved')
-                                <span class="inline-block bg-[#F3F4F6] text-[#111827] px-3 py-1 rounded-full text-xs font-medium">
-                                    Approved
+                                <span class="inline-flex items-center justify-center bg-green-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold">
+                                Approved
                                 </span>
                             @elseif($payment->status == 'Rejected')
-                                <span class="inline-block bg-[#F3F4F6] text-[#6B7280] px-3 py-1 rounded-full text-xs font-medium">
-                                    Rejected
+                                <span class="inline-flex items-center justify-center bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold">
+                                Rejected
                                 </span>
                             @else
-                                <span class="inline-block bg-[#F3F4F6] text-[#374151] px-3 py-1 rounded-full text-xs font-medium">
+                                <span class="inline-flex items-center justify-center bg-[#F3F4F6] text-[#374151] px-3 py-1.5 rounded-md text-xs font-semibold">
                                     {{ $payment->status }}
                                 </span>
                             @endif
@@ -204,7 +204,7 @@
                             <div class="flex items-center justify-center gap-1">
                                 <a
                                     href="{{ route('landlord.payments.show', $payment) }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-colors duration-150"
+                                    class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-[#ca0251] hover:bg-[#ca0251]/10 rounded-lg transition-colors duration-150"
                                     title="View Payment">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -218,7 +218,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" 
-                                                class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-colors duration-150"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-150"
                                                 title="Approve Payment"
                                                 onclick="return confirm('Approve this payment?')">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +232,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" 
-                                                class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-colors duration-150"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150"
                                                 title="Reject Payment"
                                                 onclick="return confirm('Reject this payment?')">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

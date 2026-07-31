@@ -65,22 +65,20 @@ class Tenant extends Model
      * Validate if a phone number is a valid Malawi number
      */
     public static function isValidMalawiPhone(?string $phone): bool
-    {
-        if (empty($phone)) {
-            return false;
-        }
-
-        $normalized = self::normalizePhoneNumber($phone);
-        
-        if (!$normalized) {
-            return false;
-        }
-
-        // Must be exactly 10 digits starting with 0
-        // Valid prefixes: 099, 088, 098
-        return preg_match('/^0(99|88|98)[0-9]{7}$/', $normalized) === 1;
+{
+    if (empty($phone)) {
+        return false;
     }
 
+    $normalized = self::normalizePhoneNumber($phone);
+
+    if (!$normalized) {
+        return false;
+    }
+
+    // Accept any valid Malawi mobile number starting with 08 or 09
+    return preg_match('/^0[89][0-9]{8}$/', $normalized) === 1;
+}
     /**
      * Setter for phone - automatically normalize before saving
      */

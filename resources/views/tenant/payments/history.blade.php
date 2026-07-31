@@ -132,19 +132,19 @@
                                             </td>
                                             <td class="px-4 py-3">
                                                 @if($payment->status == 'Pending')
-                                                    <span class="inline-block bg-[#F3F4F6] text-[#6B7280] px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                    <span class="inline-flex items-center justify-center bg-yellow-500 text-white px-3 py-1.5 rounded-md text-xs font-semibold min-w-[80px]">
                                                         Pending
                                                     </span>
                                                 @elseif($payment->status == 'Approved')
-                                                    <span class="inline-block bg-[#F3F4F6] text-[#111827] px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                    <span class="inline-flex items-center justify-center bg-green-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold min-w-[80px]">
                                                         Approved
                                                     </span>
                                                 @elseif($payment->status == 'Rejected')
-                                                    <span class="inline-block bg-[#F3F4F6] text-[#6B7280] px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                    <span class="inline-flex items-center justify-center bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold min-w-[80px]">
                                                         Rejected
                                                     </span>
                                                 @else
-                                                    <span class="inline-block bg-[#F3F4F6] text-[#374151] px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                    <span class="inline-flex items-center justify-center bg-[#F3F4F6] text-[#374151] px-3 py-1.5 rounded-md text-xs font-semibold min-w-[80px]">
                                                         {{ $payment->status }}
                                                     </span>
                                                 @endif
@@ -193,6 +193,30 @@
 
         </div>
     </div>
+
+    <!-- Add CSS to ensure colors are applied correctly -->
+    <style>
+        .bg-yellow-500 {
+            background-color: #eab308 !important;
+        }
+        .bg-green-600 {
+            background-color: #16a34a !important;
+        }
+        .bg-red-600 {
+            background-color: #dc2626 !important;
+        }
+        
+        /* Optional hover effects */
+        .bg-yellow-500:hover {
+            background-color: #ca8a04 !important;
+        }
+        .bg-green-600:hover {
+            background-color: #15803d !important;
+        }
+        .bg-red-600:hover {
+            background-color: #b91c1c !important;
+        }
+    </style>
 
 </body>
 </html>

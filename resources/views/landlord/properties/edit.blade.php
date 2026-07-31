@@ -21,7 +21,7 @@
 
     <!-- Success Message -->
     @if(session('success'))
-        <div class="mx-5 mt-3 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+        <div class="mx-5 mt-3 p-3 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-lg text-sm">
             {{ session('success') }}
         </div>
     @endif
@@ -54,9 +54,10 @@
                     <input
                         type="text"
                         name="name"
-                        value="{{ old('name', $property->name) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('name') border-red-500 @enderror"
-                        required>
+                        value="{{ old('name', e($property->name)) }}"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('name') border-red-500 @enderror"
+                        required
+                        maxlength="255">
                     @error('name')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
                     @enderror
@@ -73,9 +74,10 @@
                             type="text"
                             id="monthlyRent"
                             name="monthly_rent"
-                            value="{{ old('monthly_rent', number_format($property->monthly_rent ?? 0)) }}"
-                            class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 pl-8 pr-3 @error('monthly_rent') border-red-500 @enderror"
-                            required>
+                            value="{{ old('monthly_rent', number_format((float)($property->monthly_rent ?? 0))) }}"
+                            class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 pl-8 pr-3 @error('monthly_rent') border-red-500 @enderror"
+                            required
+                            maxlength="15">
                     </div>
                     @error('monthly_rent')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -90,11 +92,12 @@
                     <input
                         type="number"
                         name="max_tenants"
-                        value="{{ old('max_tenants', $property->max_tenants ?? 10) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('max_tenants') border-red-500 @enderror"
+                        value="{{ old('max_tenants', (int)($property->max_tenants ?? 10)) }}"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('max_tenants') border-red-500 @enderror"
                         min="1"
+                        max="999"
                         required>
-                    <p class="text-xs text-slate-500 mt-0.5">Current tenants: {{ $property->currentTenantCount() }} / {{ $property->max_tenants ?? 0 }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Current tenants: {{ (int)$property->currentTenantCount() }} / {{ (int)($property->max_tenants ?? 0) }}</p>
                     @error('max_tenants')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
                     @enderror
@@ -107,13 +110,13 @@
         <!-- Footer - Compact -->
         <div class="border-t border-slate-200 px-5 py-3 flex justify-end gap-2.5">
             <a href="{{ route('landlord.properties.index') }}"
-               class="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm">
+               class="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] transition text-sm">
                 Cancel
             </a>
 
             <button
                 type="submit"
-                class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-1.5 rounded-lg transition flex items-center gap-2 text-sm">
+                class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-1.5 rounded-lg transition flex items-center gap-2 text-sm">
                 <x-heroicon-o-check class="w-4 h-4"/>
                 Update Hostel
             </button>
@@ -137,6 +140,7 @@
 
     function handleRentInput(e) {
         const input = e.target;
+        // Only allow digits and commas
         let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
         
         if (value === '') {
@@ -146,7 +150,7 @@
         }
         
         const numericValue = parseFloat(value);
-        if (!isNaN(numericValue)) {
+        if (!isNaN(numericValue) && numericValue >= 0) {
             input.value = formatNumberWithCommas(numericValue);
             input.dataset.rawValue = numericValue;
         }
@@ -158,7 +162,7 @@
         
         if (value !== '') {
             const numericValue = parseFloat(value);
-            if (!isNaN(numericValue)) {
+            if (!isNaN(numericValue) && numericValue >= 0) {
                 input.value = formatNumberWithCommas(numericValue);
                 input.dataset.rawValue = numericValue;
             }

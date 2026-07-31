@@ -98,15 +98,15 @@
                 </div>
             </div>
 
-            <!-- Remember me -->
-            <div class="mb-6 flex items-center">
-                <input
-                    type="checkbox"
-                    name="remember"
-                    class="rounded border-slate-300 text-slate-600 focus:ring-slate-400"
-                />
-                <label class="ml-2 text-sm text-slate-500">Remember me</label>
-            </div>
+            <!-- Forgot Password -->
+<div class="mb-6 flex justify-end">
+    <a
+        href="{{ url('/landlord/password/reset') }}"
+        class="text-sm text-slate-600 hover:text-slate-900 hover:underline transition"
+    >
+        Forgot Password?
+    </a>
+</div>
 
             <!-- Login button -->
             <button

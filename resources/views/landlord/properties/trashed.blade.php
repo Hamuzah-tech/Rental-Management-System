@@ -11,13 +11,13 @@
             <p class="text-slate-500 text-sm">Properties moved to archive can be restored</p>
         </div>
         <a href="{{ route('landlord.properties.index') }}" 
-           class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm transition">
+           class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-xl text-sm transition">
             ← Back to Properties
         </a>
     </div>
 
     @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
+        <div class="mb-4 p-4 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-xl">
             {{ session('success') }}
         </div>
     @endif
@@ -37,20 +37,20 @@
                     @foreach($properties as $property)
                         <tr>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-slate-800">{{ $property->name }}</div>
-                                <div class="text-xs text-slate-500">#{{ $property->id }}</div>
+                                <div class="text-sm font-medium text-slate-800">{{ e($property->name) }}</div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">{{ $property->address ?? 'No address' }}</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">{{ e($property->address ?? 'No address') }}</td>
                             <td class="px-6 py-4 text-sm text-slate-600">
-                                {{ $property->deleted_at->format('M d, Y H:i') }}
+                                {{ $property->deleted_at ? $property->deleted_at->format('M d, Y H:i') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <form action="{{ route('landlord.properties.restore', $property->id) }}" 
-                                      method="POST" class="inline">
+                                      method="POST" class="inline"
+                                      onsubmit="return confirm('Are you sure you want to restore this property?')">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit" 
-                                            class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                            class="text-[#ca0251] hover:text-[#a80244] text-sm font-medium transition">
                                         Restore
                                     </button>
                                 </form>

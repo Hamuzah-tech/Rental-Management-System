@@ -340,11 +340,13 @@ class TenantController extends Controller
 
             // Check if property is full
             if ($property->isFull()) {
-                return back()
-                    ->withInput()
-                    ->withErrors(['property_id' => 'This property has reached maximum tenant capacity.']);
-            }
-
+    return back()
+        ->withInput()
+        ->with('error', "The selected hostel ({$property->name}) is already full. No more tenants can be added.")
+        ->withErrors([
+            'property_id' => 'This hostel has reached its maximum capacity.'
+        ]);
+}
             // Generate tenant code
             $tenantData = [
                 'tenant_code' => 'TEN-' . strtoupper(Str::random(8)),

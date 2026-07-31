@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - ALENDI</title>
+    <title>Reset Password - Alendi Estates</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -15,12 +15,8 @@
 
         <!-- Logo -->
         <div class="flex justify-center mb-6">
-            @php
-                $logoPath = public_path('images/alendi_logo.jpg');
-                $logoUrl = file_exists($logoPath) ? asset('images/alendi_logo.jpg') : 'https://via.placeholder.com/150x50?text=ALENDI';
-            @endphp
-            <img src="{{ $logoUrl }}" 
-                 alt="ALENDI" 
+            <img src="{{ asset('images/alendi_logo.jpg') }}" 
+                 alt="Alendi Estates" 
                  class="h-14 w-auto">
         </div>
 
@@ -69,13 +65,13 @@
                     required
                     autofocus
                     autocomplete="email"
-                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none text-sm"
-                    placeholder="your@email.com">
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-[#ca0251] focus:border-[#ca0251] outline-none text-sm"
+                >
             </div>
 
             <button
                 type="submit"
-                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-lg transition text-sm font-medium">
+                class="w-full bg-[#ca0251] hover:bg-[#a80244] text-white py-2.5 rounded-lg transition text-sm font-medium">
                 Send Password Reset Link
             </button>
 
@@ -84,7 +80,7 @@
         <!-- Links -->
         <div class="mt-6 text-center">
             <a href="{{ route('landlord.login') }}" 
-               class="text-sm text-slate-500 hover:text-slate-700 transition">
+               class="text-sm text-slate-500 hover:text-[#ca0251] transition">
                 Back to Login
             </a>
         </div>

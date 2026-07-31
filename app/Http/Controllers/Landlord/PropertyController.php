@@ -107,6 +107,18 @@ class PropertyController extends Controller
         
         // Start with base query for tenants
         $query = Tenant::where('property_id', $property->id);
+
+        $search = $request->search;
+        
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('tenant_code', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
         
         // Apply filters based on payment status and month
         if ($paymentStatus !== 'all' && $month) {
@@ -172,10 +184,10 @@ class PropertyController extends Controller
             });
         }
         
-        // Get tenants with their payments
+        // Get tenants with their payments - with pagination
         $tenants = $query->with(['payments' => function ($q) {
             $q->where('status', 'Approved')->orderBy('created_at', 'desc');
-        }])->get();
+        }])->paginate(25);
         
         // Generate month options for dropdown - Show 2026 and 2027 months
         $months = [];

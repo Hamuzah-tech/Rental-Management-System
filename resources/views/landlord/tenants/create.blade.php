@@ -20,8 +20,8 @@
 
     <!-- Success Message -->
     @if(session('success'))
-        <div class="mx-5 mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p class="text-green-700 text-sm">{{ session('success') }}</p>
+        <div class="mx-5 mt-3 p-3 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-lg">
+            <p class="text-sm">{{ session('success') }}</p>
         </div>
     @endif
 
@@ -35,11 +35,19 @@
     <!-- Validation Errors Summary -->
     @if($errors->any())
         <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <ul class="text-red-600 text-sm list-disc list-inside">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+            <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                    <p class="font-medium text-red-800 text-sm">Please fix the following errors:</p>
+                    <ul class="text-red-700 text-sm list-disc list-inside mt-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
         </div>
     @endif
 
@@ -55,13 +63,13 @@
                 <select
                     name="property_id"
                     id="propertySelect"
-                    class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('property_id') border-red-500 @enderror"
+                    class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] @error('property_id') border-red-500 bg-red-50 @enderror"
                     required>
                     <option value="">Select a hostel</option>
                     @foreach($properties as $property)
                         <option value="{{ $property->id }}" 
                                 {{ old('property_id') == $property->id ? 'selected' : '' }}>
-                            {{ $property->name }}
+                            {{ e($property->name) }}
                         </option>
                     @endforeach
                 </select>
@@ -81,7 +89,7 @@
                     id="name"
                     value="{{ old('name') }}"
                     maxlength="255"
-                    class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('name') border-red-500 @enderror"
+                    class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] @error('name') border-red-500 bg-red-50 @enderror"
                     required>
                 @error('name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -101,7 +109,7 @@
                         id="phone"
                         value="{{ old('phone') }}"
                         maxlength="15"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('phone') border-red-500 @enderror"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] @error('phone') border-red-500 bg-red-50 @enderror"
                         required>
                     @error('phone')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -120,7 +128,7 @@
                         id="email"
                         value="{{ old('email') }}"
                         maxlength="255"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('email') border-red-500 @enderror"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] @error('email') border-red-500 bg-red-50 @enderror"
                         required>
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -138,7 +146,7 @@
                     name="move_in_date"
                     id="move_in_date"
                     value="{{ old('move_in_date', date('Y-m-d')) }}"
-                    class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 @error('move_in_date') border-red-500 @enderror"
+                    class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] @error('move_in_date') border-red-500 bg-red-50 @enderror"
                     required>
                 @error('move_in_date')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -148,8 +156,8 @@
 
         <!-- Footer -->
         <div class="border-t border-slate-200 px-5 py-3 flex flex-col sm:flex-row justify-end gap-2.5">
-            <a href="{{ route('landlord.tenants.index') }}"
-               class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-center text-sm">
+            <a href="{{ url()->previous() }}"
+               class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] transition text-center text-sm">
                 Cancel
             </a>
 
@@ -157,7 +165,7 @@
                 <button
                     type="button"
                     id="shareRegistrationBtn"
-                    class="bg-[#C80B6D] hover:bg-[#a8095e] text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                    class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.368-2.684 3 3 0 00-5.368 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                     </svg>
@@ -167,7 +175,7 @@
                 <button
                     type="submit"
                     id="submitBtn"
-                    class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                    class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -188,7 +196,7 @@
                     <h3 class="text-base font-bold text-slate-800">Share Registration Link</h3>
                     <p class="text-xs text-slate-500">Generate a registration link for a tenant</p>
                 </div>
-                <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-slate-600 transition">
+                <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-[#ca0251] transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -198,9 +206,9 @@
             <div class="p-5 space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Select Hostel</label>
-                    <select id="modalPropertySelect" class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                    <select id="modalPropertySelect" class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251]">
                         @foreach($properties as $property)
-                            <option value="{{ $property->id }}">{{ $property->name }}</option>
+                            <option value="{{ $property->id }}">{{ e($property->name) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -208,7 +216,7 @@
                 <div>
                     <button
                         id="generateLinkBtn"
-                        class="w-full bg-[#C80B6D] hover:bg-[#a8095e] text-white px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                        class="w-full bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                         </svg>
@@ -218,7 +226,7 @@
 
                 <div id="loadingIndicator" class="hidden">
                     <div class="flex items-center justify-center py-4">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C80B6D]"></div>
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ca0251]"></div>
                         <span class="ml-2 text-slate-600 text-sm">Generating link...</span>
                     </div>
                 </div>
@@ -230,17 +238,17 @@
                             id="registrationLink"
                             type="text"
                             readonly
-                            class="flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-slate-400 focus:ring-slate-400 cursor-default text-sm">
+                            class="flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-[#ca0251] focus:ring-[#ca0251] cursor-default text-sm">
                         <button
                             id="copyLinkBtn"
-                            class="flex-shrink-0 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm">
+                            class="flex-shrink-0 bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
                             </svg>
                             Copy
                         </button>
                     </div>
-                    <p id="copySuccessMessage" class="text-sm text-green-600 mt-2 hidden">
+                    <p id="copySuccessMessage" class="text-sm text-[#ca0251] mt-2 hidden">
                         <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -256,7 +264,7 @@
             </div>
 
             <div class="border-t border-slate-200 px-5 py-3 flex justify-end">
-                <button onclick="closeRegistrationModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm">
+                <button onclick="closeRegistrationModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] transition text-sm">
                     Close
                 </button>
             </div>

@@ -16,12 +16,8 @@
 
         <!-- Logo -->
         <div class="flex justify-center mb-2">
-            @php
-                $logoPath = public_path('images/alendi_logo.jpg');
-                $logoUrl = file_exists($logoPath) ? asset('images/alendi_logo.jpg') : 'https://via.placeholder.com/150x50?text=Alendi';
-            @endphp
-            <img src="{{ $logoUrl }}" 
-                 alt="Alendi Logo" 
+            <img src="{{ asset('images/alendi_logo.jpg') }}" 
+                 alt="Alendi Estates" 
                  class="h-14 w-auto">
         </div>
 
@@ -29,7 +25,7 @@
         <div class="mb-6 text-center">
             
             <p class="text-slate-500 mt-1 text-sm">
-                Landlord workspace login.
+                Landlord portal login.
             </p>
         </div>
 
@@ -54,7 +50,7 @@
                     required
                     autofocus
                     autocomplete="username"
-                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none text-sm">
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-[#ca0251] focus:border-[#ca0251] outline-none text-sm">
             </div>
 
             <div class="mb-4">
@@ -66,12 +62,12 @@
                     name="password"
                     required
                     autocomplete="current-password"
-                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none text-sm">
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 focus:ring-2 focus:ring-[#ca0251] focus:border-[#ca0251] outline-none text-sm">
             </div>
 
             <button
                 type="submit"
-                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-lg transition text-sm font-medium">
+                class="w-full bg-[#ca0251] hover:bg-[#a80244] text-white py-2.5 rounded-lg transition text-sm font-medium">
                 Login
             </button>
 
@@ -80,12 +76,12 @@
         <!-- Forgot Password & Home Links -->
         <div class="mt-4 flex justify-between items-center">
             <a href="{{ route('landlord.password.request') }}" 
-               class="text-sm text-slate-500 hover:text-slate-700 transition">
+               class="text-sm text-slate-500 hover:text-[#ca0251] transition">
                 Forgot your password?
             </a>
             
             <a href="{{ route('home') }}"
-               class="text-sm text-slate-500 hover:text-slate-700 transition">
+               class="text-sm text-slate-500 hover:text-[#ca0251] transition">
                 Home
             </a>
         </div>

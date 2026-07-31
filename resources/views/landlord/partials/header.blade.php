@@ -1,6 +1,6 @@
 <!-- resources/views/landlord/partials/header.blade.php -->
 
-<header class="bg-[#C80B6D] border-b border-[#a8095e] px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between flex-shrink-0">
+<header class="bg-[#ca0251] border-b border-[#a80244] px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between flex-shrink-0">
     
     <!-- User Avatar with Username - Pushed to the right -->
     <div class="flex items-center gap-3 ml-auto">

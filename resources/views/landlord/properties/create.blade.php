@@ -8,7 +8,7 @@
 
     <!-- Display Success Message -->
     @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
+        <div class="mb-4 p-4 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-xl">
             {{ session('success') }}
         </div>
     @endif
@@ -47,7 +47,7 @@
                         type="text"
                         name="name"
                         value="{{ old('name') }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('name') border-red-500 @enderror"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm @error('name') border-red-500 @enderror"
                         required>
                     @error('name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -68,7 +68,7 @@
                                 id="monthlyRent"
                                 name="monthly_rent"
                                 value="{{ old('monthly_rent') ? number_format((float)str_replace(',', '', old('monthly_rent'))) : '' }}"
-                                class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm pl-9 @error('monthly_rent') border-red-500 @enderror"
+                                class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm pl-9 @error('monthly_rent') border-red-500 @enderror"
                                 required>
                         </div>
                         <p class="text-xs text-slate-500 mt-1">Monthly rent amount</p>
@@ -86,7 +86,7 @@
                             type="number"
                             name="max_tenants"
                             value="{{ old('max_tenants', 10) }}"
-                            class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm @error('max_tenants') border-red-500 @enderror"
+                            class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm @error('max_tenants') border-red-500 @enderror"
                             min="1"
                             required>
                         <p class="text-xs text-slate-500 mt-1">Maximum tenants allowed</p>
@@ -101,13 +101,13 @@
             <!-- Footer - More Compact -->
             <div class="border-t border-slate-200 px-5 py-3 flex justify-end gap-2.5">
                 <a href="{{ route('landlord.properties.index') }}"
-                   class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm transition">
+                   class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] text-sm transition">
                     Cancel
                 </a>
 
                 <button
                     type="submit"
-                    class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg text-sm transition flex items-center gap-2">
+                    class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-2 rounded-lg text-sm transition flex items-center gap-2">
                     <x-heroicon-o-check class="w-4 h-4"/>
                     Save
                 </button>
