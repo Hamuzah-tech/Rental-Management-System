@@ -13,12 +13,17 @@
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #0F172A;
+            border-bottom: 2px solid #ca0251;
+        }
+        .header img {
+            max-height: 60px;
+            width: auto;
+            margin-bottom: 10px;
         }
         .header h1 {
             font-size: 22px;
-            margin: 0;
-            color: #0F172A;
+            margin: 5px 0 0;
+            color: #ca0251;
         }
         .header p {
             color: #6B7280;
@@ -37,7 +42,8 @@
             color: #111827;
         }
         .badge {
-            background: #E5E7EB;
+            background: #ca0251;
+            color: #ffffff;
             padding: 2px 8px;
             border-radius: 9999px;
             font-size: 10px;
@@ -48,12 +54,12 @@
             margin-bottom: 20px;
         }
         th {
-            background-color: #F8FAFC;
-            color: #111827;
+            background-color: #ca0251;
+            color: #ffffff;
             font-weight: 600;
             padding: 10px 12px;
             text-align: left;
-            border: 1px solid #E5E7EB;
+            border: 1px solid #a80244;
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -83,18 +89,30 @@
             color: #374151;
             font-size: 10px;
         }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .logo-container img {
+            max-height: 50px;
+            width: auto;
+        }
     </style>
 </head>
 <body>
     <div class="header">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="{{ public_path('images/alendi_logo.jpg') }}" alt="Alendi Logo">
+        </div>
         <h1>Tenant List</h1>
         <p>Alendi: For Landlords. For Tenants.</p>
         <p>Generated on {{ $generatedAt->format('d M Y, H:i') }}</p>
         @if(isset($landlord))
-            <p>Landlord: {{ $landlord->name }}</p>
+            <p>Landlord: {{ e($landlord->name) }}</p>
         @endif
         @if(isset($property))
-            <p>Property: {{ $property->name }}</p>
+            <p>Property: {{ e($property->name) }}</p>
         @endif
     </div>
 
@@ -124,10 +142,10 @@
             @forelse($tenants as $index => $tenant)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $tenant->tenant_code }}</td>
-                    <td>{{ $tenant->name }}</td>
-                    <td>{{ $tenant->phone }}</td>
-                    <td>{{ $tenant->property->name ?? $property->name ?? 'N/A' }}</td>
+                    <td>{{ e($tenant->tenant_code) }}</td>
+                    <td>{{ e($tenant->name) }}</td>
+                    <td>{{ e($tenant->phone) }}</td>
+                    <td>{{ e($tenant->property->name ?? $property->name ?? 'N/A') }}</td>
                 </tr>
             @empty
                 <tr>

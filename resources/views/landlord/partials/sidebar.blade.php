@@ -137,7 +137,7 @@
 
         <!-- Logout - Fixed at bottom -->
         <div class="flex-shrink-0 p-4 border-t border-slate-200 bg-white">
-            <form method="POST" action="{{ route('logout') }}">
+           <form method="POST" action="{{ route('landlord.logout') }}">
                 @csrf
                 <button class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 text-sm">
                     <x-heroicon-o-arrow-right-on-rectangle class="w-5 h-5" />

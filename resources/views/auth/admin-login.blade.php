@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Super Admin Login</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>Admin Login</title>
 
     <!-- Tailwind via CDN (lightweight for demo) + Heroicons inline SVG -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,17 +25,27 @@
 
     <div class="w-full max-w-md">
 
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+            <img src="{{ asset('images/alendi_logo.jpg') }}" 
+                 alt="Alendi" 
+                 class="h-14 w-auto">
+        </div>
+
         <!-- header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">Portal</h1>
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">Admin Portal</h1>
             <p class="text-slate-500 mt-2">Operations manager workspace login.</p>
         </div>
 
-        <!-- demo error message (static) -->
-        <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm hidden">
-            <!-- hidden by default; only for demo -->
-            Invalid credentials.
-        </div>
+        <!-- Error Messages -->
+        @if($errors->any())
+            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+                @foreach($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
 
         <form method="POST" action="{{ route('admin.login.store') }}">
             @csrf
@@ -49,12 +60,16 @@
                     required
                     autofocus
                     autocomplete="email"
-                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none"
+                    maxlength="255"
+                    class="w-full border border-slate-200 rounded-xl p-3 text-slate-700 focus:ring-2 focus:ring-[#ca0251] focus:border-[#ca0251] outline-none @error('email') border-red-500 @enderror"
                 />
+                @error('email')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Password with show/hide icon -->
-            <div class="mb-6">
+            <div class="mb-4">
                 <label class="block mb-2 text-sm font-medium text-slate-700">Password</label>
 
                 <div class="relative">
@@ -64,13 +79,14 @@
                         name="password"
                         required
                         autocomplete="current-password"
-                        class="w-full border border-slate-200 rounded-xl p-3 pr-12 text-slate-700 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 outline-none"
+                        maxlength="255"
+                        class="w-full border border-slate-200 rounded-xl p-3 pr-12 text-slate-700 focus:ring-2 focus:ring-[#ca0251] focus:border-[#ca0251] outline-none @error('password') border-red-500 @enderror"
                     />
                     <!-- Heroicon: Eye (show/hide) -->
                     <button
                         type="button"
                         id="togglePassword"
-                        class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 toggle-pw"
+                        class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-[#ca0251] toggle-pw"
                         aria-label="Show password"
                     >
                         <!-- Eye icon (Heroicon outline) -->
@@ -96,27 +112,29 @@
                         </svg>
                     </button>
                 </div>
+                @error('password')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Forgot Password -->
-<div class="mb-6 flex justify-end">
-    <a
-        href="{{ url('/landlord/password/reset') }}"
-        class="text-sm text-slate-600 hover:text-slate-900 hover:underline transition"
-    >
-        Forgot Password?
-    </a>
-</div>
+            <div class="mb-6 flex justify-end">
+                <a
+                    href="{{ route('landlord.password.request') }}"
+                    class="text-sm text-slate-600 hover:text-[#ca0251] transition"
+                >
+                    Forgot Password?
+                </a>
+            </div>
 
             <!-- Login button -->
             <button
                 type="submit"
-                class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl transition"
+                class="w-full bg-[#ca0251] hover:bg-[#a80244] text-white py-3 rounded-xl transition"
             >
                 Login
             </button>
         </form>
-
     </div>
 </div>
 

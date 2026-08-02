@@ -12,8 +12,8 @@
     <!-- Header - More Compact -->
     <div class="px-5 py-3 border-b border-slate-200">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                <x-heroicon-o-pencil-square class="w-4 h-4 text-slate-400"/>
+            <div class="w-8 h-8 rounded-lg bg-[#ca0251]/10 flex items-center justify-center">
+                <x-heroicon-o-pencil-square class="w-4 h-4 text-[#ca0251]"/>
             </div>
             <div>
                 <h2 class="text-base font-semibold text-slate-800">
@@ -54,8 +54,9 @@
                     <input
                         type="text"
                         name="name"
-                        value="{{ old('name', $tenant->name) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('name') border-red-500 @enderror"
+                        value="{{ old('name', e($tenant->name)) }}"
+                        maxlength="255"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('name') border-red-500 @enderror"
                         required>
                     @error('name')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -70,8 +71,9 @@
                     <input
                         type="email"
                         name="email"
-                        value="{{ old('email', $tenant->email) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('email') border-red-500 @enderror"
+                        value="{{ old('email', e($tenant->email)) }}"
+                        maxlength="255"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('email') border-red-500 @enderror"
                         required>
                     @error('email')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -86,9 +88,10 @@
                     <input
                         type="tel"
                         name="phone"
-                        value="{{ old('phone', $tenant->phone) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('phone') border-red-500 @enderror"
-                        pattern="[0-9]{10,15}"
+                        value="{{ old('phone', e($tenant->phone)) }}"
+                        maxlength="15"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('phone') border-red-500 @enderror"
+                        pattern="[0-9+]{10,15}"
                         required>
                     @error('phone')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -102,14 +105,14 @@
                     </label>
                     <select
                         name="property_id"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('property_id') border-red-500 @enderror"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('property_id') border-red-500 @enderror"
                         required>
                         @foreach($properties as $property)
                             <option
                                 value="{{ $property->id }}"
                                 @if($tenant->property_id == $property->id) selected @endif
                             >
-                                {{ $property->name }}
+                                {{ e($property->name) }}
                             </option>
                         @endforeach
                     </select>
@@ -126,12 +129,12 @@
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-medium">MK</span>
                         <input
-                            type="number"
+                            type="text"
+                            id="monthlyRent"
                             name="monthly_rent"
-                            value="{{ old('monthly_rent', $tenant->monthly_rent) }}"
-                            class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 pl-8 pr-3 @error('monthly_rent') border-red-500 @enderror"
-                            step="0.01"
-                            min="0"
+                            value="{{ old('monthly_rent', number_format((float)($tenant->monthly_rent ?? 0))) }}"
+                            class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 pl-8 pr-3 @error('monthly_rent') border-red-500 @enderror"
+                            placeholder="e.g. 89,000"
                             required>
                     </div>
                     @error('monthly_rent')
@@ -148,7 +151,7 @@
                         type="date"
                         name="move_in_date"
                         value="{{ old('move_in_date', $tenant->move_in_date ? $tenant->move_in_date->format('Y-m-d') : date('Y-m-d')) }}"
-                        class="w-full rounded-lg border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm py-1.5 px-3 @error('move_in_date') border-red-500 @enderror"
+                        class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 px-3 @error('move_in_date') border-red-500 @enderror"
                         required>
                     @error('move_in_date')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
@@ -156,7 +159,7 @@
                 </div>
 
                 <!-- Status (Hidden) -->
-                <input type="hidden" name="status" value="{{ $tenant->status }}">
+                <input type="hidden" name="status" value="{{ e($tenant->status) }}">
 
             </div>
 
@@ -165,13 +168,13 @@
         <!-- Footer - Compact -->
         <div class="border-t border-slate-200 px-5 py-3 flex justify-end gap-2.5">
             <a href="{{ route('landlord.properties.show', $tenant->property_id) }}"
-               class="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm">
+               class="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] transition text-sm">
                 Cancel
             </a>
 
             <button
                 type="submit"
-                class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-1.5 rounded-lg transition flex items-center gap-2 text-sm">
+                class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-1.5 rounded-lg transition flex items-center gap-2 text-sm">
                 <x-heroicon-o-check class="w-4 h-4"/>
                 Update Tenant
             </button>
@@ -188,8 +191,8 @@
     <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 transform transition-all scale-100">
         <div class="flex flex-col items-center text-center">
             <!-- Success Icon -->
-            <div class="w-16 h-16 rounded-full bg-[#F3F4F6] flex items-center justify-center mb-4">
-                <svg class="w-8 h-8 text-[#0F172A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-16 h-16 rounded-full bg-[#ca0251]/10 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-[#ca0251]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
@@ -200,7 +203,7 @@
             </p>
 
             <a href="{{ route('landlord.properties.show', $tenant->property_id) }}"
-               class="w-full inline-flex items-center justify-center rounded-lg bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-6 py-2.5 text-sm font-medium transition">
+               class="w-full inline-flex items-center justify-center rounded-lg bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 text-sm font-medium transition">
                 Continue
             </a>
         </div>
@@ -253,6 +256,69 @@
                     }, 300);
                 }
             });
+        }
+
+        // Format number with commas
+        function formatNumberWithCommas(number) {
+            if (!number && number !== 0) return '';
+            const num = number.toString().replace(/,/g, '');
+            return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function handleRentInput(e) {
+            const input = e.target;
+            // Store cursor position
+            const cursorPosition = input.selectionStart;
+            const oldLength = input.value.length;
+            
+            // Remove non-numeric characters (allow only digits)
+            let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
+            
+            if (value === '') {
+                input.value = '';
+                input.dataset.rawValue = '';
+                return;
+            }
+            
+            const numericValue = parseFloat(value);
+            if (!isNaN(numericValue) && numericValue >= 0) {
+                const formatted = formatNumberWithCommas(numericValue);
+                input.value = formatted;
+                input.dataset.rawValue = numericValue;
+                
+                // Adjust cursor position
+                const newLength = input.value.length;
+                const diff = newLength - oldLength;
+                input.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            }
+        }
+
+        function handleRentBlur(e) {
+            const input = e.target;
+            let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
+            
+            if (value !== '') {
+                const numericValue = parseFloat(value);
+                if (!isNaN(numericValue) && numericValue >= 0) {
+                    input.value = formatNumberWithCommas(numericValue);
+                    input.dataset.rawValue = numericValue;
+                }
+            }
+        }
+
+        // Handle form submission - remove commas before submit
+        document.getElementById('editTenantForm')?.addEventListener('submit', function(e) {
+            const rentInput = document.getElementById('monthlyRent');
+            if (rentInput) {
+                const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');
+                rentInput.value = rawValue;
+            }
+        });
+
+        const rentInput = document.getElementById('monthlyRent');
+        if (rentInput) {
+            rentInput.addEventListener('input', handleRentInput);
+            rentInput.addEventListener('blur', handleRentBlur);
         }
     });
 </script>

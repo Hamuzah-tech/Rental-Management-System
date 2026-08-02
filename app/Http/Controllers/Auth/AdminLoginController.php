@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AdminLoginController extends Controller
@@ -27,6 +29,17 @@ class AdminLoginController extends Controller
             'password' => ['required'],
         ]);
 
+        // Step 3: Create throttle key and check rate limit
+        $throttleKey = Str::lower($request->email).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
+            ]);
+        }
+
         if (!Auth::guard('admin')->attempt([
             'email' => $request->email,
             'password' => $request->password,
@@ -34,12 +47,18 @@ class AdminLoginController extends Controller
             'is_active' => 1,
         ], $request->boolean('remember'))) {
 
+            // Step 5: Count failed login attempts
+            RateLimiter::hit($throttleKey);
+
             throw ValidationException::withMessages([
                 'email' => 'Invalid administrator credentials.',
             ]);
         }
 
         $request->session()->regenerate();
+
+        // Step 4: Clear the limiter after a successful login
+        RateLimiter::clear($throttleKey);
 
         $user = Auth::guard('admin')->user();
         $user->last_login_at = now();

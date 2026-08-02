@@ -21,7 +21,7 @@
 
         <!-- Header (Optional - if you have a header for guest pages) -->
         @if(View::hasSection('header'))
-            <header class="bg-[#C80B6D] border-b border-[#a8095e] px-4 sm:px-6 lg:px-8 py-3 flex-shrink-0">
+            <header class="bg-[#ca0251] border-b border-[#a80244] px-4 sm:px-6 lg:px-8 py-3 flex-shrink-0">
                 <div class="max-w-7xl mx-auto">
                     <h1 class="text-xl font-bold text-white">
                         @yield('header-title', 'Alendi')
@@ -30,7 +30,7 @@
             </header>
         @else
             <!-- Default header for guest pages -->
-            <header class="bg-[#C80B6D] border-b border-[#a8095e] px-4 sm:px-6 lg:px-8 py-3 flex-shrink-0">
+            <header class="bg-[#ca0251] border-b border-[#a80244] px-4 sm:px-6 lg:px-8 py-3 flex-shrink-0">
                 <div class="max-w-7xl mx-auto flex items-center justify-between">
                     <h1 class="text-xl font-bold text-white">Alendi</h1>
                     <p class="text-sm text-white/80">For Landlords. For Tenants.</p>
@@ -55,7 +55,7 @@
                         <a href="https://wa.me/260990705194?text=Hi%2C%20I%20need%20help%20with%20Alendi" 
                            target="_blank"
                            rel="noopener noreferrer"
-                           class="font-medium text-[#0F172A] hover:text-[#C80B6D] transition hover:underline">
+                           class="font-medium text-[#ca0251] hover:text-[#a80244] transition hover:underline">
                             Say Hi
                         </a>
                     </div>

@@ -15,6 +15,7 @@ use Spatie\Permission\Models\Role;
 use App\Mail\LandlordWelcomeMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Password;
 
 class LandlordController extends Controller
 {
@@ -24,9 +25,9 @@ class LandlordController extends Controller
     public function index()
     {
         $landlords = User::where('role', 'landlord')
-    ->withCount('properties')
-    ->latest()
-    ->paginate(20);
+            ->withCount('properties')
+            ->latest()
+            ->paginate(20);
 
         return view('admin.landlords.index', compact('landlords'));
     }
@@ -56,60 +57,63 @@ class LandlordController extends Controller
     /**
      * Store a newly created landlord in storage.
      */
-   public function store(Request $request)
-{
-    $data = $request->validate([
-        'name'         => 'required|string|max:255',
-        'username'     => 'required|string|max:255|unique:users,username',
-        'email'        => 'required|email|unique:users,email',
-        'phone'        => 'required|string|max:15|unique:users,phone',
-        'second_phone' => 'nullable|string|max:15',
-    ]);
-
-    DB::beginTransaction();
-
-    try {
-
-        // Generate a secure temporary password
-        $plainPassword = Str::random(10);
-
-        $user = User::create([
-            'name'         => $data['name'],
-            'username'     => $data['username'],
-            'email'        => $data['email'],
-            'phone'        => $data['phone'],
-            'second_phone' => $data['second_phone'],
-            'password'     => Hash::make($plainPassword),
-            'role'         => 'landlord',
-            'status'       => true,
-            'is_active'    => true,
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name'         => 'required|string|max:255',
+            'username'     => 'required|string|max:255|unique:users,username',
+            'email'        => 'required|email|unique:users,email',
+            'phone'        => 'required|string|max:15|unique:users,phone',
+            'second_phone' => 'nullable|string|max:15',
         ]);
 
-        // Send welcome email
-        Mail::to($user->email)
-            ->send(new LandlordWelcomeMail($user, $plainPassword));
+        try {
+            // Generate a secure temporary password
+            $plainPassword = Str::random(10);
 
-        DB::commit();
-
-        return redirect()
-            ->route('admin.landlords.index')
-            ->with('success', 'Landlord created successfully and login details emailed.');
-
-    } catch (\Exception $e) {
-
-        DB::rollBack();
-
-        Log::error('Landlord creation failed', [
-            'message' => $e->getMessage(),
-        ]);
-
-        return back()
-            ->withInput()
-            ->withErrors([
-                'error' => $e->getMessage()
+            $user = User::create([
+                'name'         => $data['name'],
+                'username'     => $data['username'],
+                'email'        => $data['email'],
+                'phone'        => $data['phone'],
+                'second_phone' => $data['second_phone'],
+                'password'     => Hash::make($plainPassword),
+                'role'         => 'landlord',
+                'status'       => true,
+                'is_active'    => true,
             ]);
+
+            // Commit before sending email to avoid keeping transaction open
+            DB::commit();
+
+            // Send welcome email (queue it for better performance)
+            Mail::to($user->email)->queue(new LandlordWelcomeMail($user, $plainPassword));
+
+            Log::info('Landlord created successfully by admin', [
+                'landlord_id' => $user->id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.landlords.index')
+                ->with('success', 'Landlord created successfully and login details emailed.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Landlord creation failed', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'error' => 'Failed to create landlord. Please try again.'
+                ]);
+        }
     }
-}
+
     /**
      * Display the specified landlord.
      */
@@ -160,12 +164,16 @@ class LandlordController extends Controller
                 ->with('success', 'Landlord updated successfully.');
 
         } catch (\Exception $e) {
-            Log::error('Error updating landlord: ' . $e->getMessage());
+            Log::error('Error updating landlord', [
+                'landlord_id' => $landlord->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
 
             return back()
                 ->withInput()
                 ->withErrors([
-                    'error' => 'Failed to update landlord: ' . $e->getMessage()
+                    'error' => 'Failed to update landlord. Please try again.'
                 ]);
         }
     }
@@ -201,17 +209,33 @@ class LandlordController extends Controller
      */
     public function restore($id)
     {
-        $landlord = User::onlyTrashed()->findOrFail($id);
-        $landlord->restore();
+        try {
+            $landlord = User::onlyTrashed()
+                ->where('role', 'landlord')
+                ->findOrFail($id);
+            
+            $landlord->restore();
 
-        Log::info('Landlord restored by admin', [
-            'landlord_id' => $landlord->id,
-            'admin_id' => auth()->id()
-        ]);
+            Log::info('Landlord restored by admin', [
+                'landlord_id' => $landlord->id,
+                'admin_id' => auth()->id()
+            ]);
 
-        return redirect()
-            ->route('admin.trash.landlords')
-            ->with('success', 'Landlord restored successfully.');
+            return redirect()
+                ->route('admin.trash.landlords')
+                ->with('success', 'Landlord restored successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Error restoring landlord', [
+                'landlord_id' => $id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.landlords')
+                ->withErrors(['error' => 'Failed to restore landlord. Please try again.']);
+        }
     }
 
     /**
@@ -219,24 +243,39 @@ class LandlordController extends Controller
      */
     public function forceDelete($id)
     {
-        $landlord = User::onlyTrashed()->findOrFail($id);
-        
-        // Delete related properties and tenants first
-        foreach ($landlord->properties as $property) {
-            $property->tenants()->delete();
-            $property->forceDelete();
+        try {
+            $landlord = User::onlyTrashed()
+                ->where('role', 'landlord')
+                ->findOrFail($id);
+            
+            // Delete related properties and tenants first
+            foreach ($landlord->properties as $property) {
+                $property->tenants()->delete();
+                $property->forceDelete();
+            }
+            
+            $landlord->forceDelete();
+
+            Log::info('Landlord permanently deleted by admin', [
+                'landlord_id' => $landlord->id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.landlords')
+                ->with('success', 'Landlord permanently deleted.');
+
+        } catch (\Exception $e) {
+            Log::error('Error permanently deleting landlord', [
+                'landlord_id' => $id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.landlords')
+                ->withErrors(['error' => 'Failed to permanently delete landlord. Please try again.']);
         }
-        
-        $landlord->forceDelete();
-
-        Log::info('Landlord permanently deleted by admin', [
-            'landlord_id' => $landlord->id,
-            'admin_id' => auth()->id()
-        ]);
-
-        return redirect()
-            ->route('admin.trash.landlords')
-            ->with('success', 'Landlord permanently deleted.');
     }
 
     /**
@@ -244,19 +283,32 @@ class LandlordController extends Controller
      */
     public function toggleStatus(User $landlord)
     {
-        $landlord->update([
-            'status' => !$landlord->status
-        ]);
+        try {
+            $landlord->update([
+                'status' => !$landlord->status,
+                'is_active' => !$landlord->is_active // Keep both status fields in sync
+            ]);
 
-        Log::info('Landlord status toggled by admin', [
-            'landlord_id' => $landlord->id,
-            'new_status' => $landlord->status,
-            'admin_id' => auth()->id()
-        ]);
+            Log::info('Landlord status toggled by admin', [
+                'landlord_id' => $landlord->id,
+                'new_status' => $landlord->status,
+                'new_is_active' => $landlord->is_active,
+                'admin_id' => auth()->id()
+            ]);
 
-        return redirect()
-            ->route('admin.landlords.index')
-            ->with('success', 'Landlord status updated successfully.');
+            return redirect()
+                ->route('admin.landlords.index')
+                ->with('success', 'Landlord status updated successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Error toggling landlord status', [
+                'landlord_id' => $landlord->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to update landlord status. Please try again.']);
+        }
     }
 
     /**
@@ -269,7 +321,7 @@ class LandlordController extends Controller
             // If password is provided in request, use it; otherwise generate random
             if ($request->filled('password')) {
                 $request->validate([
-                    'password' => 'required|string|min:8|confirmed',
+                    'password' => ['required', 'confirmed', Password::defaults()],
                 ]);
                 $newPassword = $request->password;
             } else {
@@ -277,9 +329,10 @@ class LandlordController extends Controller
                 $newPassword = $this->generateRandomPassword();
             }
 
-            // Update the password
+            // Update the password and regenerate remember token
             $landlord->update([
-                'password' => Hash::make($newPassword)
+                'password' => Hash::make($newPassword),
+                'remember_token' => Str::random(60),
             ]);
 
             Log::info('Landlord password reset by admin', [
@@ -299,9 +352,13 @@ class LandlordController extends Controller
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
-            Log::error('Error resetting password: ' . $e->getMessage());
+            Log::error('Error resetting password', [
+                'landlord_id' => $landlord->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
             return back()
-                ->withErrors(['error' => 'Failed to reset password: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to reset password. Please try again.']);
         }
     }
 
@@ -323,10 +380,10 @@ class LandlordController extends Controller
      */
     public function statistics()
     {
-        $totalLandlords = User::role('Landlord')->count();
-        $activeLandlords = User::role('Landlord')->where('status', true)->count();
-        $inactiveLandlords = User::role('Landlord')->where('status', false)->count();
-        $trashedLandlords = User::role('Landlord')->onlyTrashed()->count();
+        $totalLandlords = User::where('role', 'landlord')->count();
+        $activeLandlords = User::where('role', 'landlord')->where('status', true)->count();
+        $inactiveLandlords = User::where('role', 'landlord')->where('status', false)->count();
+        $trashedLandlords = User::where('role', 'landlord')->onlyTrashed()->count();
 
         return response()->json([
             'total' => $totalLandlords,
@@ -353,19 +410,33 @@ class LandlordController extends Controller
         try {
             switch ($action) {
                 case 'activate':
-                    User::whereIn('id', $landlordIds)->update(['status' => true]);
+                    User::where('role', 'landlord')
+                        ->whereIn('id', $landlordIds)
+                        ->update([
+                            'status' => true,
+                            'is_active' => true
+                        ]);
                     $message = 'Landlords activated successfully.';
                     break;
                 case 'deactivate':
-                    User::whereIn('id', $landlordIds)->update(['status' => false]);
+                    User::where('role', 'landlord')
+                        ->whereIn('id', $landlordIds)
+                        ->update([
+                            'status' => false,
+                            'is_active' => false
+                        ]);
                     $message = 'Landlords deactivated successfully.';
                     break;
                 case 'delete':
-                    User::whereIn('id', $landlordIds)->delete();
+                    User::where('role', 'landlord')
+                        ->whereIn('id', $landlordIds)
+                        ->delete();
                     $message = 'Landlords moved to archive.';
                     break;
                 case 'restore':
-                    User::whereIn('id', $landlordIds)->restore();
+                    User::where('role', 'landlord')
+                        ->whereIn('id', $landlordIds)
+                        ->restore();
                     $message = 'Landlords restored successfully.';
                     break;
                 default:
@@ -383,8 +454,12 @@ class LandlordController extends Controller
                 ->with('success', $message);
 
         } catch (\Exception $e) {
-            Log::error('Bulk action error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to perform bulk action.']);
+            Log::error('Bulk action error', [
+                'action' => $action,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+            return back()->withErrors(['error' => 'Failed to perform bulk action. Please try again.']);
         }
     }
 
@@ -393,7 +468,7 @@ class LandlordController extends Controller
      */
     public function export(Request $request)
     {
-        $landlords = User::role('Landlord')
+        $landlords = User::where('role', 'landlord')
             ->withCount('properties')
             ->get();
 
@@ -414,16 +489,19 @@ class LandlordController extends Controller
 
             // Data
             foreach ($landlords as $landlord) {
-                fputcsv($handle, [
-                    $landlord->id,
-                    $landlord->name,
-                    $landlord->username ?? '',
-                    $landlord->email,
-                    $landlord->phone ?? '',
-                    $landlord->properties_count,
-                    $landlord->status ? 'Active' : 'Inactive',
-                    $landlord->created_at->format('Y-m-d H:i:s'),
-                ]);
+                // Sanitize CSV fields to prevent CSV injection
+                $fields = [
+                    $this->sanitizeCsvField($landlord->id),
+                    $this->sanitizeCsvField($landlord->name),
+                    $this->sanitizeCsvField($landlord->username ?? ''),
+                    $this->sanitizeCsvField($landlord->email),
+                    $this->sanitizeCsvField($landlord->phone ?? ''),
+                    $this->sanitizeCsvField($landlord->properties_count),
+                    $this->sanitizeCsvField($landlord->status ? 'Active' : 'Inactive'),
+                    $this->sanitizeCsvField($landlord->created_at->format('Y-m-d H:i:s')),
+                ];
+                
+                fputcsv($handle, $fields);
             }
 
             fclose($handle);
@@ -439,7 +517,7 @@ class LandlordController extends Controller
     {
         $search = $request->get('search');
 
-        $landlords = User::role('Landlord')
+        $landlords = User::where('role', 'landlord')
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
@@ -450,5 +528,24 @@ class LandlordController extends Controller
             ->paginate(20);
 
         return view('admin.landlords.index', compact('landlords'));
+    }
+
+    /**
+     * Sanitize CSV field to prevent CSV injection.
+     */
+    private function sanitizeCsvField($field)
+    {
+        if ($field === null) {
+            return '';
+        }
+        
+        $field = (string) $field;
+        
+        // If field starts with =, +, -, @, prefix with a single quote
+        if (in_array(substr($field, 0, 1), ['=', '+', '-', '@'])) {
+            return "'" . $field;
+        }
+        
+        return $field;
     }
 }

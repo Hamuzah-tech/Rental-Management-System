@@ -12,18 +12,18 @@ class User extends Authenticatable
     use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
-    'username',
-    'name',
-    'email',
-    'phone',
-    'second_phone',
-    'password',
-    'role',
-    'status',
-    'landlord_id',
-    'is_active',
-    'last_login_at',
-];
+        'username',
+        'name',
+        'email',
+        'phone',
+        'second_phone',
+        'password',
+        'role',
+        'status',
+        'landlord_id',
+        'is_active',
+        'last_login_at',
+    ];
 
     protected $hidden = [
         'password',
@@ -36,11 +36,6 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    public function landlord()
-    {
-        return $this->hasOne(Landlord::class);
-    }
-
     public function tenant()
     {
         return $this->hasOne(Tenant::class);
@@ -48,7 +43,7 @@ class User extends Authenticatable
 
     public function properties()
     {
-        return $this->hasMany(\App\Models\Property::class, 'landlord_id');
+        return $this->hasMany(Property::class, 'landlord_id');
     }
 
     public function hasRole($role)

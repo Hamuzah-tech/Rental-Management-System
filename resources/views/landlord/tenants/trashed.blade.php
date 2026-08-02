@@ -10,13 +10,13 @@
             <p class="text-slate-500 text-sm">Tenants moved to archive can be restored</p>
         </div>
         <a href="{{ route('landlord.tenants.index') }}" 
-           class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm transition">
+           class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-xl text-sm transition">
             ← Back to Tenants
         </a>
     </div>
 
     @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
+        <div class="mb-4 p-4 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-xl">
             {{ session('success') }}
         </div>
     @endif
@@ -37,26 +37,27 @@
                     @foreach($tenants as $tenant)
                         <tr>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-slate-800">{{ $tenant->name }}</div>
-                                <div class="text-xs text-slate-500">Code: {{ $tenant->tenant_code }}</div>
+                                <div class="text-sm font-medium text-slate-800">{{ e($tenant->name) }}</div>
+                                <div class="text-xs text-slate-500">Code: {{ e($tenant->tenant_code) }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-slate-600">
-                                {{ $tenant->property->name ?? 'N/A' }}
+                                {{ e($tenant->property->name ?? 'N/A') }}
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-slate-600">{{ $tenant->email }}</div>
-                                <div class="text-sm text-slate-500">{{ $tenant->phone }}</div>
+                                <div class="text-sm text-slate-600">{{ e($tenant->email) }}</div>
+                                <div class="text-sm text-slate-500">{{ e($tenant->phone) }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-slate-600">
-                                {{ $tenant->deleted_at->format('M d, Y H:i') }}
+                                {{ $tenant->deleted_at ? $tenant->deleted_at->format('M d, Y H:i') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <form action="{{ route('landlord.tenants.restore', $tenant->id) }}" 
-                                      method="POST" class="inline">
+                                      method="POST" class="inline"
+                                      onsubmit="return confirm('Are you sure you want to restore this tenant?')">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit" 
-                                            class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                            class="text-[#ca0251] hover:text-[#a80244] text-sm font-medium transition">
                                         Restore
                                     </button>
                                 </form>

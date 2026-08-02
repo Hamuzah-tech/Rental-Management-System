@@ -11,8 +11,8 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-slate-200">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-                    <x-heroicon-o-link class="w-6 h-6 text-indigo-600"/>
+                <div class="w-12 h-12 rounded-xl bg-[#ca0251]/10 flex items-center justify-center">
+                    <x-heroicon-o-link class="w-6 h-6 text-[#ca0251]"/>
                 </div>
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800">
@@ -35,7 +35,7 @@
                             Property
                         </label>
                         <div class="font-semibold text-slate-800">
-                            {{ $property->name }}
+                            {{ e($property->name) }}
                         </div>
                     </div>
 
@@ -44,7 +44,7 @@
                             Address
                         </label>
                         <div class="text-slate-700">
-                            {{ $property->address }}
+                            {{ e($property->address ?? 'No address provided') }}
                         </div>
                     </div>
 
@@ -53,7 +53,7 @@
                             Monthly Rent
                         </label>
                         <div class="text-slate-800 font-semibold">
-                            MK {{ number_format($property->monthly_rent ?? 0) }}
+                            MK {{ number_format((float)($property->monthly_rent ?? 0)) }}
                         </div>
                     </div>
                 </div>
@@ -76,33 +76,30 @@
                         type="text"
                         readonly
                         value="{{ $registrationLink }}"
-                        class="flex-1 rounded-xl border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500">
-
+                        class="flex-1 rounded-xl border-slate-300 bg-slate-50 focus:border-[#ca0251] focus:ring-[#ca0251]">
                     <button
                         onclick="copyLink()"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-xl transition">
-
+                        class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 rounded-xl transition">
                         Copy
-
                     </button>
                 </div>
                 <p class="text-xs text-slate-500 mt-1">
-                    Tenants will see the monthly rent amount of MK {{ number_format($property->monthly_rent ?? 0) }} when registering
+                    Tenants will see the monthly rent amount of MK {{ number_format((float)($property->monthly_rent ?? 0)) }} when registering
                 </p>
             </div>
 
             <!-- Instructions -->
-            <div class="mt-8 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
-                <h3 class="font-semibold text-indigo-800">
+            <div class="mt-8 rounded-xl border border-[#ca0251]/20 bg-[#ca0251]/5 p-5">
+                <h3 class="font-semibold text-[#ca0251]">
                     Instructions
                 </h3>
-                <ul class="mt-3 space-y-2 text-indigo-700 text-sm list-disc list-inside">
+                <ul class="mt-3 space-y-2 text-slate-700 text-sm list-disc list-inside">
                     <li>Copy the registration link above.</li>
                     <li>Send it to all your tenants.</li>
                     <li>Tenants will register themselves.</li>
                     <li>Each tenant will automatically receive a unique Tenant Code.</li>
                     <li>Registered tenants will automatically appear in your tenant list.</li>
-                    <li>The monthly rent will be automatically set to <strong>MK {{ number_format($property->monthly_rent ?? 0) }}</strong> for each tenant.</li>
+                    <li>The monthly rent will be automatically set to <strong>MK {{ number_format((float)($property->monthly_rent ?? 0)) }}</strong> for each tenant.</li>
                 </ul>
             </div>
 
@@ -110,25 +107,19 @@
             <div class="mt-8 flex flex-wrap gap-3">
                 <button
                     onclick="copyLink()"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition">
-
+                    class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-3 rounded-xl transition">
                     Copy Registration Link
-
                 </button>
 
                 <button
                     onclick="window.print()"
                     class="bg-slate-700 hover:bg-slate-800 text-white px-6 py-3 rounded-xl transition">
-
                     Print
-
                 </button>
 
                 <a href="{{ route('landlord.tenants.index') }}"
-                   class="border border-slate-300 hover:bg-slate-100 px-6 py-3 rounded-xl transition">
-
+                   class="border border-slate-300 hover:border-[#ca0251] hover:text-[#ca0251] px-6 py-3 rounded-xl transition">
                     Back to Tenants
-
                 </a>
             </div>
 
@@ -139,17 +130,63 @@
 </div>
 
 <script>
-function copyLink()
-{
+function copyLink() {
     let copyText = document.getElementById("registrationLink");
-
+    
+    if (!copyText) return;
+    
+    // Select the text
     copyText.select();
     copyText.setSelectionRange(0, 99999);
+    
+    // Try using the Clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyText.value)
+            .then(() => {
+                // Show success feedback
+                showCopySuccess();
+            })
+            .catch(() => {
+                // Fallback to execCommand
+                fallbackCopy(copyText.value);
+            });
+    } else {
+        // Fallback for older browsers
+        fallbackCopy(copyText.value);
+    }
+}
 
-    navigator.clipboard.writeText(copyText.value);
+function fallbackCopy(text) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showCopySuccess();
+    } catch (err) {
+        alert('Failed to copy link. Please select and copy manually.');
+    }
+}
 
-    // Show success feedback
-    alert("Registration link copied successfully.");
+function showCopySuccess() {
+    // Create a temporary success message
+    const copyBtn = document.querySelector('button[onclick="copyLink()"]');
+    if (copyBtn) {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✓ Copied!';
+        copyBtn.classList.add('bg-green-600');
+        copyBtn.classList.remove('bg-[#ca0251]', 'hover:bg-[#a80244]');
+        
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.classList.remove('bg-green-600');
+            copyBtn.classList.add('bg-[#ca0251]', 'hover:bg-[#a80244]');
+        }, 2000);
+    }
 }
 </script>
 

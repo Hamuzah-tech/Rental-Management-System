@@ -16,7 +16,7 @@
         <div class="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-2">
             <div class="flex items-center gap-2 md:gap-4">
                 <a href="{{ route('tenant.payments.index') }}"
-                   class="inline-flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-slate-800 transition text-sm">
+                   class="inline-flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-[#ca0251] transition text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
@@ -29,20 +29,20 @@
 
         <!-- Success Message -->
         @if(session('success'))
-            <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+            <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-[#ca0251]/10 border border-[#ca0251] rounded-lg flex items-center justify-between">
                 <div class="flex flex-wrap items-center gap-2 md:gap-3">
-                    <svg class="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 text-[#ca0251] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    <p class="text-green-700 text-xs sm:text-sm font-medium">{{ session('success') }}</p>
+                    <p class="text-[#ca0251] text-xs sm:text-sm font-medium">{{ session('success') }}</p>
                     @php
                         $monthCount = session('payment_month_count', 1);
                     @endphp
                     @if($monthCount > 1)
-                        <span class="text-green-600 text-xs whitespace-nowrap">• {{ $monthCount }} months paid</span>
+                        <span class="text-[#ca0251] text-xs whitespace-nowrap">• {{ $monthCount }} months paid</span>
                     @endif
                 </div>
-                <button onclick="this.parentElement.style.display='none'" class="text-green-500 hover:text-green-700 flex-shrink-0 ml-2">
+                <button onclick="this.parentElement.style.display='none'" class="text-[#ca0251] hover:text-[#a80244] flex-shrink-0 ml-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -55,7 +55,7 @@
             <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-red-50 border border-red-200 rounded-lg">
                 <ul class="text-red-600 text-xs space-y-1 list-disc list-inside">
                     @foreach($errors->all() as $error)
-                        <li class="break-words">{{ $error }}</li>
+                        <li class="break-words">{{ e($error) }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -63,7 +63,7 @@
 
         @if(session('error'))
             <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs break-words">
-                {{ session('error') }}
+                {{ e(session('error')) }}
             </div>
         @endif
 
@@ -89,9 +89,10 @@
                                    name="tenant_code" 
                                    value="{{ old('tenant_code') }}"
                                    required
-                                   class="w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition {{ $errors->has('tenant_code') ? 'border-red-500' : 'border-slate-200' }}" />
+                                   maxlength="50"
+                                   class="w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-[#ca0251] focus:ring-2 focus:ring-[#ca0251]/20 transition {{ $errors->has('tenant_code') ? 'border-red-500' : 'border-slate-200' }}" />
                             @error('tenant_code')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ e($message) }}</p>
                             @enderror
                         </div>
 
@@ -104,13 +105,14 @@
                                    name="tenant_name" 
                                    value="{{ old('tenant_name') }}"
                                    required
-                                   class="w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition {{ $errors->has('tenant_name') ? 'border-red-500' : 'border-slate-200' }}" />
+                                   maxlength="255"
+                                   class="w-full rounded-lg border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-[#ca0251] focus:ring-2 focus:ring-[#ca0251]/20 transition {{ $errors->has('tenant_name') ? 'border-red-500' : 'border-slate-200' }}" />
                             @error('tenant_name')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ e($message) }}</p>
                             @enderror
                         </div>
 
-                        <!-- Payment Month - Custom SVG arrow removed, appearance-none removed -->
+                        <!-- Payment Month -->
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 md:mb-1.5">
                                 Payment Month <span class="text-red-500">*</span>
@@ -124,7 +126,7 @@
                                 <select name="payment_month" 
                                         id="paymentMonth"
                                         required
-                                        class="w-full rounded-lg border bg-white pl-8 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition {{ $errors->has('payment_month') ? 'border-red-500' : 'border-slate-200' }}">
+                                        class="w-full rounded-lg border bg-white pl-8 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-[#ca0251] focus:ring-2 focus:ring-[#ca0251]/20 transition {{ $errors->has('payment_month') ? 'border-red-500' : 'border-slate-200' }}">
                                     <option value="">Select month</option>
                                     @php
                                         $startDate = \Carbon\Carbon::now()->subMonths(6);
@@ -132,16 +134,15 @@
                                         for ($date = clone $startDate; $date <= $endDate; $date->addMonth()) {
                                             $value = $date->format('Y-m');
                                             $label = $date->format('F Y');
-                                        @endphp
+                                    @endphp
                                         <option value="{{ $value }}" {{ old('payment_month') == $value ? 'selected' : '' }}>
                                             {{ $label }}
                                         </option>
                                     @php } @endphp
                                 </select>
-                                <!-- Custom SVG arrow removed -->
                             </div>
                             @error('payment_month')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ e($message) }}</p>
                             @enderror
                         </div>
 
@@ -153,7 +154,7 @@
                             <div class="flex items-center gap-2 sm:gap-3">
                                 <button type="button" 
                                         onclick="adjustMonths(-1)"
-                                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition text-base flex-shrink-0">
+                                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-slate-200 hover:border-[#ca0251] hover:text-[#ca0251] flex items-center justify-center text-slate-600 transition text-base flex-shrink-0">
                                     −
                                 </button>
                                 <input type="number" 
@@ -162,11 +163,11 @@
                                        value="{{ old('month_count', 1) }}"
                                        min="1"
                                        max="12"
-                                       class="w-12 sm:w-16 text-center rounded-lg border border-slate-200 bg-white px-1 sm:px-2 py-1.5 sm:py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                                       class="w-12 sm:w-16 text-center rounded-lg border border-slate-200 bg-white px-1 sm:px-2 py-1.5 sm:py-2 text-sm text-slate-800 focus:border-[#ca0251] focus:ring-2 focus:ring-[#ca0251]/20 transition"
                                        readonly>
                                 <button type="button" 
                                         onclick="adjustMonths(1)"
-                                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition text-base flex-shrink-0">
+                                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-slate-200 hover:border-[#ca0251] hover:text-[#ca0251] flex items-center justify-center text-slate-600 transition text-base flex-shrink-0">
                                     +
                                 </button>
                                 <span class="text-xs sm:text-sm text-slate-500 whitespace-nowrap">month(s)</span>
@@ -188,13 +189,14 @@
                                        id="amountInput"
                                        name="amount_display"
                                        value="{{ old('amount') ? number_format(old('amount'), 0, '.', ',') : '' }}"
-                                       class="w-full rounded-lg border bg-white pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition {{ $errors->has('amount') ? 'border-red-500' : 'border-slate-200' }}"
+                                       class="w-full rounded-lg border bg-white pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm text-slate-800 focus:border-[#ca0251] focus:ring-2 focus:ring-[#ca0251]/20 transition {{ $errors->has('amount') ? 'border-red-500' : 'border-slate-200' }}"
                                        autocomplete="off"
-                                       inputmode="numeric" />
+                                       inputmode="numeric"
+                                       maxlength="15" />
                                 <input type="hidden" name="amount" id="amountHidden" value="{{ old('amount') }}" />
                             </div>
                             @error('amount')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ e($message) }}</p>
                             @enderror
                         </div>
 
@@ -208,18 +210,18 @@
                                        name="screenshot" 
                                        required
                                        accept="image/*,.pdf"
-                                       class="w-full rounded-lg border bg-white px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm text-slate-800 file:mr-2 sm:file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 sm:file:px-4 file:py-1 sm:file:py-2 file:text-xs sm:file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 transition {{ $errors->has('screenshot') ? 'border-red-500' : 'border-slate-200' }}" />
+                                       class="w-full rounded-lg border bg-white px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm text-slate-800 file:mr-2 sm:file:mr-3 file:rounded-lg file:border-0 file:bg-[#ca0251]/10 file:px-3 sm:file:px-4 file:py-1 sm:file:py-2 file:text-xs sm:file:text-sm file:font-medium file:text-[#ca0251] hover:file:bg-[#ca0251]/20 transition {{ $errors->has('screenshot') ? 'border-red-500' : 'border-slate-200' }}" />
                             </div>
                             <p class="text-[10px] sm:text-xs text-slate-400 mt-1">JPG, PNG (Max 5MB)</p>
                             @error('screenshot')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ e($message) }}</p>
                             @enderror
                         </div>
 
                         <!-- Submit Button -->
                         <div class="pt-1 sm:pt-3">
                             <button type="submit"
-                                    class="w-full rounded-lg bg-[#0F172A] px-6 py-2.5 sm:py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#0F172A] focus:ring-offset-2 active:scale-[0.98]">
+                                    class="w-full rounded-lg bg-[#ca0251] px-6 py-2.5 sm:py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a80244] focus:outline-none focus:ring-2 focus:ring-[#ca0251] focus:ring-offset-2 active:scale-[0.98]">
                                 Submit Payment
                             </button>
                         </div>
@@ -328,7 +330,7 @@
             }
 
             // Auto-hide success message after 5 seconds
-            var successMessage = document.querySelector('.bg-green-50');
+            var successMessage = document.querySelector('.bg-\\[\\#ca0251\\]\\/10');
             if (successMessage) {
                 setTimeout(function() {
                     successMessage.style.transition = 'opacity 0.5s ease';

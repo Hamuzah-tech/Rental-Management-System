@@ -23,7 +23,7 @@ class TenantController extends Controller
     public function index(Request $request)
     {
         $query = Tenant::whereHas('property', function ($q) {
-            $q->where('landlord_id', Auth::id());
+            $q->where('landlord_id', Auth::guard('landlord')->id());
         });
 
         // Filter by property
@@ -89,7 +89,7 @@ class TenantController extends Controller
         }
 
         $tenants = $query->latest()->paginate(10);
-        $properties = Property::where('landlord_id', Auth::id())->get();
+        $properties = Property::where('landlord_id', Auth::guard('landlord')->id())->get();
 
         return view('landlord.tenants.index', compact('tenants', 'properties'));
     }
@@ -99,8 +99,8 @@ class TenantController extends Controller
      */
     public function showProperty(Request $request, Property $property)
     {
-        if ($property->landlord_id !== Auth::id()) {
-            abort(403);
+        if ($property->landlord_id !== Auth::guard('landlord')->id()) {
+            abort(403, 'You are not authorized to access this property.');
         }
 
         $query = Tenant::where('property_id', $property->id);
@@ -177,8 +177,8 @@ class TenantController extends Controller
      */
     public function exportPropertyPdf(Request $request, Property $property)
     {
-        if ($property->landlord_id !== Auth::id()) {
-            abort(403);
+        if ($property->landlord_id !== Auth::guard('landlord')->id()) {
+            abort(403, 'You are not authorized to export this property.');
         }
 
         $paymentStatus = $request->payment_status ?? 'all';
@@ -244,7 +244,7 @@ class TenantController extends Controller
             'paymentStatus' => $paymentStatus,
             'month' => $month,
             'search' => $search,
-            'landlord' => Auth::user(),
+            'landlord' => Auth::guard('landlord')->user(),
             'generatedAt' => now()
         ]);
 
@@ -259,7 +259,7 @@ class TenantController extends Controller
     public function trashed()
     {
         $tenants = Tenant::whereHas('property', function ($q) {
-            $q->where('landlord_id', Auth::id());
+            $q->where('landlord_id', Auth::guard('landlord')->id());
         })
         ->onlyTrashed()
         ->with('property')
@@ -274,7 +274,7 @@ class TenantController extends Controller
      */
     public function create()
     {
-        $properties = Property::where('landlord_id', Auth::id())
+        $properties = Property::where('landlord_id', Auth::guard('landlord')->id())
             ->where('status', true)
             ->get();
 
@@ -335,18 +335,18 @@ class TenantController extends Controller
 
             // Check if property belongs to this landlord
             $property = Property::where('id', $validated['property_id'])
-                ->where('landlord_id', Auth::id())
+                ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
             // Check if property is full
             if ($property->isFull()) {
-    return back()
-        ->withInput()
-        ->with('error', "The selected hostel ({$property->name}) is already full. No more tenants can be added.")
-        ->withErrors([
-            'property_id' => 'This hostel has reached its maximum capacity.'
-        ]);
-}
+                return back()
+                    ->withInput()
+                    ->with('error', "The selected hostel ({$property->name}) is already full. No more tenants can be added.")
+                    ->withErrors([
+                        'property_id' => 'This hostel has reached its maximum capacity.'
+                    ]);
+            }
             // Generate tenant code
             $tenantData = [
                 'tenant_code' => 'TEN-' . strtoupper(Str::random(8)),
@@ -367,7 +367,7 @@ class TenantController extends Controller
                 'tenant_id' => $tenant->id,
                 'property_id' => $property->id,
                 'phone' => $tenant->phone,
-                'landlord_id' => Auth::id()
+                'landlord_id' => Auth::guard('landlord')->id()
             ]);
 
             return redirect()
@@ -377,9 +377,10 @@ class TenantController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('Error creating tenant: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['_token'])
+            Log::error('Error creating tenant', [
+                'message' => $e->getMessage(),
+                'property_id' => $validated['property_id'] ?? null,
+                'landlord_id' => Auth::guard('landlord')->id()
             ]);
             
             return back()
@@ -423,7 +424,7 @@ class TenantController extends Controller
     {
         $this->authorizeTenant($tenant);
 
-        $properties = Property::where('landlord_id', Auth::id())
+        $properties = Property::where('landlord_id', Auth::guard('landlord')->id())
             ->where('status', true)
             ->get();
 
@@ -453,7 +454,7 @@ class TenantController extends Controller
 
             // Check if property belongs to this landlord
             $property = Property::where('id', $validated['property_id'])
-                ->where('landlord_id', Auth::id())
+                ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
             // Validate phone number format (Malawi)
@@ -498,7 +499,8 @@ class TenantController extends Controller
             Log::info('Tenant updated successfully', [
                 'tenant_id' => $tenant->id,
                 'property_id' => $property->id,
-                'phone' => $tenant->phone
+                'phone' => $tenant->phone,
+                'landlord_id' => Auth::guard('landlord')->id()
             ]);
 
             return redirect()
@@ -513,10 +515,11 @@ class TenantController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('Error updating tenant: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
+            Log::error('Error updating tenant', [
+                'message' => $e->getMessage(),
                 'tenant_id' => $tenant->id,
-                'request_data' => $request->except(['_token'])
+                'property_id' => $validated['property_id'] ?? null,
+                'landlord_id' => Auth::guard('landlord')->id()
             ]);
             
             return back()
@@ -535,7 +538,10 @@ class TenantController extends Controller
         $propertyId = $tenant->property_id;
         $tenant->delete();
 
-        Log::info('Tenant soft deleted', ['id' => $tenant->id]);
+        Log::info('Tenant soft deleted', [
+            'id' => $tenant->id,
+            'landlord_id' => Auth::guard('landlord')->id()
+        ]);
 
         return redirect()
             ->route('landlord.properties.show', $propertyId)
@@ -553,7 +559,10 @@ class TenantController extends Controller
         $propertyId = $tenant->property_id;
         $tenant->restore();
 
-        Log::info('Tenant restored', ['id' => $tenant->id]);
+        Log::info('Tenant restored', [
+            'id' => $tenant->id,
+            'landlord_id' => Auth::guard('landlord')->id()
+        ]);
 
         return redirect()
             ->route('landlord.properties.show', $propertyId)
@@ -571,7 +580,7 @@ class TenantController extends Controller
             ]);
 
             $property = Property::where('id', $request->property_id)
-                ->where('landlord_id', Auth::id())
+                ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
             if ($property->isFull()) {
@@ -593,7 +602,7 @@ class TenantController extends Controller
 
             Log::info('Registration link generated', [
                 'property_id' => $property->id,
-                'landlord_id' => Auth::id()
+                'landlord_id' => Auth::guard('landlord')->id()
             ]);
 
             return response()->json([
@@ -604,8 +613,10 @@ class TenantController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error generating registration link: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('Error generating registration link', [
+                'message' => $e->getMessage(),
+                'property_id' => $request->property_id ?? null,
+                'landlord_id' => Auth::guard('landlord')->id()
             ]);
             
             return response()->json([
@@ -631,7 +642,10 @@ class TenantController extends Controller
 
         $tenant->delete();
 
-        Log::info('Tenant moved out', ['id' => $tenant->id]);
+        Log::info('Tenant moved out', [
+            'id' => $tenant->id,
+            'landlord_id' => Auth::guard('landlord')->id()
+        ]);
 
         return redirect()
             ->route('landlord.properties.show', $propertyId)
@@ -650,7 +664,10 @@ class TenantController extends Controller
             'move_out_date' => null,
         ]);
 
-        Log::info('Tenant reactivated', ['id' => $tenant->id]);
+        Log::info('Tenant reactivated', [
+            'id' => $tenant->id,
+            'landlord_id' => Auth::guard('landlord')->id()
+        ]);
 
         return redirect()
             ->route('landlord.properties.show', $tenant->property_id)
@@ -667,7 +684,7 @@ class TenantController extends Controller
         $search = $request->search ?? null;
 
         $query = Tenant::whereHas('property', function ($q) {
-            $q->where('landlord_id', Auth::id());
+            $q->where('landlord_id', Auth::guard('landlord')->id());
         });
 
         // Search filter
@@ -726,7 +743,7 @@ class TenantController extends Controller
             'paymentStatus' => $paymentStatus,
             'month' => $month,
             'search' => $search,
-            'landlord' => Auth::user(),
+            'landlord' => Auth::guard('landlord')->user(),
             'generatedAt' => now()
         ]);
 
@@ -736,20 +753,12 @@ class TenantController extends Controller
     }
 
     /**
-     * Export tenants to Excel.
-     */
-    public function exportExcel()
-    {
-        // Implementation for Excel export
-    }
-
-    /**
      * Authorize that the tenant belongs to the current landlord.
      */
     private function authorizeTenant(Tenant $tenant)
     {
         $property = Property::where('id', $tenant->property_id)
-            ->where('landlord_id', Auth::id())
+            ->where('landlord_id', Auth::guard('landlord')->id())
             ->first();
 
         abort_if(!$property, 403, 'Unauthorized access to this tenant.');

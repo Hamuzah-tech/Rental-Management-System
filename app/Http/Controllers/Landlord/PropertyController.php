@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Property;
 use App\Models\Tenant;
 use App\Models\Payment;
@@ -20,7 +21,7 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        $properties = Property::where('landlord_id', Auth::id())
+        $properties = Property::where('landlord_id', Auth::guard('landlord')->id())
             ->latest()
             ->paginate(10);
 
@@ -32,7 +33,7 @@ class PropertyController extends Controller
      */
     public function trashed()
     {
-        $properties = Property::where('landlord_id', Auth::id())
+        $properties = Property::where('landlord_id', Auth::guard('landlord')->id())
             ->onlyTrashed()
             ->latest('deleted_at')
             ->paginate(10);
@@ -53,8 +54,6 @@ class PropertyController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('Property store called', $request->all());
-        
         try {
             // Validate - address and description are now optional
             $data = $request->validate([
@@ -68,13 +67,17 @@ class PropertyController extends Controller
             // Set default values for nullable fields if not provided
             $data['address'] = $data['address'] ?? '';
             $data['description'] = $data['description'] ?? '';
-            $data['landlord_id'] = Auth::id();
+            $data['landlord_id'] = Auth::guard('landlord')->id();
             $data['status'] = true;
             $data['registration_token'] = \Illuminate\Support\Str::random(40);
 
             $property = Property::create($data);
 
-            Log::info('Property created successfully', ['id' => $property->id]);
+            Log::info('Property created successfully', [
+                'id' => $property->id,
+                'name' => $property->name,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
 
             return redirect()
                 ->route('landlord.properties.index')
@@ -87,10 +90,13 @@ class PropertyController extends Controller
                 ->withInput();
                 
         } catch (\Exception $e) {
-            Log::error('Error creating property: ' . $e->getMessage());
+            Log::error('Error creating property', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to create property: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to create property. Please try again.']);
         }
     }
 
@@ -110,7 +116,6 @@ class PropertyController extends Controller
 
         $search = $request->search;
         
-
         if ($request->filled('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -120,69 +125,8 @@ class PropertyController extends Controller
             });
         }
         
-        // Apply filters based on payment status and month
-        if ($paymentStatus !== 'all' && $month) {
-            // PAID: Tenants who have a payment record for the selected month
-            if ($paymentStatus === 'paid') {
-                $query->whereHas('payments', function ($q) use ($month) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($month) {
-                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
-                                   ->orWhere('payment_month', '=', $month);
-                      });
-                });
-            } 
-            // UNPAID: Tenants who DO NOT have a payment record for the selected month
-            elseif ($paymentStatus === 'unpaid') {
-                $query->whereDoesntHave('payments', function ($q) use ($month) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($month) {
-                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
-                                   ->orWhere('payment_month', '=', $month);
-                      });
-                });
-            }
-        } elseif ($paymentStatus !== 'all' && !$month) {
-            // If no month selected, use current month
-            $currentMonth = date('Y-m');
-            
-            if ($paymentStatus === 'paid') {
-                $query->whereHas('payments', function ($q) use ($currentMonth) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($currentMonth) {
-                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
-                                   ->orWhere('payment_month', '=', $currentMonth);
-                      });
-                });
-            } elseif ($paymentStatus === 'unpaid') {
-                $query->whereDoesntHave('payments', function ($q) use ($currentMonth) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($currentMonth) {
-                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
-                                   ->orWhere('payment_month', '=', $currentMonth);
-                      });
-                });
-            }
-        } elseif ($paymentStatus === 'all' && $month) {
-            // Month only filter - show tenants who have paid for this month
-            $query->whereHas('payments', function ($q) use ($month) {
-                $q->where('status', 'Approved')
-                  ->where(function ($subQuery) use ($month) {
-                      $subQuery->where('payment_month', 'LIKE', $month . ',%')
-                               ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
-                               ->orWhere('payment_month', 'LIKE', '%,' . $month)
-                               ->orWhere('payment_month', '=', $month);
-                  });
-            });
-        }
+        // Apply payment filters using the extracted method
+        $this->applyPaymentFilters($query, $paymentStatus, $month);
         
         // Get tenants with their payments - with pagination
         $tenants = $query->with(['payments' => function ($q) {
@@ -216,69 +160,8 @@ class PropertyController extends Controller
         // Start with base query for tenants
         $query = Tenant::where('property_id', $property->id);
         
-        // Apply filters based on payment status and month
-        if ($paymentStatus !== 'all' && $month) {
-            // PAID: Tenants who have a payment record for the selected month
-            if ($paymentStatus === 'paid') {
-                $query->whereHas('payments', function ($q) use ($month) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($month) {
-                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
-                                   ->orWhere('payment_month', '=', $month);
-                      });
-                });
-            } 
-            // UNPAID: Tenants who DO NOT have a payment record for the selected month
-            elseif ($paymentStatus === 'unpaid') {
-                $query->whereDoesntHave('payments', function ($q) use ($month) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($month) {
-                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
-                                   ->orWhere('payment_month', '=', $month);
-                      });
-                });
-            }
-        } elseif ($paymentStatus !== 'all' && !$month) {
-            // If no month selected, use current month
-            $currentMonth = date('Y-m');
-            
-            if ($paymentStatus === 'paid') {
-                $query->whereHas('payments', function ($q) use ($currentMonth) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($currentMonth) {
-                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
-                                   ->orWhere('payment_month', '=', $currentMonth);
-                      });
-                });
-            } elseif ($paymentStatus === 'unpaid') {
-                $query->whereDoesntHave('payments', function ($q) use ($currentMonth) {
-                    $q->where('status', 'Approved')
-                      ->where(function ($subQuery) use ($currentMonth) {
-                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
-                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
-                                   ->orWhere('payment_month', '=', $currentMonth);
-                      });
-                });
-            }
-        } elseif ($paymentStatus === 'all' && $month) {
-            // Month only filter - show tenants who have paid for this month
-            $query->whereHas('payments', function ($q) use ($month) {
-                $q->where('status', 'Approved')
-                  ->where(function ($subQuery) use ($month) {
-                      $subQuery->where('payment_month', 'LIKE', $month . ',%')
-                               ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
-                               ->orWhere('payment_month', 'LIKE', '%,' . $month)
-                               ->orWhere('payment_month', '=', $month);
-                  });
-            });
-        }
+        // Apply payment filters using the extracted method
+        $this->applyPaymentFilters($query, $paymentStatus, $month);
         
         // Get tenants with their payments
         $tenants = $query->with(['payments' => function ($q) {
@@ -291,7 +174,7 @@ class PropertyController extends Controller
             'property' => $property,
             'paymentStatus' => $paymentStatus,
             'month' => $month,
-            'landlord' => Auth::user(),
+            'landlord' => Auth::guard('landlord')->user(),
             'generatedAt' => now()
         ]);
         
@@ -332,17 +215,31 @@ class PropertyController extends Controller
 
             $property->update($data);
 
-            Log::info('Property updated successfully', ['id' => $property->id]);
+            Log::info('Property updated successfully', [
+                'id' => $property->id,
+                'name' => $property->name,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
 
             return redirect()
                 ->route('landlord.properties.index')
                 ->with('success', 'Property updated successfully.');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed during property update', ['errors' => $e->errors()]);
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+                
         } catch (\Exception $e) {
-            Log::error('Error updating property: ' . $e->getMessage());
+            Log::error('Error updating property', [
+                'message' => $e->getMessage(),
+                'property_id' => $property->id,
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to update property: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to update property. Please try again.']);
         }
     }
 
@@ -352,13 +249,27 @@ class PropertyController extends Controller
     public function destroy(Property $property)
     {
         $this->authorizeProperty($property);
-        $property->delete();
+        
+        try {
+            $property->delete();
 
-        Log::info('Property soft deleted', ['id' => $property->id]);
+            Log::info('Property soft deleted', [
+                'id' => $property->id,
+                'name' => $property->name,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
 
-        return redirect()
-            ->route('landlord.properties.index')
-            ->with('success', 'Property moved to archive.');
+            return redirect()
+                ->route('landlord.properties.index')
+                ->with('success', 'Property moved to archive.');
+                
+        } catch (\Exception $e) {
+            Log::error('Error deleting property', [
+                'message' => $e->getMessage(),
+                'property_id' => $property->id
+            ]);
+            return back()->withErrors(['error' => 'Failed to delete property. Please try again.']);
+        }
     }
 
     /**
@@ -366,16 +277,29 @@ class PropertyController extends Controller
      */
     public function restore($id)
     {
-        $property = Property::withTrashed()->findOrFail($id);
-        $this->authorizeProperty($property);
-        
-        $property->restore();
+        try {
+            $property = Property::withTrashed()->findOrFail($id);
+            $this->authorizeProperty($property);
+            
+            $property->restore();
 
-        Log::info('Property restored', ['id' => $property->id]);
+            Log::info('Property restored', [
+                'id' => $property->id,
+                'name' => $property->name,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
 
-        return redirect()
-            ->route('landlord.properties.trashed')
-            ->with('success', 'Property restored successfully.');
+            return redirect()
+                ->route('landlord.properties.trashed')
+                ->with('success', 'Property restored successfully.');
+                
+        } catch (\Exception $e) {
+            Log::error('Error restoring property', [
+                'message' => $e->getMessage(),
+                'property_id' => $id
+            ]);
+            return back()->withErrors(['error' => 'Failed to restore property. Please try again.']);
+        }
     }
 
     /**
@@ -385,11 +309,26 @@ class PropertyController extends Controller
     {
         $this->authorizeProperty($property);
 
-        $property->update([
-            'status' => !$property->status
-        ]);
+        try {
+            $property->update([
+                'status' => !$property->status
+            ]);
 
-        return back()->with('success', 'Property status updated.');
+            Log::info('Property status toggled', [
+                'id' => $property->id,
+                'new_status' => $property->status,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
+
+            return back()->with('success', 'Property status updated.');
+            
+        } catch (\Exception $e) {
+            Log::error('Error toggling property status', [
+                'message' => $e->getMessage(),
+                'property_id' => $property->id
+            ]);
+            return back()->withErrors(['error' => 'Failed to update property status. Please try again.']);
+        }
     }
 
     /**
@@ -398,8 +337,84 @@ class PropertyController extends Controller
     private function authorizeProperty(Property $property)
     {
         abort_if(
-            $property->landlord_id !== Auth::id(),
-            403
+            $property->landlord_id !== Auth::guard('landlord')->id(),
+            403,
+            'You are not authorized to access this property.'
         );
+    }
+
+    /**
+     * Apply payment filters to the tenant query.
+     * This method extracts the duplicated payment filtering logic for maintainability.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $paymentStatus
+     * @param string|null $month
+     * @return void
+     */
+    private function applyPaymentFilters($query, string $paymentStatus, ?string $month): void
+    {
+        if ($paymentStatus !== 'all' && $month) {
+            // PAID: Tenants who have a payment record for the selected month
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) use ($month) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($month) {
+                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                                   ->orWhere('payment_month', '=', $month);
+                      });
+                });
+            } 
+            // UNPAID: Tenants who DO NOT have a payment record for the selected month
+            elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) use ($month) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($month) {
+                          $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                                   ->orWhere('payment_month', '=', $month);
+                      });
+                });
+            }
+        } elseif ($paymentStatus !== 'all' && !$month) {
+            // If no month selected, use current month
+            $currentMonth = date('Y-m');
+            
+            if ($paymentStatus === 'paid') {
+                $query->whereHas('payments', function ($q) use ($currentMonth) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($currentMonth) {
+                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
+                                   ->orWhere('payment_month', '=', $currentMonth);
+                      });
+                });
+            } elseif ($paymentStatus === 'unpaid') {
+                $query->whereDoesntHave('payments', function ($q) use ($currentMonth) {
+                    $q->where('status', 'Approved')
+                      ->where(function ($subQuery) use ($currentMonth) {
+                          $subQuery->where('payment_month', 'LIKE', $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth . ',%')
+                                   ->orWhere('payment_month', 'LIKE', '%,' . $currentMonth)
+                                   ->orWhere('payment_month', '=', $currentMonth);
+                      });
+                });
+            }
+        } elseif ($paymentStatus === 'all' && $month) {
+            // Month only filter - show tenants who have paid for this month
+            $query->whereHas('payments', function ($q) use ($month) {
+                $q->where('status', 'Approved')
+                  ->where(function ($subQuery) use ($month) {
+                      $subQuery->where('payment_month', 'LIKE', $month . ',%')
+                               ->orWhere('payment_month', 'LIKE', '%,' . $month . ',%')
+                               ->orWhere('payment_month', 'LIKE', '%,' . $month)
+                               ->orWhere('payment_month', '=', $month);
+                  });
+            });
+        }
     }
 }

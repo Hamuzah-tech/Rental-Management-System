@@ -3,32 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Tenant Dashboard</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-
 <body class="bg-white">
 
-
 <div class="min-h-screen flex items-center justify-center px-6">
-
 
     <div class="w-full max-w-3xl">
 
         <!-- Back Button -->
         <div class="mb-6">
             <a href="{{ route('home') }}"
-               class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 transition">
-                <x-heroicon-o-arrow-left
-                    class="w-5 h-5"/>
+               class="inline-flex items-center gap-2 text-slate-500 hover:text-[#ca0251] transition">
+                <x-heroicon-o-arrow-left class="w-5 h-5"/>
                 <span>Back</span>
             </a>
         </div>
 
         <h1 class="text-3xl font-bold text-slate-800">
-            Tenant
+            Tenant Dashboard
         </h1>
 
         <p class="mt-2 text-slate-500">
@@ -38,102 +35,48 @@
         <div class="mt-10 space-y-4">
             
             <!-- Record Payment -->
-
             <a href="{{ route('tenant.payments.create') }}"
-               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition-all duration-300 hover:border-[#ca0251] hover:shadow-lg hover:-translate-y-1">
 
-
-                <x-heroicon-o-credit-card
-                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
-
+                <x-heroicon-o-credit-card class="w-12 h-12 text-[#ca0251] flex-shrink-0"/>
 
                 <div class="flex-1">
-
-
                     <h2 class="font-semibold text-slate-800">
                         Record Payment
                     </h2>
-
-
                     <p class="text-sm text-slate-500">
                         Submit your rent payment record with proof (screenshot).
                     </p>
-
-
                 </div>
 
-
-
-                <span class="text-slate-400 text-xl">
-                    →
-                </span>
-
+                <x-heroicon-o-arrow-right class="w-5 h-5 text-[#ca0251]"/>
 
             </a>
 
-
-
-
-
-
-
             <!-- Payment History -->
-
-
             <a href="{{ route('tenant.payments.history') }}"
-               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition hover:border-slate-400">
+               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition-all duration-300 hover:border-[#ca0251] hover:shadow-lg hover:-translate-y-1">
 
-
-
-                <x-heroicon-o-document-text
-                    class="w-12 h-12 text-slate-300 flex-shrink-0"/>
-
-
+                <x-heroicon-o-document-text class="w-12 h-12 text-[#ca0251] flex-shrink-0"/>
 
                 <div class="flex-1">
-
-
                     <h2 class="font-semibold text-slate-800">
                         Payment History
                     </h2>
-
-
                     <p class="text-sm text-slate-500">
                         Check approved, pending and rejected payments.
                     </p>
-
-
                 </div>
 
-
-
-                <span class="text-slate-400 text-xl">
-                    →
-                </span>
-
-
+                <x-heroicon-o-arrow-right class="w-5 h-5 text-[#ca0251]"/>
 
             </a>
 
-
-
-
-
-
-
-
-
-           
-
-
+        </div>
 
     </div>
 
-
-
 </div>
-
-
 
 </body>
 </html>

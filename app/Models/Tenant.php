@@ -28,8 +28,6 @@ class Tenant extends Model
         'move_in_date' => 'date',
     ];
 
-    protected $dates = ['deleted_at'];
-
     /**
      * Normalize Malawi phone numbers to local format
      * Converts +265XXXXXXXX to 0XXXXXXXXX
@@ -65,34 +63,27 @@ class Tenant extends Model
      * Validate if a phone number is a valid Malawi number
      */
     public static function isValidMalawiPhone(?string $phone): bool
-{
-    if (empty($phone)) {
-        return false;
+    {
+        if (empty($phone)) {
+            return false;
+        }
+
+        $normalized = self::normalizePhoneNumber($phone);
+
+        if (!$normalized) {
+            return false;
+        }
+
+        // Accept any valid Malawi mobile number starting with 08 or 09
+        return preg_match('/^0[89][0-9]{8}$/', $normalized) === 1;
     }
 
-    $normalized = self::normalizePhoneNumber($phone);
-
-    if (!$normalized) {
-        return false;
-    }
-
-    // Accept any valid Malawi mobile number starting with 08 or 09
-    return preg_match('/^0[89][0-9]{8}$/', $normalized) === 1;
-}
     /**
      * Setter for phone - automatically normalize before saving
      */
     public function setPhoneAttribute($value)
     {
         $this->attributes['phone'] = self::normalizePhoneNumber($value);
-    }
-
-    /**
-     * Getter for phone - return normalized format
-     */
-    public function getPhoneAttribute($value)
-    {
-        return $value;
     }
 
     /**
@@ -121,19 +112,24 @@ class Tenant extends Model
 
     /**
      * Get the effective rent (tenant's rent or property default).
+     * Uses optional() to prevent extra database queries if property isn't loaded.
      */
     public function getEffectiveRentAttribute(): float
     {
-        return $this->monthly_rent ?? $this->property->monthly_rent ?? 0;
+        return (float) ($this->monthly_rent ?? optional($this->property)->monthly_rent ?? 0);
     }
 
     /**
      * Check if tenant has a custom rent different from property default.
+     * Uses strict comparison for decimal values.
      */
     public function hasCustomRent(): bool
     {
-        if (!$this->property) return false;
-        return $this->monthly_rent != $this->property->monthly_rent;
+        if (!$this->property) {
+            return false;
+        }
+
+        return (float) $this->monthly_rent !== (float) $this->property->monthly_rent;
     }
 
     /**
@@ -208,5 +204,92 @@ class Tenant extends Model
         }
 
         return $query->exists();
+    }
+
+    /**
+     * Get the total payments amount for this tenant.
+     */
+    public function getTotalPaymentsAttribute(): float
+    {
+        return (float) $this->payments()->where('status', 'Approved')->sum('amount');
+    }
+
+    /**
+     * Get the total pending payments amount for this tenant.
+     */
+    public function getPendingPaymentsAttribute(): float
+    {
+        return (float) $this->payments()->where('status', 'Pending')->sum('amount');
+    }
+
+    /**
+     * Get the tenant's current status label.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return ucfirst($this->status ?? 'Inactive');
+    }
+
+    /**
+     * Scope to get active tenants.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope to get inactive tenants.
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('status', 'inactive');
+    }
+
+    /**
+     * Scope to get moved out tenants.
+     */
+    public function scopeMovedOut($query)
+    {
+        return $query->where('status', 'moved_out');
+    }
+
+    /**
+     * Check if the tenant is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Check if the tenant is inactive.
+     */
+    public function isInactive(): bool
+    {
+        return $this->status === 'inactive';
+    }
+
+    /**
+     * Check if the tenant has moved out.
+     */
+    public function isMovedOut(): bool
+    {
+        return $this->status === 'moved_out';
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Ensure tenant_code is always set
+        static::creating(function ($tenant) {
+            if (empty($tenant->tenant_code)) {
+                $tenant->tenant_code = 'TEN-' . strtoupper(\Illuminate\Support\Str::random(8));
+            }
+        });
     }
 }

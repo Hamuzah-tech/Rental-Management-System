@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -22,7 +23,7 @@ class PaymentController extends Controller
     {
         // Start the query
         $query = Payment::whereHas('tenant.property', function ($q) {
-            $q->where('landlord_id', Auth::id());
+            $q->where('landlord_id', Auth::guard('landlord')->id());
         });
 
         // Filter by property (hostel)
@@ -56,7 +57,7 @@ class PaymentController extends Controller
         $payments = $query->latest()->paginate(20);
 
         // Get properties for filter dropdown
-        $properties = Property::where('landlord_id', Auth::id())
+        $properties = Property::where('landlord_id', Auth::guard('landlord')->id())
             ->where('status', true)
             ->get();
 
@@ -78,6 +79,13 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment)
     {
+        // Verify payment belongs to the authenticated landlord
+        abort_unless(
+            $payment->tenant->property->landlord_id === Auth::guard('landlord')->id(),
+            403,
+            'You are not authorized to view this payment.'
+        );
+
         return view('landlord.payments.show', compact('payment'));
     }
 
@@ -86,16 +94,36 @@ class PaymentController extends Controller
      */
     public function approve(Payment $payment)
     {
-        $payment->update([
-            'status' => 'Approved',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
+        // Verify payment belongs to the authenticated landlord
+        abort_unless(
+            $payment->tenant->property->landlord_id === Auth::guard('landlord')->id(),
+            403,
+            'You are not authorized to approve this payment.'
+        );
 
-        Log::info('Payment approved', [
-            'payment_id' => $payment->id,
-            'approved_by' => Auth::id()
-        ]);
+        // Check if payment is already processed
+        if ($payment->status !== 'Pending') {
+            return back()->withErrors([
+                'payment' => 'This payment has already been processed.'
+            ]);
+        }
+
+        // Use database transaction
+        DB::transaction(function () use ($payment) {
+            $payment->update([
+                'status' => 'Approved',
+                'approved_by' => Auth::guard('landlord')->id(),
+                'approved_at' => now(),
+            ]);
+
+            Log::info('Payment approved', [
+                'payment_id' => $payment->id,
+                'payment_reference' => $payment->reference,
+                'approved_by' => Auth::guard('landlord')->id(),
+                'tenant_id' => $payment->tenant_id,
+                'amount' => $payment->amount
+            ]);
+        });
 
         return back()->with('success', 'Payment approved successfully.');
     }
@@ -105,17 +133,43 @@ class PaymentController extends Controller
      */
     public function reject(Request $request, Payment $payment)
     {
-        $payment->update([
-            'status' => 'Rejected',
-            'remarks' => $request->remarks,
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
+        // Verify payment belongs to the authenticated landlord
+        abort_unless(
+            $payment->tenant->property->landlord_id === Auth::guard('landlord')->id(),
+            403,
+            'You are not authorized to reject this payment.'
+        );
+
+        // Validate rejection remarks
+        $request->validate([
+            'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        Log::info('Payment rejected', [
-            'payment_id' => $payment->id,
-            'rejected_by' => Auth::id()
-        ]);
+        // Check if payment is already processed
+        if ($payment->status !== 'Pending') {
+            return back()->withErrors([
+                'payment' => 'This payment has already been processed.'
+            ]);
+        }
+
+        // Use database transaction
+        DB::transaction(function () use ($request, $payment) {
+            $payment->update([
+                'status' => 'Rejected',
+                'remarks' => $request->remarks,
+                'approved_by' => Auth::guard('landlord')->id(),
+                'approved_at' => now(),
+            ]);
+
+            Log::info('Payment rejected', [
+                'payment_id' => $payment->id,
+                'payment_reference' => $payment->reference,
+                'rejected_by' => Auth::guard('landlord')->id(),
+                'tenant_id' => $payment->tenant_id,
+                'amount' => $payment->amount,
+                'remarks' => $request->remarks
+            ]);
+        });
 
         return back()->with('success', 'Payment rejected successfully.');
     }

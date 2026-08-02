@@ -2,7 +2,6 @@
 // routes/web.php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
 
 // Authentication Controllers
 use App\Http\Controllers\Auth\AdminLoginController;
@@ -47,6 +46,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [AdminLoginController::class, 'create'])->name('admin.login');
     Route::post('/admin/login', [AdminLoginController::class, 'store'])->name('admin.login.store');
 });
+
+// Admin Logout Route - Authenticated Only
+Route::post('/admin/logout', [AdminLoginController::class, 'destroy'])
+    ->middleware('auth:admin')
+    ->name('admin.logout');
 
 /*
 |--------------------------------------------------------------------------
@@ -121,22 +125,6 @@ Route::prefix('tenant')->name('tenant.')->group(function () {
     Route::post('/payments/search', [TenantPaymentController::class, 'search'])->name('payments.search');
     Route::post('/payments/public-search', [TenantPaymentController::class, 'publicSearch'])->name('payments.public-search');
     Route::get('/payments/history/{reference}', [TenantPaymentController::class, 'publicHistory'])->name('payments.public-history');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Authenticated Routes
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth')->group(function () {
-    /*
-    |--------------------------------------------------------------------------
-    | Profile Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 /*
@@ -257,18 +245,9 @@ Route::middleware(['auth:landlord', 'role:landlord'])
     });
 
 /*
-
-/*
 |--------------------------------------------------------------------------
 | Additional Routes
 |--------------------------------------------------------------------------
 */
 Route::get('/tenants/property/{property}/registration-link', [TenantController::class, 'registrationLink'])
     ->name('landlord.tenants.registration-link');
-
-/*
-|--------------------------------------------------------------------------
-| Auth Routes (Laravel Breeze/Jetstream)
-|--------------------------------------------------------------------------
-*/
-require __DIR__.'/auth.php';

@@ -8,10 +8,12 @@ use App\Http\Requests\Admin\StorePropertyRequest;
 use App\Http\Requests\Admin\UpdatePropertyRequest;
 use App\Models\Property;
 use App\Models\User;
+use App\Models\Tenant;
 use App\Services\PropertyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PropertyController extends Controller
 {
@@ -25,12 +27,22 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        $properties = Property::with('landlord')
-            ->withCount('tenants')
-            ->latest()
-            ->paginate(10);
+        try {
+            $properties = Property::with('landlord')
+                ->withCount('tenants')
+                ->latest()
+                ->paginate(10);
 
-        return view('admin.properties.index', compact('properties'));
+            return view('admin.properties.index', compact('properties'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load properties list', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load properties. Please try again.']);
+        }
     }
 
     /**
@@ -38,12 +50,22 @@ class PropertyController extends Controller
      */
     public function trashed()
     {
-        $properties = Property::onlyTrashed()
-            ->with('landlord')
-            ->latest('deleted_at')
-            ->paginate(20);
+        try {
+            $properties = Property::onlyTrashed()
+                ->with('landlord')
+                ->latest('deleted_at')
+                ->paginate(20);
 
-        return view('admin.trash.properties', compact('properties'));
+            return view('admin.trash.properties', compact('properties'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load trashed properties', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load archived properties. Please try again.']);
+        }
     }
 
     /**
@@ -51,11 +73,21 @@ class PropertyController extends Controller
      */
     public function create()
     {
-        $landlords = User::role('Landlord')
-            ->latest()
-            ->get();
+        try {
+            $landlords = User::role('Landlord')
+                ->latest()
+                ->get();
 
-        return view('admin.properties.create', compact('landlords'));
+            return view('admin.properties.create', compact('landlords'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load property creation form', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load form. Please try again.']);
+        }
     }
 
     /**
@@ -63,11 +95,31 @@ class PropertyController extends Controller
      */
     public function store(StorePropertyRequest $request): RedirectResponse
     {
-        $this->propertyService->create($request->validated());
+        try {
+            $property = $this->propertyService->create($request->validated());
 
-        return redirect()
-            ->route('admin.properties.index')
-            ->with('success', 'Property created successfully.');
+            Log::info('Property created by admin', [
+                'property_id' => $property->id,
+                'property_name' => $property->name,
+                'landlord_id' => $property->landlord_id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.properties.index')
+                ->with('success', 'Property created successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create property', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id(),
+                'request_data' => $request->validated()
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to create property. Please try again.']);
+        }
     }
 
     /**
@@ -75,9 +127,20 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
-        $property->load(['landlord', 'tenants']);
+        try {
+            $property->load(['landlord', 'tenants']);
 
-        return view('admin.properties.show', compact('property'));
+            return view('admin.properties.show', compact('property'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load property details', [
+                'property_id' => $property->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load property details. Please try again.']);
+        }
     }
 
     /**
@@ -85,9 +148,20 @@ class PropertyController extends Controller
      */
     public function edit(Property $property)
     {
-        $landlords = User::role('Landlord')->get();
+        try {
+            $landlords = User::role('Landlord')->get();
 
-        return view('admin.properties.edit', compact('property', 'landlords'));
+            return view('admin.properties.edit', compact('property', 'landlords'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load property edit form', [
+                'property_id' => $property->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load edit form. Please try again.']);
+        }
     }
 
     /**
@@ -95,11 +169,32 @@ class PropertyController extends Controller
      */
     public function update(UpdatePropertyRequest $request, Property $property): RedirectResponse
     {
-        $this->propertyService->update($property, $request->validated());
+        try {
+            $this->propertyService->update($property, $request->validated());
 
-        return redirect()
-            ->route('admin.properties.index')
-            ->with('success', 'Property updated successfully.');
+            Log::info('Property updated by admin', [
+                'property_id' => $property->id,
+                'property_name' => $property->name,
+                'landlord_id' => $property->landlord_id,
+                'admin_id' => auth()->id(),
+                'changes' => $request->validated()
+            ]);
+
+            return redirect()
+                ->route('admin.properties.index')
+                ->with('success', 'Property updated successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to update property', [
+                'property_id' => $property->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to update property. Please try again.']);
+        }
     }
 
     /**
@@ -107,11 +202,36 @@ class PropertyController extends Controller
      */
     public function destroy(Property $property): RedirectResponse
     {
-        $this->propertyService->delete($property);
+        try {
+            // Check if property has active tenants before deletion
+            if ($property->tenants()->whereNull('deleted_at')->count() > 0) {
+                return back()->withErrors([
+                    'error' => 'Cannot delete property with active tenants. Archive tenants first.'
+                ]);
+            }
 
-        return redirect()
-            ->route('admin.properties.index')
-            ->with('success', 'Property moved to archive.');
+            $this->propertyService->delete($property);
+
+            Log::info('Property soft deleted by admin', [
+                'property_id' => $property->id,
+                'property_name' => $property->name,
+                'landlord_id' => $property->landlord_id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.properties.index')
+                ->with('success', 'Property moved to archive.');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to delete property', [
+                'property_id' => $property->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to delete property. Please try again.']);
+        }
     }
 
     /**
@@ -119,17 +239,44 @@ class PropertyController extends Controller
      */
     public function restore($id): RedirectResponse
     {
-        $property = Property::withTrashed()->findOrFail($id);
-        $property->restore();
+        try {
+            // Use onlyTrashed() to ensure we only restore soft-deleted records
+            $property = Property::onlyTrashed()
+                ->where('id', $id)
+                ->firstOrFail();
 
-        Log::info('Property restored by admin', [
-            'property_id' => $property->id,
-            'admin_id' => auth()->id()
-        ]);
+            $property->restore();
 
-        return redirect()
-            ->route('admin.trash.properties')
-            ->with('success', 'Property restored successfully.');
+            Log::info('Property restored by admin', [
+                'property_id' => $property->id,
+                'property_name' => $property->name,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.properties')
+                ->with('success', 'Property restored successfully.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Attempted to restore non-existent or non-trashed property', [
+                'property_id' => $id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.properties')
+                ->withErrors(['error' => 'Property not found in archive.']);
+        } catch (\Exception $e) {
+            Log::error('Failed to restore property', [
+                'property_id' => $id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.properties')
+                ->withErrors(['error' => 'Failed to restore property. Please try again.']);
+        }
     }
 
     /**
@@ -137,20 +284,69 @@ class PropertyController extends Controller
      */
     public function forceDelete($id): RedirectResponse
     {
-        $property = Property::withTrashed()->findOrFail($id);
-        
-        // Delete related tenants first
-        $property->tenants()->delete();
-        
-        $property->forceDelete();
+        DB::beginTransaction();
 
-        Log::info('Property permanently deleted by admin', [
-            'property_id' => $property->id,
-            'admin_id' => auth()->id()
-        ]);
+        try {
+            // Use onlyTrashed() to ensure we only delete soft-deleted records
+            $property = Property::onlyTrashed()
+                ->where('id', $id)
+                ->firstOrFail();
 
-        return redirect()
-            ->route('admin.trash.properties')
-            ->with('success', 'Property permanently deleted.');
+            // Check if property has any tenants (including soft deleted ones)
+            $tenantCount = Tenant::where('property_id', $property->id)
+                ->withTrashed()
+                ->count();
+
+            if ($tenantCount > 0) {
+                // If there are tenants, permanently delete them first
+                // Use forceDelete() on the relationship to permanently remove all tenants
+                $property->tenants()->withTrashed()->forceDelete();
+
+                Log::info('Tenants permanently deleted before property deletion', [
+                    'property_id' => $property->id,
+                    'tenant_count' => $tenantCount,
+                    'admin_id' => auth()->id()
+                ]);
+            }
+
+            // Now permanently delete the property
+            $property->forceDelete();
+
+            DB::commit();
+
+            Log::info('Property permanently deleted by admin', [
+                'property_id' => $property->id,
+                'property_name' => $property->name,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.properties')
+                ->with('success', 'Property permanently deleted.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+
+            Log::warning('Attempted to permanently delete non-existent or non-trashed property', [
+                'property_id' => $id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.properties')
+                ->withErrors(['error' => 'Property not found in archive.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Failed to permanently delete property', [
+                'property_id' => $id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.properties')
+                ->withErrors(['error' => 'Failed to permanently delete property. Please try again.']);
+        }
     }
 }

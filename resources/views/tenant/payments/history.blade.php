@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Payment History · Tenant</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -15,7 +16,7 @@
             <!-- Back Button -->
             <div class="mb-6">
                 <a href="{{ route('tenant.payments.index') }}"
-                   class="inline-flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition text-sm">
+                   class="inline-flex items-center gap-2 text-[#6B7280] hover:text-[#ca0251] transition text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
@@ -30,7 +31,7 @@
             </p>
 
             @if(session('success'))
-                <div class="mt-4 p-3 bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg text-[#111827] text-sm">
+                <div class="mt-4 p-3 bg-[#ca0251]/10 border border-[#ca0251] rounded-lg text-[#ca0251] text-sm">
                     {{ session('success') }}
                 </div>
             @endif
@@ -39,7 +40,7 @@
                 <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <ul class="text-red-600 text-xs list-disc list-inside space-y-0.5">
                         @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                            <li>{{ e($error) }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -54,14 +55,15 @@
                                name="tenant_code" 
                                value="{{ request('tenant_code') }}"
                                placeholder="Enter your tenant code"
-                               class="w-full rounded-lg border-[#E5E7EB] focus:border-[#0F172A] focus:ring-[#0F172A] px-3 py-1.5 text-sm bg-white text-[#111827]">
+                               maxlength="50"
+                               class="w-full rounded-lg border-[#E5E7EB] focus:border-[#ca0251] focus:ring-[#ca0251] px-3 py-1.5 text-sm bg-white text-[#111827]">
                     </div>
                     <button type="submit" 
-                            class="bg-[#0F172A] hover:bg-[#1a2a4a] text-white px-6 py-1.5 rounded-lg text-sm transition">
+                            class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition">
                         Search
                     </button>
                     @if(request('tenant_code'))
-                        <a href="{{ route('tenant.payments.history') }}" class="text-sm text-[#6B7280] hover:text-[#111827]">
+                        <a href="{{ route('tenant.payments.history') }}" class="text-sm text-[#6B7280] hover:text-[#ca0251] transition">
                             Clear
                         </a>
                     @endif
@@ -75,17 +77,17 @@
                 @if(isset($tenant) && $tenant)
                     <div class="mt-4 bg-white border border-[#E5E7EB] rounded-xl p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                         <span class="text-[#6B7280]">Tenant:</span>
-                        <span class="font-medium text-[#111827]">{{ $tenant->name }}</span>
+                        <span class="font-medium text-[#111827]">{{ e($tenant->name) }}</span>
                         <span class="text-[#6B7280]">|</span>
                         <span class="text-[#6B7280]">Code:</span>
-                        <span class="font-mono text-[#111827]">{{ $tenant->tenant_code }}</span>
+                        <span class="font-mono text-[#111827]">{{ e($tenant->tenant_code) }}</span>
                         <span class="text-[#6B7280]">|</span>
                         <span class="text-[#6B7280]">Property:</span>
-                        <span class="font-medium text-[#111827]">{{ $tenant->property->name ?? 'N/A' }}</span>
+                        <span class="font-medium text-[#111827]">{{ e($tenant->property->name ?? 'N/A') }}</span>
                     </div>
                 @elseif(!$errors->has('tenant_code'))
                     <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
-                        No tenant found with code: <strong>{{ request('tenant_code') }}</strong>
+                        No tenant found with code: <strong>{{ e(request('tenant_code')) }}</strong>
                     </div>
                 @endif
 
@@ -128,11 +130,11 @@
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-[#111827] font-medium">
-                                                MK {{ number_format($payment->amount) }}
+                                                MK {{ number_format((float)$payment->amount) }}
                                             </td>
                                             <td class="px-4 py-3">
                                                 @if($payment->status == 'Pending')
-                                                    <span class="inline-flex items-center justify-center bg-yellow-500 text-white px-3 py-1.5 rounded-md text-xs font-semibold min-w-[80px]">
+                                                    <span class="inline-flex items-center justify-center bg-[#ca0251] text-white px-3 py-1.5 rounded-md text-xs font-semibold min-w-[80px]">
                                                         Pending
                                                     </span>
                                                 @elseif($payment->status == 'Approved')
@@ -215,6 +217,50 @@
         }
         .bg-red-600:hover {
             background-color: #b91c1c !important;
+        }
+        
+        /* Pagination Styling */
+        .pagination {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .pagination .page-item {
+            display: inline-block;
+        }
+        .pagination .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #374151;
+            background: white;
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .pagination .page-link:hover {
+            background: #F3F4F6;
+            border-color: #D1D5DB;
+        }
+        .pagination .page-item.active .page-link {
+            background: #ca0251;
+            color: white;
+            border-color: #ca0251;
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #9CA3AF;
+            background: #F9FAFB;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .pagination .page-item.disabled .page-link:hover {
+            background: #F9FAFB;
         }
     </style>
 

@@ -6,11 +6,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\View;
-use Spatie\Permission\Models\Role;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class TenantController extends Controller
@@ -20,39 +17,49 @@ class TenantController extends Controller
      */
     public function index(Request $request)
     {
-        // Get all landlords (users with role 'landlord')
-        $landlords = User::where('role', 'landlord')
-            ->orderBy('name')
-            ->get();
+        try {
+            // Get all landlords (users with role 'landlord')
+            $landlords = User::where('role', 'landlord')
+                ->orderBy('name')
+                ->get();
 
-        // Start query for tenants with eager loading
-        $query = Tenant::with(['property', 'property.landlord']);
+            // Start query for tenants with eager loading
+            $query = Tenant::with(['property', 'property.landlord']);
 
-        // Filter by landlord if selected
-        if ($request->filled('landlord')) {
-            $query->whereHas('property', function($q) use ($request) {
-                $q->where('landlord_id', $request->landlord);
-            });
+            // Filter by landlord if selected
+            if ($request->filled('landlord')) {
+                $query->whereHas('property', function($q) use ($request) {
+                    $q->where('landlord_id', $request->landlord);
+                });
+            }
+
+            // Apply search filter if provided
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('tenant_code', 'like', "%{$search}%")
+                      ->orWhereHas('property', function($subQuery) use ($search) {
+                          $subQuery->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // Get paginated results
+            $tenants = $query->latest()->paginate(20);
+
+            return view('admin.tenants.index', compact('tenants', 'landlords'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load tenants list', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load tenants. Please try again.']);
         }
-
-        // Apply search filter if provided
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('tenant_code', 'like', "%{$search}%")
-                  ->orWhereHas('property', function($subQuery) use ($search) {
-                      $subQuery->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // Get paginated results
-        $tenants = $query->latest()->paginate(20);
-
-        return view('admin.tenants.index', compact('tenants', 'landlords'));
     }
 
     /**
@@ -60,44 +67,82 @@ class TenantController extends Controller
      */
     public function export(Request $request)
     {
-        // Start query for tenants with eager loading
-        $query = Tenant::with(['property', 'property.landlord']);
+        try {
+            // Start query for tenants with eager loading
+            $query = Tenant::with(['property', 'property.landlord']);
 
-        // Apply the same filters as the index page
-        if ($request->filled('landlord')) {
-            $query->whereHas('property', function($q) use ($request) {
-                $q->where('landlord_id', $request->landlord);
-            });
+            // Apply the same filters as the index page
+            if ($request->filled('landlord')) {
+                // Only allow landlords to be selected
+                $landlord = User::where('role', 'landlord')
+                    ->whereKey($request->landlord)
+                    ->first();
+
+                if (!$landlord) {
+                    return back()->withErrors(['error' => 'Invalid landlord selected.']);
+                }
+
+                $query->whereHas('property', function($q) use ($request) {
+                    $q->where('landlord_id', $request->landlord);
+                });
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('tenant_code', 'like', "%{$search}%")
+                      ->orWhereHas('property', function($subQuery) use ($search) {
+                          $subQuery->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // Get all tenants (no pagination for export)
+            $tenants = $query->latest()->get();
+
+            // Get filter info for the report
+            $filters = [
+                'landlord' => null,
+                'search' => $request->filled('search') ? $request->search : null,
+            ];
+
+            if ($request->filled('landlord')) {
+                $filters['landlord'] = User::where('role', 'landlord')
+                    ->whereKey($request->landlord)
+                    ->first();
+            }
+
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.tenants.export', compact('tenants', 'filters'));
+            $pdf->setPaper('A4', 'landscape');
+
+            // Log the export
+            Log::info('Tenant report exported', [
+                'admin_id' => auth()->id(),
+                'tenant_count' => $tenants->count(),
+                'filters' => [
+                    'landlord_id' => $request->landlord ?? null,
+                    'search' => $request->search ?? null
+                ]
+            ]);
+
+            // Return the PDF for download
+            return $pdf->download('tenant-report-' . date('Y-m-d') . '.pdf');
+
+        } catch (\Exception $e) {
+            Log::error('Tenant PDF export failed', [
+                'admin_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->withErrors([
+                'error' => 'Unable to generate PDF. Please try again.'
+            ]);
         }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('tenant_code', 'like', "%{$search}%")
-                  ->orWhereHas('property', function($subQuery) use ($search) {
-                      $subQuery->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // Get all tenants (no pagination for export)
-        $tenants = $query->latest()->get();
-
-        // Get filter info for the report
-        $filters = [
-            'landlord' => $request->filled('landlord') ? User::find($request->landlord) : null,
-            'search' => $request->filled('search') ? $request->search : null,
-        ];
-
-        // Generate PDF
-        $pdf = Pdf::loadView('admin.tenants.export', compact('tenants', 'filters'));
-        $pdf->setPaper('A4', 'landscape');
-
-        // Return the PDF for download
-        return $pdf->download('tenant-report-' . date('Y-m-d') . '.pdf');
     }
 
     /**
@@ -105,12 +150,22 @@ class TenantController extends Controller
      */
     public function trashed()
     {
-        $tenants = Tenant::onlyTrashed()
-            ->with(['property', 'property.landlord'])
-            ->latest('deleted_at')
-            ->paginate(20);
+        try {
+            $tenants = Tenant::onlyTrashed()
+                ->with(['property', 'property.landlord'])
+                ->latest('deleted_at')
+                ->paginate(20);
 
-        return view('admin.trash.tenants', compact('tenants'));
+            return view('admin.trash.tenants', compact('tenants'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load trashed tenants', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to load archived tenants. Please try again.']);
+        }
     }
 
     /**
@@ -118,17 +173,43 @@ class TenantController extends Controller
      */
     public function restore($id)
     {
-        $tenant = Tenant::onlyTrashed()->findOrFail($id);
-        $tenant->restore();
+        try {
+            $tenant = Tenant::onlyTrashed()
+                ->where('id', $id)
+                ->firstOrFail();
+            
+            $tenant->restore();
 
-        Log::info('Tenant restored by admin', [
-            'tenant_id' => $tenant->id,
-            'admin_id' => auth()->id()
-        ]);
+            Log::info('Tenant restored by admin', [
+                'tenant_id' => $tenant->id,
+                'tenant_name' => $tenant->name,
+                'admin_id' => auth()->id()
+            ]);
 
-        return redirect()
-            ->route('admin.trash.tenants')
-            ->with('success', 'Tenant restored successfully.');
+            return redirect()
+                ->route('admin.trash.tenants')
+                ->with('success', 'Tenant restored successfully.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Attempted to restore non-existent or non-trashed tenant', [
+                'tenant_id' => $id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.tenants')
+                ->withErrors(['error' => 'Tenant not found in archive.']);
+        } catch (\Exception $e) {
+            Log::error('Failed to restore tenant', [
+                'tenant_id' => $id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.tenants')
+                ->withErrors(['error' => 'Failed to restore tenant. Please try again.']);
+        }
     }
 
     /**
@@ -136,21 +217,52 @@ class TenantController extends Controller
      */
     public function forceDelete($id)
     {
-        $tenant = Tenant::onlyTrashed()->findOrFail($id);
-        
-        // Delete related payments first
-        $tenant->payments()->delete();
-        
-        $tenant->forceDelete();
+        try {
+            $tenant = Tenant::onlyTrashed()
+                ->where('id', $id)
+                ->firstOrFail();
+            
+            // Check if Payment model uses SoftDeletes
+            // If yes, use forceDelete() to permanently remove
+            // If no, use delete() to remove the records
+            if (method_exists($tenant->payments()->getModel(), 'forceDelete')) {
+                $tenant->payments()->withTrashed()->forceDelete();
+            } else {
+                $tenant->payments()->delete();
+            }
+            
+            $tenant->forceDelete();
 
-        Log::info('Tenant permanently deleted by admin', [
-            'tenant_id' => $tenant->id,
-            'admin_id' => auth()->id()
-        ]);
+            Log::info('Tenant permanently deleted by admin', [
+                'tenant_id' => $tenant->id,
+                'tenant_name' => $tenant->name,
+                'admin_id' => auth()->id()
+            ]);
 
-        return redirect()
-            ->route('admin.trash.tenants')
-            ->with('success', 'Tenant permanently deleted.');
+            return redirect()
+                ->route('admin.trash.tenants')
+                ->with('success', 'Tenant permanently deleted.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Attempted to permanently delete non-existent or non-trashed tenant', [
+                'tenant_id' => $id,
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.tenants')
+                ->withErrors(['error' => 'Tenant not found in archive.']);
+        } catch (\Exception $e) {
+            Log::error('Failed to permanently delete tenant', [
+                'tenant_id' => $id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return redirect()
+                ->route('admin.trash.tenants')
+                ->withErrors(['error' => 'Failed to permanently delete tenant. Please try again.']);
+        }
     }
 
     /**
@@ -158,35 +270,27 @@ class TenantController extends Controller
      */
     public function destroy(Tenant $tenant)
     {
-        $tenant->delete();
+        try {
+            $tenant->delete();
 
-        Log::info('Tenant soft deleted by admin', [
-            'tenant_id' => $tenant->id,
-            'admin_id' => auth()->id()
-        ]);
+            Log::info('Tenant soft deleted by admin', [
+                'tenant_id' => $tenant->id,
+                'tenant_name' => $tenant->name,
+                'admin_id' => auth()->id()
+            ]);
 
-        return redirect()
-            ->route('admin.tenants.index')
-            ->with('success', 'Tenant moved to archive.');
-    }
+            return redirect()
+                ->route('admin.tenants.index')
+                ->with('success', 'Tenant moved to archive.');
 
-    /**
-     * Show the form for editing the specified tenant.
-     */
-    public function edit(Tenant $tenant)
-    {
-        // This is a placeholder - implement as needed
-        return view('admin.tenants.edit', compact('tenant'));
-    }
+        } catch (\Exception $e) {
+            Log::error('Failed to delete tenant', [
+                'tenant_id' => $tenant->id,
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
 
-    /**
-     * Update the specified tenant in storage.
-     */
-    public function update(Request $request, Tenant $tenant)
-    {
-        // This is a placeholder - implement as needed
-        // For now, just redirect back
-        return redirect()->route('admin.tenants.index')
-            ->with('success', 'Tenant updated successfully.');
+            return back()->withErrors(['error' => 'Failed to delete tenant. Please try again.']);
+        }
     }
 }
