@@ -25,15 +25,25 @@
         </div>
     @endif
 
-    <!-- General Error Message -->
-    @if(session('error'))
-        <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p class="text-red-700 text-sm">{{ session('error') }}</p>
+    <!-- General Error Message - Only show for non-field specific errors -->
+    @if(session('error') && !$errors->has('property_id'))
+        <div class="mx-5 mt-3 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-medium text-red-800 text-sm">Error</h4>
+                    <p class="text-red-700 text-sm mt-0.5">{{ session('error') }}</p>
+                </div>
+            </div>
         </div>
     @endif
 
-    <!-- Validation Errors Summary -->
-    @if($errors->any())
+    <!-- Validation Errors Summary - Show only non-property_id errors here -->
+    @if($errors->any() && !$errors->has('property_id'))
         <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
             <div class="flex items-start gap-2">
                 <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +65,7 @@
         @csrf
 
         <div class="p-5 space-y-4">
-            <!-- Property Selection -->
+            <!-- Property Selection - Enhanced with capacity error display -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
                     Hostel <span class="text-red-500">*</span>
@@ -73,8 +83,17 @@
                         </option>
                     @endforeach
                 </select>
+                
+                <!-- Display property_id error only once, with a clean design -->
                 @error('property_id')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <div class="mt-2 p-3 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="text-red-700 text-sm">{{ $message }}</span>
+                        </div>
+                    </div>
                 @enderror
             </div>
 

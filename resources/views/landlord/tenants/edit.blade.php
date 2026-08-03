@@ -121,7 +121,7 @@
                     @enderror
                 </div>
 
-                <!-- Monthly Rent -->
+                <!-- Monthly Rent - IMPROVED: Numeric only with thousand separators -->
                 <div>
                     <label class="block text-xs font-medium text-slate-700 mb-1">
                         Monthly Rent (MK) <span class="text-red-500">*</span>
@@ -135,8 +135,11 @@
                             value="{{ old('monthly_rent', number_format((float)($tenant->monthly_rent ?? 0))) }}"
                             class="w-full rounded-lg border-slate-200 focus:border-[#ca0251] focus:ring-[#ca0251] text-sm py-1.5 pl-8 pr-3 @error('monthly_rent') border-red-500 @enderror"
                             placeholder="e.g. 89,000"
+                            inputmode="numeric"
+                            autocomplete="off"
                             required>
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Numbers only - formatted automatically</p>
                     @error('monthly_rent')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
                     @enderror
@@ -158,8 +161,8 @@
                     @enderror
                 </div>
 
-                <!-- Status (Hidden) -->
-                <input type="hidden" name="status" value="{{ e($tenant->status) }}">
+                <!-- Status - REMOVED hidden field -->
+                <!-- Status is now preserved from database in controller -->
 
             </div>
 
@@ -258,68 +261,157 @@
             });
         }
 
-        // Format number with commas
-        function formatNumberWithCommas(number) {
-            if (!number && number !== 0) return '';
-            const num = number.toString().replace(/,/g, '');
-            return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-
-        function handleRentInput(e) {
-            const input = e.target;
-            // Store cursor position
-            const cursorPosition = input.selectionStart;
-            const oldLength = input.value.length;
-            
-            // Remove non-numeric characters (allow only digits)
-            let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
-            
-            if (value === '') {
-                input.value = '';
-                input.dataset.rawValue = '';
-                return;
+        // =====================
+        // IMPROVED MONTHLY RENT INPUT HANDLING
+        // =====================
+        
+        const rentInput = document.getElementById('monthlyRent');
+        if (rentInput) {
+            /**
+             * Format number with thousand separators
+             * @param {string|number} value - The value to format
+             * @returns {string} Formatted string with commas
+             */
+            function formatNumberWithCommas(value) {
+                if (!value && value !== 0) return '';
+                // Remove all non-numeric characters first
+                const numericStr = String(value).replace(/[^0-9]/g, '');
+                if (numericStr === '') return '';
+                const num = parseInt(numericStr, 10);
+                if (isNaN(num)) return '';
+                return num.toLocaleString('en-US');
             }
-            
-            const numericValue = parseFloat(value);
-            if (!isNaN(numericValue) && numericValue >= 0) {
-                const formatted = formatNumberWithCommas(numericValue);
-                input.value = formatted;
-                input.dataset.rawValue = numericValue;
+
+            /**
+             * Extract raw number from formatted string
+             * @param {string} value - The formatted string
+             * @returns {number} Raw number value
+             */
+            function getRawNumber(value) {
+                if (!value) return 0;
+                const numericStr = String(value).replace(/[^0-9]/g, '');
+                return parseInt(numericStr, 10) || 0;
+            }
+
+            /**
+             * Handle input event - format as user types
+             */
+            function handleRentInput(e) {
+                const input = e.target;
+                const selectionStart = input.selectionStart;
+                const rawValue = getRawNumber(input.value);
+                const formattedValue = formatNumberWithCommas(rawValue);
                 
-                // Adjust cursor position
-                const newLength = input.value.length;
-                const diff = newLength - oldLength;
-                input.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
-            }
-        }
-
-        function handleRentBlur(e) {
-            const input = e.target;
-            let value = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
-            
-            if (value !== '') {
-                const numericValue = parseFloat(value);
-                if (!isNaN(numericValue) && numericValue >= 0) {
-                    input.value = formatNumberWithCommas(numericValue);
-                    input.dataset.rawValue = numericValue;
+                // Store raw value as data attribute for form submission
+                input.dataset.rawValue = rawValue;
+                
+                // Only update if the value has changed to prevent cursor jumping
+                if (input.value !== formattedValue) {
+                    input.value = formattedValue;
+                    // Restore cursor position
+                    const newPosition = Math.min(selectionStart, formattedValue.length);
+                    input.setSelectionRange(newPosition, newPosition);
                 }
             }
+
+            /**
+             * Handle blur event - ensure proper formatting
+             */
+            function handleRentBlur(e) {
+                const input = e.target;
+                const rawValue = getRawNumber(input.value);
+                const formattedValue = formatNumberWithCommas(rawValue);
+                
+                input.dataset.rawValue = rawValue;
+                if (formattedValue) {
+                    input.value = formattedValue;
+                } else {
+                    input.value = '';
+                }
+            }
+
+            /**
+             * Handle focus event - select all text for easy editing
+             */
+            function handleRentFocus(e) {
+                e.target.select();
+            }
+
+            /**
+             * Handle keydown event - prevent non-numeric characters
+             */
+            function handleRentKeydown(e) {
+                // Allow: backspace, delete, tab, escape, enter, home, end, left, right
+                const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight'];
+                if (allowedKeys.includes(e.key)) {
+                    return;
+                }
+                
+                // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                if (e.ctrlKey && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+                    return;
+                }
+                
+                // Prevent letter keys, space, symbols, currency symbols
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            }
+
+            /**
+             * Handle paste event - clean pasted content
+             */
+            function handleRentPaste(e) {
+                e.preventDefault();
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+                if (pastedData) {
+                    const cleanData = pastedData.replace(/[^0-9]/g, '');
+                    if (cleanData) {
+                        const rawValue = parseInt(cleanData, 10) || 0;
+                        const formattedValue = formatNumberWithCommas(rawValue);
+                        rentInput.value = formattedValue;
+                        rentInput.dataset.rawValue = rawValue;
+                    }
+                }
+            }
+
+            // Attach event listeners
+            rentInput.addEventListener('input', handleRentInput);
+            rentInput.addEventListener('blur', handleRentBlur);
+            rentInput.addEventListener('focus', handleRentFocus);
+            rentInput.addEventListener('keydown', handleRentKeydown);
+            rentInput.addEventListener('paste', handleRentPaste);
+
+            // Initialize with proper formatting
+            const initialRawValue = getRawNumber(rentInput.value);
+            if (initialRawValue > 0) {
+                rentInput.value = formatNumberWithCommas(initialRawValue);
+                rentInput.dataset.rawValue = initialRawValue;
+            }
         }
 
-        // Handle form submission - remove commas before submit
+        // =====================
+        // FORM SUBMISSION HANDLER - Remove commas before submit
+        // =====================
         document.getElementById('editTenantForm')?.addEventListener('submit', function(e) {
             const rentInput = document.getElementById('monthlyRent');
             if (rentInput) {
-                const rawValue = rentInput.dataset.rawValue || rentInput.value.replace(/,/g, '');
+                // Get raw value from data attribute or parse from input
+                let rawValue = rentInput.dataset.rawValue;
+                if (!rawValue || rawValue === '') {
+                    rawValue = getRawNumber(rentInput.value);
+                }
+                // Set the input value to raw number (no commas) before submission
                 rentInput.value = rawValue;
             }
         });
 
-        const rentInput = document.getElementById('monthlyRent');
-        if (rentInput) {
-            rentInput.addEventListener('input', handleRentInput);
-            rentInput.addEventListener('blur', handleRentBlur);
-        }
+        // Helper function for getRawNumber (exposed globally for the submit handler)
+        window.getRawNumber = function(value) {
+            if (!value) return 0;
+            const numericStr = String(value).replace(/[^0-9]/g, '');
+            return parseInt(numericStr, 10) || 0;
+        };
     });
 </script>
 @endif

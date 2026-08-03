@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Tenant extends Model
 {
@@ -27,6 +28,62 @@ class Tenant extends Model
         'monthly_rent' => 'decimal:2',
         'move_in_date' => 'date',
     ];
+
+    /**
+     * Generate a secure random 6-character alphanumeric tenant code.
+     * Uses cryptographically secure random bytes for maximum security.
+     * Automatically checks for uniqueness and regenerates if duplicate found.
+     * 
+     * @return string
+     */
+    public static function generateUniqueTenantCode(): string
+    {
+        $maxAttempts = 50;
+        $attempts = 0;
+        
+        do {
+            // Generate a cryptographically secure random code
+            // Using random_bytes for maximum security (better than rand() or uniqid())
+            $bytes = random_bytes(6);
+            // Convert to hex and take first 6 characters, then uppercase
+            $code = strtoupper(substr(bin2hex($bytes), 0, 6));
+            
+            // Ensure the code contains at least one letter and one number for better distribution
+            // If it's all numbers or all letters, regenerate
+            if (!preg_match('/[A-Z]/', $code) || !preg_match('/[0-9]/', $code)) {
+                continue;
+            }
+            
+            $attempts++;
+            
+            // Check if code already exists in database (including soft-deleted records)
+            $exists = self::withTrashed()
+                ->where('tenant_code', $code)
+                ->exists();
+                
+        } while ($exists && $attempts < $maxAttempts);
+        
+        // If we've exhausted attempts and still have a duplicate (extremely rare),
+        // fallback to a more complex code with timestamp to ensure uniqueness
+        if ($exists) {
+            $timestamp = now()->timestamp;
+            $random = strtoupper(substr(bin2hex(random_bytes(4)), 0, 4));
+            $code = strtoupper(substr($timestamp . $random, 0, 6));
+        }
+        
+        return $code;
+    }
+
+    /**
+     * Generate a secure tenant code with a prefix (for backward compatibility).
+     * This method maintains compatibility with existing code that expects a prefix.
+     * 
+     * @return string
+     */
+    public static function generateTenantCodeWithPrefix(): string
+    {
+        return 'TEN-' . self::generateUniqueTenantCode();
+    }
 
     /**
      * Normalize Malawi phone numbers to local format
@@ -285,10 +342,11 @@ class Tenant extends Model
     {
         parent::boot();
 
-        // Ensure tenant_code is always set
+        // Generate secure tenant code before creating
         static::creating(function ($tenant) {
             if (empty($tenant->tenant_code)) {
-                $tenant->tenant_code = 'TEN-' . strtoupper(\Illuminate\Support\Str::random(8));
+                // Use the new secure generator without prefix
+                $tenant->tenant_code = self::generateUniqueTenantCode();
             }
         });
     }

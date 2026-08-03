@@ -70,7 +70,7 @@ class PaymentController extends Controller
                 'payment_month' => 'required|string|date_format:Y-m',
                 'month_count' => 'nullable|integer|min:1|max:12',
                 'amount' => 'required|numeric|min:0',
-                'screenshot' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Removed PDF
+                'screenshot' => 'required|image|max:102400',
             ]);
 
             // Find tenant by code

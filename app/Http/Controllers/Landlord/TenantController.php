@@ -282,7 +282,7 @@ class TenantController extends Controller
     }
 
     /**
-     * Store a newly created tenant in storage - FIXED to match self-registration behavior
+     * Store a newly created tenant in storage - IMPROVED with secure tenant code generation.
      */
     public function store(Request $request)
     {
@@ -338,18 +338,28 @@ class TenantController extends Controller
                 ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
-            // Check if property is full
+            // Check if property is full - IMPROVED to retain form data
             if ($property->isFull()) {
+                DB::rollBack();
+                
+                // Get property details for the error message
+                $propertyName = $property->name;
+                $capacity = $property->capacity;
+                $currentCount = $property->tenants()->whereNull('deleted_at')->count();
+                
+                // Return with all input data preserved and a clear error message
                 return back()
                     ->withInput()
-                    ->with('error', "The selected hostel ({$property->name}) is already full. No more tenants can be added.")
                     ->withErrors([
-                        'property_id' => 'This hostel has reached its maximum capacity.'
-                    ]);
+                        'property_id' => "This hostel ({$propertyName}) is full. No additional tenants can be added because the hostel has reached its maximum capacity of {$capacity} tenants. Please select another hostel or wait until a space becomes available."
+                    ])
+                    ->with('error', "This hostel is full. No additional tenants can be added because the hostel has reached its maximum capacity. Please select another hostel or wait until a space becomes available.");
             }
-            // Generate tenant code
+
+            // Generate tenant code using the secure generator (without prefix)
+            // The boot method in the Tenant model will use generateUniqueTenantCode()
             $tenantData = [
-                'tenant_code' => 'TEN-' . strtoupper(Str::random(8)),
+                // 'tenant_code' is automatically generated in the model's boot method
                 'property_id' => $property->id,
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -365,6 +375,7 @@ class TenantController extends Controller
 
             Log::info('Tenant created successfully by landlord', [
                 'tenant_id' => $tenant->id,
+                'tenant_code' => $tenant->tenant_code,
                 'property_id' => $property->id,
                 'phone' => $tenant->phone,
                 'landlord_id' => Auth::guard('landlord')->id()
@@ -433,12 +444,22 @@ class TenantController extends Controller
 
     /**
      * Update the specified tenant in storage.
+     * IMPROVED: Removed status validation, sanitizes monthly_rent, preserves status from database.
      */
     public function update(Request $request, Tenant $tenant)
     {
         $this->authorizeTenant($tenant);
 
-        // Validate the request
+        // Sanitize monthly_rent BEFORE validation - remove commas and non-numeric characters
+        if ($request->has('monthly_rent')) {
+            $monthlyRent = $request->input('monthly_rent');
+            // Remove all non-numeric characters (commas, spaces, currency symbols, letters)
+            $cleanMonthlyRent = preg_replace('/[^0-9.]/', '', $monthlyRent);
+            // Override the request input with cleaned value
+            $request->merge(['monthly_rent' => $cleanMonthlyRent]);
+        }
+
+        // Validate the request - removed 'status' validation
         $validated = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'name' => 'required|string|max:255',
@@ -446,7 +467,7 @@ class TenantController extends Controller
             'phone' => 'required|string|max:20',
             'monthly_rent' => 'nullable|numeric|min:0',
             'move_in_date' => 'required|date',
-            'status' => 'required|in:active,inactive,moved_out',
+            // 'status' validation removed intentionally
         ]);
 
         try {
@@ -478,26 +499,31 @@ class TenantController extends Controller
                     ->withErrors(['phone' => 'A tenant with this phone number already exists in this property.']);
             }
 
-            // If monthly_rent is not provided, use property's default rent
-            if (empty($validated['monthly_rent'])) {
-                $validated['monthly_rent'] = $property->monthly_rent ?? 0;
+            // If monthly_rent is empty or null, use property's default rent
+            if (empty($validated['monthly_rent']) && $validated['monthly_rent'] !== 0) {
+                $numericMonthlyRent = $property->monthly_rent ?? 0;
+            } else {
+                $numericMonthlyRent = floatval($validated['monthly_rent']);
             }
 
-            // Update the tenant
+            // Update the tenant - preserve existing status from database
+            // Note: tenant_code is NOT updated - it remains the same
             $tenant->update([
                 'property_id' => $validated['property_id'],
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $normalizedPhone,
-                'monthly_rent' => $validated['monthly_rent'],
+                'monthly_rent' => $numericMonthlyRent,
                 'move_in_date' => $validated['move_in_date'],
-                'status' => $validated['status'],
+                // Status is NOT updated - we preserve the existing value from the database
+                // This prevents the "status validation" error and is more secure
             ]);
 
             DB::commit();
 
             Log::info('Tenant updated successfully', [
                 'tenant_id' => $tenant->id,
+                'tenant_code' => $tenant->tenant_code,
                 'property_id' => $property->id,
                 'phone' => $tenant->phone,
                 'landlord_id' => Auth::guard('landlord')->id()
@@ -540,6 +566,7 @@ class TenantController extends Controller
 
         Log::info('Tenant soft deleted', [
             'id' => $tenant->id,
+            'tenant_code' => $tenant->tenant_code,
             'landlord_id' => Auth::guard('landlord')->id()
         ]);
 
@@ -561,6 +588,7 @@ class TenantController extends Controller
 
         Log::info('Tenant restored', [
             'id' => $tenant->id,
+            'tenant_code' => $tenant->tenant_code,
             'landlord_id' => Auth::guard('landlord')->id()
         ]);
 
@@ -644,6 +672,7 @@ class TenantController extends Controller
 
         Log::info('Tenant moved out', [
             'id' => $tenant->id,
+            'tenant_code' => $tenant->tenant_code,
             'landlord_id' => Auth::guard('landlord')->id()
         ]);
 
@@ -666,6 +695,7 @@ class TenantController extends Controller
 
         Log::info('Tenant reactivated', [
             'id' => $tenant->id,
+            'tenant_code' => $tenant->tenant_code,
             'landlord_id' => Auth::guard('landlord')->id()
         ]);
 

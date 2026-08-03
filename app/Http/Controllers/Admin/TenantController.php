@@ -222,15 +222,10 @@ class TenantController extends Controller
                 ->where('id', $id)
                 ->firstOrFail();
             
-            // Check if Payment model uses SoftDeletes
-            // If yes, use forceDelete() to permanently remove
-            // If no, use delete() to remove the records
-            if (method_exists($tenant->payments()->getModel(), 'forceDelete')) {
-                $tenant->payments()->withTrashed()->forceDelete();
-            } else {
-                $tenant->payments()->delete();
-            }
+            // Permanently remove all payment records belonging to this tenant
+            $tenant->payments()->delete();
             
+            // Permanently delete the tenant
             $tenant->forceDelete();
 
             Log::info('Tenant permanently deleted by admin', [
