@@ -132,7 +132,7 @@
                 </button>
                 <button 
                     @click="activeTab = 'reject'"
-                    class="flex-1 px-4 py-3 text-sm font-medium transition-all duration-200"
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-all duration-200 relative group"
                     :class="activeTab === 'reject' 
                         ? 'bg-[#ca0251] text-white' 
                         : 'text-[#374151] hover:bg-[#ca0251]/10 hover:text-[#ca0251]'">
@@ -142,6 +142,11 @@
                         </svg>
                         Reject Payment
                     </span>
+                    <!-- Tooltip -->
+                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap max-w-xs">
+                        Once you reject this tenant, contact them on why you reject
+                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
                 </button>
             </div>
 
@@ -165,23 +170,9 @@
                 <!-- Reject Tab -->
                 <div x-show="activeTab === 'reject'" x-transition:enter.duration.200ms>
                     <div class="space-y-3">
-                        <p class="text-sm text-[#6B7280]">
-                            Reject this payment and provide a reason for the tenant.
-                        </p>
                         <form method="POST" action="{{ route('landlord.payments.reject', $payment) }}">
                             @csrf @method('PATCH')
-                            <div>
-                                <label class="block text-sm font-medium text-[#374151] mb-1.5">
-                                    Reason for Rejection
-                                    <span class="text-[#6B7280] font-normal">(Optional)</span>
-                                </label>
-                                <textarea 
-                                    name="remarks" 
-                                    rows="3" 
-                                    class="w-full rounded-lg border-[#E5E7EB] focus:border-[#ca0251] focus:ring-[#ca0251] text-sm"
-                                    placeholder="Provide a reason for rejecting this payment..."></textarea>
-                            </div>
-                            <button class="mt-2 bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 rounded-lg text-sm transition w-full sm:w-auto">
+                            <button class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 rounded-lg text-sm transition w-full sm:w-auto">
                                 Confirm Rejection
                             </button>
                         </form>
