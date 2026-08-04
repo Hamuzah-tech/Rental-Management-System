@@ -86,8 +86,8 @@ class LandlordController extends Controller
             // Commit before sending email to avoid keeping transaction open
             DB::commit();
 
-            // Send welcome email (queue it for better performance)
-            Mail::to($user->email)->queue(new LandlordWelcomeMail($user, $plainPassword));
+            // Send welcome email (send immediately)
+            Mail::to($user->email)->send(new LandlordWelcomeMail($user, $plainPassword));
 
             Log::info('Landlord created successfully by admin', [
                 'landlord_id' => $user->id,
