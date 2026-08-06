@@ -95,11 +95,11 @@
             <h3 class="font-semibold text-sm mb-2 text-[#111827]">Payment Screenshot</h3>
             @if($payment->screenshot)
                 <img 
-                    src="{{ asset($payment->screenshot) }}" 
+                    src="{{ asset('storage/'.$payment->screenshot) }}" 
                     class="rounded-lg border w-full h-32 object-cover cursor-pointer"
-                    onclick="openModal('{{ asset($payment->screenshot) }}')">
+                    onclick="openModal('{{ asset('storage/'.$payment->screenshot) }}')">
                 <button 
-                    onclick="openModal('{{ asset($payment->screenshot) }}')"
+                    onclick="openModal('{{ asset('storage/'.$payment->screenshot) }}')"
                     class="mt-2 text-[#ca0251] hover:text-[#a80244] text-sm text-center transition">
                     Open Full Image
                 </button>
