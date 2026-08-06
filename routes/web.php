@@ -205,8 +205,8 @@ Route::middleware(['auth:landlord', 'role:landlord'])
             ->name('properties.export.pdf');
 
         // Show property with tenants (with filters)
-        Route::get('/properties/{property}/show', [LandlordTenantController::class, 'showProperty'])
-            ->name('properties.show');
+        Route::get('/properties/{property}/tenants', [LandlordTenantController::class, 'showProperty'])
+            ->name('properties.tenants');
         
         // Export property tenants to PDF
         Route::get('/properties/{property}/export-property-pdf', [LandlordTenantController::class, 'exportPropertyPdf'])
