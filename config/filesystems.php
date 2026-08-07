@@ -38,11 +38,12 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+       'public' => [
         'driver' => 'local',
-        'root' => '/home/alendi/public_html/storage',
+        'root' => storage_path('app/public'),  // ← Change this line
         'url' => env('APP_URL').'/storage',
         'visibility' => 'public',
+        'throw' => false,
         ],
 
         's3' => [

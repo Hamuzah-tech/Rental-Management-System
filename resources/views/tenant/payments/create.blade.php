@@ -27,6 +27,22 @@
             </div>
         </div>
 
+        <!-- Moving Text Banner -->
+        <div class="mb-3 md:mb-4 p-2 md:p-3 bg-gradient-to-r from-[#ca0251]/10 via-[#ca0251]/5 to-[#ca0251]/10 border border-[#ca0251]/20 rounded-lg overflow-hidden">
+            <div class="moving-text-container">
+                <div class="moving-text">
+                    <span class="text-[#ca0251] font-medium text-xs sm:text-sm">
+                        Are you experiencing an error or failing to submit? Kindly say 
+                        <a href="https://wa.me/265990705194" 
+                           target="_blank" 
+                           class="font-bold text-[#ca0251] hover:text-[#a80244] underline decoration-2 underline-offset-2 transition-colors">
+                            Hi
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
         <!-- Success Message -->
         @if(session('success'))
             <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-[#ca0251]/10 border border-[#ca0251] rounded-lg flex items-center justify-between">
@@ -391,6 +407,78 @@
         /* Smooth transitions */
         * {
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Moving Text Styles */
+        .moving-text-container {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .moving-text {
+            display: inline-block;
+            animation: scrollText 20s linear infinite;
+            padding-left: 100%;
+        }
+
+        .moving-text:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollText {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Gradient animation for the banner */
+        .bg-gradient-to-r {
+            background-size: 200% 200%;
+            animation: gradientMove 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientMove {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* WhatsApp link hover effect */
+        a[href*="wa.me"]:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s ease;
+        }
+
+        a[href*="wa.me"] {
+            transition: transform 0.2s ease;
+        }
+
+        /* Responsive text adjustments */
+        @media (max-width: 640px) {
+            .moving-text {
+                animation-duration: 15s;
+            }
+            
+            .moving-text span {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .moving-text {
+                animation-duration: 12s;
+            }
+            
+            .moving-text span {
+                font-size: 0.65rem;
+            }
         }
     </style>
 
