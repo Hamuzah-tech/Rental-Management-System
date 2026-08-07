@@ -22,12 +22,14 @@ class Property extends Model
         'max_tenants',
         'registration_token',
         'status',
+        'registration_open',
     ];
 
     protected $casts = [
         'monthly_rent' => 'decimal:2',
         'max_tenants' => 'integer',
         'status' => 'boolean',
+        'registration_open' => 'boolean',
         'deleted_at' => 'datetime',
     ];
 
@@ -99,6 +101,9 @@ class Property extends Model
             }
             if (!isset($property->status)) {
                 $property->status = true;
+            }
+            if (!isset($property->registration_open)) {
+                $property->registration_open = true;
             }
         });
     }
@@ -204,11 +209,27 @@ class Property extends Model
     }
 
     /**
+     * Check if registration is open.
+     */
+    public function isRegistrationOpen(): bool
+    {
+        return (bool) $this->registration_open;
+    }
+
+    /**
      * Scope a query to only include active properties.
      */
     public function scopeActive($query)
     {
         return $query->where('status', true);
+    }
+
+    /**
+     * Scope a query to only include properties with registration open.
+     */
+    public function scopeRegistrationOpen($query)
+    {
+        return $query->where('registration_open', true);
     }
 
     /**

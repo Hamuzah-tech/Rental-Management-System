@@ -53,10 +53,17 @@
                         <span class="text-[#6B7280]">Rent:</span>
                         <span class="font-medium text-[#111827]">MK {{ number_format((float)($property->monthly_rent ?? 0)) }}</span>
                     </div>
+                    <div class="text-xs">
+                        <span class="text-[#6B7280]">Tenants:</span>
+                        <span class="font-medium text-[#111827]">{{ (int)$property->currentTenantCount() }}/{{ (int)($property->max_tenants ?? 0) }}</span>
+                        @if($property->isFull())
+                            <span class="ml-1 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] rounded-full">Full</span>
+                        @endif
+                    </div>
                 </div>
                 
-                <div class="flex justify-between items-center mt-2.5">
-                    <div>
+                <div class="flex flex-wrap items-center justify-between mt-2.5 gap-1">
+                    <div class="flex flex-wrap items-center gap-1">
                         @if($property->status)
                             <span class="px-2 py-0.5 rounded-full bg-[#ca0251] text-white text-[10px] font-medium">
                                 Active
@@ -66,8 +73,18 @@
                                 Inactive
                             </span>
                         @endif
-                        @if($property->isFull())
-                            <span class="ml-1 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] rounded-full">Full</span>
+                        
+                        {{-- Registration Status Badge --}}
+                        @if($property->isRegistrationOpen())
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-[10px] font-medium">
+                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
+                                Registration Open
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-medium">
+                                <span class="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
+                                Registration Closed
+                            </span>
                         @endif
                     </div>
                     
@@ -113,13 +130,14 @@
 
     <!-- Desktop Table View -->
     <div class="hidden sm:block overflow-x-auto">
-        <table class="w-full text-sm min-w-[600px]">
+        <table class="w-full text-sm min-w-[700px]">
             <thead class="bg-[#F8FAFC]">
                 <tr class="text-[#6B7280]">
                     <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">#</th>
                     <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
                     <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Rent (MK)</th>
                     <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Tenants</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Registration</th>
                     <th class="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
                     <th class="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Actions</th>
                 </tr>
@@ -142,6 +160,19 @@
                             </span>
                             @if($property->isFull())
                                 <span class="ml-1 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] rounded-full">Full</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-2.5">
+                            @if($property->isRegistrationOpen())
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
+                                    Open
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
+                                    Closed
+                                </span>
                             @endif
                         </td>
                         <td class="px-4 py-2.5">
@@ -191,7 +222,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-[#6B7280] text-sm">
+                        <td colspan="7" class="px-4 py-6 text-center text-[#6B7280] text-sm">
                             No Hostels found.
                         </td>
                     </tr>

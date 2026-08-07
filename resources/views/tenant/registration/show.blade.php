@@ -6,6 +6,14 @@
 
     <div class="max-w-3xl mx-auto">
 
+        <!-- Registration Status Badge -->
+        <div class="mb-4 flex justify-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200">
+                <span class="w-2 h-2 bg-green-500 rounded-full inline-block"></span>
+                Registration Open
+            </div>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-sm border border-[#E5E7EB] overflow-hidden">
 
             <!-- Header -->

@@ -21,8 +21,20 @@ class TenantRegistrationController extends Controller
     {
         $property = Property::where('registration_token', $token)
             ->where('status', true)
-            ->firstOrFail();
+            ->first();
 
+        // Check if property exists
+        if (!$property) {
+            abort(404);
+        }
+
+        // Check if property is active (already checked in query)
+        // Check if registration is open
+        if (!$property->isRegistrationOpen()) {
+            return view('tenant.registration.closed', compact('property'));
+        }
+
+        // Check if property is full
         if ($property->isFull()) {
             return view('tenant.registration.full', compact('property'));
         }
@@ -51,6 +63,12 @@ class TenantRegistrationController extends Controller
                 ->where('status', true)
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            // Check if registration is still open (with lock in place)
+            if (!$property->isRegistrationOpen()) {
+                RateLimiter::hit($throttleKey, 600);
+                return back()->with('error', 'Registration has been closed by the landlord.');
+            }
 
             // Double-check property isn't full with the lock in place
             if ($property->isFull()) {
@@ -127,6 +145,13 @@ class TenantRegistrationController extends Controller
                 DB::rollBack();
                 RateLimiter::hit($throttleKey, 600);
                 return back()->with('error', 'This property is now full. Registration closed.');
+            }
+
+            // Check registration status one more time
+            if (!$property->isRegistrationOpen()) {
+                DB::rollBack();
+                RateLimiter::hit($throttleKey, 600);
+                return back()->with('error', 'Registration has been closed by the landlord.');
             }
 
             // Determine monthly rent
@@ -206,6 +231,14 @@ class TenantRegistrationController extends Controller
     public function full(Property $property)
     {
         return view('tenant.registration.full', compact('property'));
+    }
+
+    /**
+     * Show registration closed page.
+     */
+    public function closed(Property $property)
+    {
+        return view('tenant.registration.closed', compact('property'));
     }
 
     /**

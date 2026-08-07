@@ -32,6 +32,64 @@
         </div>
     @endif
 
+    {{-- Registration Status Section --}}
+    <div class="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-sm font-medium text-[#374151] mb-1">Registration Status</h3>
+                <div class="flex items-center gap-3">
+                    @if($property->isRegistrationOpen())
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            <span class="w-2 h-2 bg-green-500 rounded-full inline-block"></span>
+                            Open
+                        </span>
+                        <span class="text-xs text-[#6B7280]">
+                            Accepting new tenant registrations
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                            <span class="w-2 h-2 bg-red-500 rounded-full inline-block"></span>
+                            Closed
+                        </span>
+                        <span class="text-xs text-[#6B7280]">
+                            Not accepting new tenant registrations
+                        </span>
+                    @endif
+                </div>
+            </div>
+            <form action="{{ route('landlord.properties.toggle-registration', $property) }}" method="POST" class="inline">
+                @csrf
+                @method('PATCH')
+                <button type="submit" 
+                        class="px-4 py-2 text-sm font-medium rounded-lg border transition whitespace-nowrap
+                               @if($property->isRegistrationOpen())
+                                   bg-red-50 text-red-700 border-red-200 hover:bg-red-100
+                               @else
+                                   bg-green-50 text-green-700 border-green-200 hover:bg-green-100
+                               @endif">
+                    @if($property->isRegistrationOpen())
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Pause Registration
+                        </span>
+                    @else
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Resume Registration
+                        </span>
+                    @endif
+                </button>
+            </form>
+        </div>
+        @if(session('error'))
+            <p class="text-red-600 text-xs mt-2">{{ session('error') }}</p>
+        @endif
+    </div>
+
     {{-- Success Modal --}}
     @if(session('success'))
     <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -53,6 +111,8 @@
                         Tenant Moved Out Successfully
                     @elseif(str_contains(session('success'), 'deleted'))
                         Tenant Deleted Successfully
+                    @elseif(str_contains(session('success'), 'Registration'))
+                        Registration Status Updated
                     @else
                         Success
                     @endif

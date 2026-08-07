@@ -101,6 +101,7 @@ Route::prefix('register')->name('tenant.')->group(function () {
     Route::post('/property/{token}', [TenantRegistrationController::class, 'store'])->name('registration.store');
     Route::get('/success/{tenant}', [TenantRegistrationController::class, 'success'])->name('registration.success');
     Route::get('/full/{property}', [TenantRegistrationController::class, 'full'])->name('registration.full');
+    Route::get('/closed/{property}', [TenantRegistrationController::class, 'closed'])->name('registration.closed');
 });
 
 /*
@@ -201,6 +202,8 @@ Route::middleware(['auth:landlord', 'role:landlord'])
         Route::resource('properties', LandlordPropertyController::class);
         Route::patch('/properties/{property}/status', [LandlordPropertyController::class, 'toggleStatus'])
             ->name('properties.status');
+        Route::patch('/properties/{property}/toggle-registration', [LandlordPropertyController::class, 'toggleRegistration'])
+            ->name('properties.toggle-registration');
         Route::get('/properties/{property}/export-pdf', [LandlordPropertyController::class, 'exportPdf'])
             ->name('properties.export.pdf');
 

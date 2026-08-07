@@ -69,6 +69,7 @@ class PropertyController extends Controller
             $data['description'] = $data['description'] ?? '';
             $data['landlord_id'] = Auth::guard('landlord')->id();
             $data['status'] = true;
+            $data['registration_open'] = true;
             $data['registration_token'] = \Illuminate\Support\Str::random(40);
 
             $property = Property::create($data);
@@ -240,6 +241,38 @@ class PropertyController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Failed to update property. Please try again.']);
+        }
+    }
+
+    /**
+     * Toggle registration open/closed for the property.
+     */
+    public function toggleRegistration(Request $request, Property $property)
+    {
+        $this->authorizeProperty($property);
+
+        try {
+            $property->update([
+                'registration_open' => !$property->registration_open
+            ]);
+
+            $status = $property->registration_open ? 'opened' : 'closed';
+
+            Log::info('Property registration toggled', [
+                'id' => $property->id,
+                'name' => $property->name,
+                'registration_open' => $property->registration_open,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
+
+            return back()->with('success', "Registration {$status} successfully.");
+
+        } catch (\Exception $e) {
+            Log::error('Error toggling registration status', [
+                'message' => $e->getMessage(),
+                'property_id' => $property->id
+            ]);
+            return back()->withErrors(['error' => 'Failed to update registration status. Please try again.']);
         }
     }
 
