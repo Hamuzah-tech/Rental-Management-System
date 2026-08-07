@@ -139,7 +139,6 @@
                             autocomplete="off"
                             required>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Numbers only - formatted automatically</p>
                     @error('monthly_rent')
                         <p class="text-red-500 text-xs mt-0.5">{{ $message }}</p>
                     @enderror

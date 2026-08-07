@@ -151,9 +151,6 @@ class TenantRegistrationController extends Controller
 
             $tenant = Tenant::create($tenantData);
 
-            // Clear the registration token after successful registration
-            $property->update(['registration_token' => null]);
-
             DB::commit();
 
             // Clear rate limiter on success
