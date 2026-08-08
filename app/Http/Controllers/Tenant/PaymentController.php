@@ -133,12 +133,22 @@ class PaymentController extends Controller
             // Store as comma-separated string
             $paymentMonths = implode(',', $months);
 
-            // Handle screenshot upload
+            // Handle screenshot upload - FIXED!
             $screenshotPath = null;
             if ($request->hasFile('screenshot')) {
                 $file = $request->file('screenshot');
                 $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-                $screenshotPath = $file->storeAs('payments', $filename, 'public');
+                
+                // Save directly to public/payments/
+                $file->move(public_path('payments'), $filename);
+                $screenshotPath = $filename; // Store just the filename
+                
+                // Log the upload for debugging
+                Log::info('Screenshot uploaded', [
+                    'filename' => $filename,
+                    'path' => public_path('payments/' . $filename),
+                    'url' => asset('payments/' . $filename)
+                ]);
             }
 
             // Create payment record
