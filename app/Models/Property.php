@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use App\Models\Traits\HasPublicId;
 
 class Property extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasPublicId;
 
     protected $fillable = [
         'landlord_id',

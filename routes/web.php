@@ -140,21 +140,21 @@ Route::middleware(['auth:admin', 'role:super_admin'])
         // Dashboard
         Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
 
-        // PROPERTIES with Soft Delete
+        // PROPERTIES with Soft Delete - Using public_id
         Route::get('/properties/trashed', [PropertyController::class, 'trashed'])
             ->name('trash.properties');
-        Route::patch('/properties/trashed/{id}/restore', [PropertyController::class, 'restore'])
+        Route::patch('/properties/trashed/{property}/restore', [PropertyController::class, 'restore'])
             ->name('trash.properties.restore');
-        Route::delete('/properties/trashed/{id}/force-delete', [PropertyController::class, 'forceDelete'])
+        Route::delete('/properties/trashed/{property}/force-delete', [PropertyController::class, 'forceDelete'])
             ->name('trash.properties.force-delete');
         Route::resource('properties', PropertyController::class);
 
         // TENANTS with Soft Delete
         Route::get('/tenants/trashed', [TenantController::class, 'trashed'])
             ->name('trash.tenants');
-        Route::patch('/tenants/trashed/{id}/restore', [TenantController::class, 'restore'])
+        Route::patch('/tenants/trashed/{tenant}/restore', [TenantController::class, 'restore'])
             ->name('trash.tenants.restore');
-        Route::delete('/tenants/trashed/{id}/force-delete', [TenantController::class, 'forceDelete'])
+        Route::delete('/tenants/trashed/{tenant}/force-delete', [TenantController::class, 'forceDelete'])
             ->name('trash.tenants.force-delete');
         
         // Tenant Export Route (must be before resource to avoid conflict)
@@ -164,9 +164,9 @@ Route::middleware(['auth:admin', 'role:super_admin'])
         // LANDLORDS with Soft Delete
         Route::get('/landlords/trashed', [LandlordController::class, 'trashed'])
             ->name('trash.landlords');
-        Route::patch('/landlords/trashed/{id}/restore', [LandlordController::class, 'restore'])
+        Route::patch('/landlords/trashed/{landlord}/restore', [LandlordController::class, 'restore'])
             ->name('trash.landlords.restore');
-        Route::delete('/landlords/trashed/{id}/force-delete', [LandlordController::class, 'forceDelete'])
+        Route::delete('/landlords/trashed/{landlord}/force-delete', [LandlordController::class, 'forceDelete'])
             ->name('trash.landlords.force-delete');
         Route::resource('landlords', LandlordController::class);
 
@@ -194,10 +194,10 @@ Route::middleware(['auth:landlord', 'role:landlord'])
         // Dashboard
         Route::get('/dashboard', [LandlordDashboard::class, 'index'])->name('dashboard');
 
-        // Properties with Soft Delete & PDF Export
+        // Properties with Soft Delete & PDF Export - Using public_id
         Route::get('/properties/trashed', [LandlordPropertyController::class, 'trashed'])
             ->name('properties.trashed');
-        Route::patch('/properties/{id}/restore', [LandlordPropertyController::class, 'restore'])
+        Route::patch('/properties/{property}/restore', [LandlordPropertyController::class, 'restore'])
             ->name('properties.restore');
         Route::resource('properties', LandlordPropertyController::class);
         Route::patch('/properties/{property}/status', [LandlordPropertyController::class, 'toggleStatus'])
@@ -218,7 +218,7 @@ Route::middleware(['auth:landlord', 'role:landlord'])
         // Tenants with Soft Delete
         Route::get('/tenants/trashed', [LandlordTenantController::class, 'trashed'])
             ->name('tenants.trashed');
-        Route::patch('/tenants/{id}/restore', [LandlordTenantController::class, 'restore'])
+        Route::patch('/tenants/{tenant}/restore', [LandlordTenantController::class, 'restore'])
             ->name('tenants.restore');
         Route::resource('tenants', LandlordTenantController::class);
         Route::post('/tenants/generate-link', [LandlordTenantController::class, 'generateRegistrationLink'])

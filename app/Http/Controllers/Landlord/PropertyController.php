@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\Property;
 use App\Models\Tenant;
 use App\Models\Payment;
@@ -181,7 +182,10 @@ class PropertyController extends Controller
         
         $pdf->setPaper('A4', 'landscape');
         
-        $filename = 'property_tenants_' . $property->id . '_' . date('Y-m-d') . '.pdf';
+        // Use public_id or slug for better filename
+        $filename = Str::slug($property->name) . '.pdf';
+        // Alternative: $filename = 'property_tenants_' . $property->public_id . '_' . date('Y-m-d') . '.pdf';
+        
         return $pdf->download($filename);
     }
 
@@ -306,18 +310,22 @@ class PropertyController extends Controller
     }
 
     /**
-     * Restore a soft deleted property
+     * Restore a soft deleted property using public_id.
      */
-    public function restore($id)
+    public function restore($public_id)
     {
         try {
-            $property = Property::withTrashed()->findOrFail($id);
+            $property = Property::withTrashed()
+                ->where('public_id', $public_id)
+                ->firstOrFail();
+            
             $this->authorizeProperty($property);
             
             $property->restore();
 
             Log::info('Property restored', [
                 'id' => $property->id,
+                'public_id' => $property->public_id,
                 'name' => $property->name,
                 'landlord_id' => Auth::guard('landlord')->id()
             ]);
@@ -329,7 +337,7 @@ class PropertyController extends Controller
         } catch (\Exception $e) {
             Log::error('Error restoring property', [
                 'message' => $e->getMessage(),
-                'property_id' => $id
+                'public_id' => $public_id
             ]);
             return back()->withErrors(['error' => 'Failed to restore property. Please try again.']);
         }

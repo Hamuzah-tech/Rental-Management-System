@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use App\Models\Traits\HasPublicId;
 
 class Tenant extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasPublicId;
 
     protected $fillable = [
         'tenant_code',
