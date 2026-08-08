@@ -26,6 +26,20 @@
         </div>
     </div>
 
+    {{-- Success Message --}}
+    @if(session('success'))
+        <div class="mx-5 mt-3 p-3 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-lg text-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Error Message --}}
+    @if(session('error'))
+        <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Error Display -->
     @if($errors->any())
         <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -187,79 +201,8 @@
 </div>
 </div>
 
-<!-- Success Modal -->
-@if(session('success'))
-<div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 transform transition-all scale-100">
-        <div class="flex flex-col items-center text-center">
-            <!-- Success Icon -->
-            <div class="w-16 h-16 rounded-full bg-[#ca0251]/10 flex items-center justify-center mb-4">
-                <svg class="w-8 h-8 text-[#ca0251]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-            </div>
-
-            <h2 class="text-xl font-bold text-[#111827] mb-2">Tenant Updated Successfully</h2>
-            <p class="text-sm text-[#6B7280] mb-6">
-                {{ session('success') }}
-            </p>
-
-            <a href="{{ route('landlord.properties.show', $tenant->property_id) }}"
-               class="w-full inline-flex items-center justify-center rounded-lg bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 text-sm font-medium transition">
-                Continue
-            </a>
-        </div>
-    </div>
-</div>
-
-<style>
-    #successModal {
-        animation: modalFadeIn 0.3s ease-out;
-    }
-    #successModal > div {
-        animation: modalSlideIn 0.3s ease-out;
-    }
-    @keyframes modalFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: scale(0.95) translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-</style>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const successModal = document.getElementById('successModal');
-        if (successModal) {
-            // Auto-close after 5 seconds
-            setTimeout(function() {
-                successModal.style.opacity = '0';
-                successModal.style.transition = 'opacity 0.5s ease';
-                setTimeout(function() {
-                    successModal.style.display = 'none';
-                }, 500);
-            }, 5000);
-
-            // Close on outside click
-            successModal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.opacity = '0';
-                    this.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => {
-                        this.style.display = 'none';
-                    }, 300);
-                }
-            });
-        }
-
         // =====================
         // IMPROVED MONTHLY RENT INPUT HANDLING
         // =====================
@@ -413,6 +356,5 @@
         };
     });
 </script>
-@endif
 
 @endsection
