@@ -254,3 +254,31 @@ Route::middleware(['auth:landlord', 'role:landlord'])
 */
 Route::get('/tenants/property/{property}/registration-link', [TenantController::class, 'registrationLink'])
     ->name('landlord.tenants.registration-link');
+
+/*
+|--------------------------------------------------------------------------
+| Serve Payment Screenshots
+|--------------------------------------------------------------------------
+| This route serves payment screenshots from public/payments directory
+| It handles files that the web server might not be serving directly
+*/
+Route::get('/payments/{filename}', function ($filename) {
+    // Security: Prevent directory traversal attacks
+    $filename = basename($filename);
+    $path = public_path('payments/' . $filename);
+    
+    // Check if file exists
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    // Get the MIME type
+    $mimeType = mime_content_type($path);
+    
+    // Return the file with proper headers
+    return response()->file($path, [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=86400', // Cache for 24 hours
+        'Content-Disposition' => 'inline',
+    ]);
+})->where('filename', '.*');
