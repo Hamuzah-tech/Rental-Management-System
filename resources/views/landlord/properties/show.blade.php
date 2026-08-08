@@ -302,6 +302,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1">
+                                    {{-- Fixed: Using route helper with tenant model for route model binding --}}
                                     <a href="{{ route('landlord.tenants.edit', $tenant) }}"
                                        title="Edit Tenant"
                                        class="p-2 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
