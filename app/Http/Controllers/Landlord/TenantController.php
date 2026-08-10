@@ -286,6 +286,7 @@ class TenantController extends Controller
      */
     public function store(Request $request)
     {
+        // Validate the request with custom messages
         $validated = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'name' => 'required|string|max:255',
@@ -307,14 +308,17 @@ class TenantController extends Controller
             'move_in_date.after_or_equal' => 'Move-in date must be today or a future date.',
         ]);
 
+        // Check phone format BEFORE checking duplicate
         if (!Tenant::isValidMalawiPhone($validated['phone'])) {
             return back()
                 ->withInput()
                 ->withErrors(['phone' => 'Please enter a valid Malawi phone number.']);
         }
 
+        // Normalize phone for duplicate check
         $normalizedPhone = Tenant::normalizePhoneNumber($validated['phone']);
 
+        // Check for duplicate phone in the same property
         $existingTenant = Tenant::where('phone', $normalizedPhone)
             ->where('property_id', $validated['property_id'])
             ->whereNull('deleted_at')
@@ -329,10 +333,12 @@ class TenantController extends Controller
         try {
             DB::beginTransaction();
 
+            // Check if property belongs to this landlord
             $property = Property::where('id', $validated['property_id'])
                 ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
+            // Check if property is full
             if ($property->isFull()) {
                 DB::rollBack();
                 return back()
@@ -342,6 +348,7 @@ class TenantController extends Controller
                     ]);
             }
 
+            // Create the tenant
             $tenantData = [
                 'property_id' => $property->id,
                 'name' => $validated['name'],
@@ -428,6 +435,7 @@ class TenantController extends Controller
     {
         $this->authorizeTenant($tenant);
 
+        // Sanitize monthly_rent
         if ($request->has('monthly_rent')) {
             $monthlyRent = $request->input('monthly_rent');
             $cleanMonthlyRent = preg_replace('/[^0-9.]/', '', $monthlyRent);
@@ -457,6 +465,8 @@ class TenantController extends Controller
             }
 
             $normalizedPhone = Tenant::normalizePhoneNumber($validated['phone']);
+            
+            // Check for duplicate phone in the same property (excluding current tenant)
             $existingTenant = Tenant::where('phone', $normalizedPhone)
                 ->where('property_id', $property->id)
                 ->where('id', '!=', $tenant->id)

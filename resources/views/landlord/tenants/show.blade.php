@@ -18,7 +18,7 @@
             </p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('landlord.properties.show', $tenant->property_id) }}"
+            <a href="{{ route('landlord.properties.show', $tenant->property->public_id) }}"
                class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
                 <x-heroicon-o-arrow-left class="w-4 h-4"/>
                 Back to Property
