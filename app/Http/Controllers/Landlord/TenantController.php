@@ -249,7 +249,7 @@ class TenantController extends Controller
         ]);
 
         $pdf->setPaper('A4', 'landscape');
-        $filename = 'property_tenants_' . $property->id . '_' . date('Y-m-d_H-i-s') . '.pdf';
+        $filename = 'property_tenants_' . $property->public_id . '_' . date('Y-m-d_H-i-s') . '.pdf';
         return $pdf->download($filename);
     }
 
@@ -282,11 +282,10 @@ class TenantController extends Controller
     }
 
     /**
-     * Store a newly created tenant in storage - IMPROVED with secure tenant code generation.
+     * Store a newly created tenant in storage.
      */
     public function store(Request $request)
     {
-        // Validate the request with custom messages (matching self-registration)
         $validated = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'name' => 'required|string|max:255',
@@ -308,17 +307,14 @@ class TenantController extends Controller
             'move_in_date.after_or_equal' => 'Move-in date must be today or a future date.',
         ]);
 
-        // Check phone format BEFORE checking duplicate
         if (!Tenant::isValidMalawiPhone($validated['phone'])) {
             return back()
                 ->withInput()
                 ->withErrors(['phone' => 'Please enter a valid Malawi phone number.']);
         }
 
-        // Normalize phone for duplicate check
         $normalizedPhone = Tenant::normalizePhoneNumber($validated['phone']);
 
-        // Check for duplicate phone in the same property
         $existingTenant = Tenant::where('phone', $normalizedPhone)
             ->where('property_id', $validated['property_id'])
             ->whereNull('deleted_at')
@@ -333,33 +329,20 @@ class TenantController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check if property belongs to this landlord
             $property = Property::where('id', $validated['property_id'])
                 ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
-            // Check if property is full - IMPROVED to retain form data
             if ($property->isFull()) {
                 DB::rollBack();
-                
-                // Get property details for the error message
-                $propertyName = $property->name;
-                $capacity = $property->capacity;
-                $currentCount = $property->tenants()->whereNull('deleted_at')->count();
-                
-                // Return with all input data preserved and a clear error message
                 return back()
                     ->withInput()
                     ->withErrors([
-                        'property_id' => "This hostel ({$propertyName}) is full. No additional tenants can be added because the hostel has reached its maximum capacity of {$capacity} tenants. Please select another hostel or wait until a space becomes available."
-                    ])
-                    ->with('error', "This hostel is full. No additional tenants can be added because the hostel has reached its maximum capacity. Please select another hostel or wait until a space becomes available.");
+                        'property_id' => "This property is full. Please select another property or wait until a space becomes available."
+                    ]);
             }
 
-            // Generate tenant code using the secure generator (without prefix)
-            // The boot method in the Tenant model will use generateUniqueTenantCode()
             $tenantData = [
-                // 'tenant_code' is automatically generated in the model's boot method
                 'property_id' => $property->id,
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -382,7 +365,7 @@ class TenantController extends Controller
             ]);
 
             return redirect()
-                ->route('landlord.properties.show', $property->id)
+                ->route('landlord.properties.show', $property->public_id)
                 ->with('success', 'Tenant created successfully.');
 
         } catch (\Exception $e) {
@@ -407,10 +390,8 @@ class TenantController extends Controller
     {
         $this->authorizeTenant($tenant);
         
-        // Start query for payments
         $query = $tenant->payments();
         
-        // Search by payment month or amount
         if ($request->filled('search_payment')) {
             $search = $request->search_payment;
             $query->where(function($q) use ($search) {
@@ -420,9 +401,7 @@ class TenantController extends Controller
             });
         }
         
-        // Get payments with pagination
         $payments = $query->latest()->paginate(10);
-        
         $tenant->load('property');
 
         return view('landlord.tenants.show', compact('tenant', 'payments'));
@@ -444,22 +423,17 @@ class TenantController extends Controller
 
     /**
      * Update the specified tenant in storage.
-     * IMPROVED: Removed status validation, sanitizes monthly_rent, preserves status from database.
      */
     public function update(Request $request, Tenant $tenant)
     {
         $this->authorizeTenant($tenant);
 
-        // Sanitize monthly_rent BEFORE validation - remove commas and non-numeric characters
         if ($request->has('monthly_rent')) {
             $monthlyRent = $request->input('monthly_rent');
-            // Remove all non-numeric characters (commas, spaces, currency symbols, letters)
             $cleanMonthlyRent = preg_replace('/[^0-9.]/', '', $monthlyRent);
-            // Override the request input with cleaned value
             $request->merge(['monthly_rent' => $cleanMonthlyRent]);
         }
 
-        // Validate the request - removed 'status' validation
         $validated = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'name' => 'required|string|max:255',
@@ -467,25 +441,21 @@ class TenantController extends Controller
             'phone' => 'required|string|max:20',
             'monthly_rent' => 'nullable|numeric|min:0',
             'move_in_date' => 'required|date',
-            // 'status' validation removed intentionally
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Check if property belongs to this landlord
             $property = Property::where('id', $validated['property_id'])
                 ->where('landlord_id', Auth::guard('landlord')->id())
                 ->firstOrFail();
 
-            // Validate phone number format (Malawi)
             if (!Tenant::isValidMalawiPhone($validated['phone'])) {
                 return back()
                     ->withInput()
                     ->withErrors(['phone' => 'Please enter a valid Malawi phone number.']);
             }
 
-            // Check for duplicate phone in the same property (excluding current tenant)
             $normalizedPhone = Tenant::normalizePhoneNumber($validated['phone']);
             $existingTenant = Tenant::where('phone', $normalizedPhone)
                 ->where('property_id', $property->id)
@@ -499,15 +469,12 @@ class TenantController extends Controller
                     ->withErrors(['phone' => 'A tenant with this phone number already exists in this property.']);
             }
 
-            // If monthly_rent is empty or null, use property's default rent
             if (empty($validated['monthly_rent']) && $validated['monthly_rent'] !== 0) {
                 $numericMonthlyRent = $property->monthly_rent ?? 0;
             } else {
                 $numericMonthlyRent = floatval($validated['monthly_rent']);
             }
 
-            // Update the tenant - preserve existing status from database
-            // Note: tenant_code is NOT updated - it remains the same
             $tenant->update([
                 'property_id' => $validated['property_id'],
                 'name' => $validated['name'],
@@ -515,8 +482,6 @@ class TenantController extends Controller
                 'phone' => $normalizedPhone,
                 'monthly_rent' => $numericMonthlyRent,
                 'move_in_date' => $validated['move_in_date'],
-                // Status is NOT updated - we preserve the existing value from the database
-                // This prevents the "status validation" error and is more secure
             ]);
 
             DB::commit();
@@ -530,14 +495,9 @@ class TenantController extends Controller
             ]);
 
             return redirect()
-                ->route('landlord.properties.show', $property->id)
+                ->route('landlord.properties.show', $property->public_id)
                 ->with('success', 'Tenant updated successfully!');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return back()
-                ->withErrors($e->errors())
-                ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             
@@ -561,7 +521,7 @@ class TenantController extends Controller
     {
         $this->authorizeTenant($tenant);
         
-        $propertyId = $tenant->property_id;
+        $propertyPublicId = $tenant->property->public_id;
         $tenant->delete();
 
         Log::info('Tenant soft deleted', [
@@ -571,30 +531,43 @@ class TenantController extends Controller
         ]);
 
         return redirect()
-            ->route('landlord.properties.show', $propertyId)
+            ->route('landlord.properties.show', $propertyPublicId)
             ->with('success', 'Tenant moved to archive.');
     }
 
     /**
-     * Restore a soft deleted tenant.
+     * Restore a soft deleted tenant using public_id.
      */
-    public function restore($id)
+    public function restore($public_id)
     {
-        $tenant = Tenant::onlyTrashed()->findOrFail($id);
-        $this->authorizeTenant($tenant);
-        
-        $propertyId = $tenant->property_id;
-        $tenant->restore();
+        try {
+            $tenant = Tenant::withTrashed()
+                ->where('public_id', $public_id)
+                ->firstOrFail();
+            
+            $this->authorizeTenant($tenant);
+            
+            $propertyPublicId = $tenant->property->public_id;
+            $tenant->restore();
 
-        Log::info('Tenant restored', [
-            'id' => $tenant->id,
-            'tenant_code' => $tenant->tenant_code,
-            'landlord_id' => Auth::guard('landlord')->id()
-        ]);
+            Log::info('Tenant restored', [
+                'id' => $tenant->id,
+                'public_id' => $tenant->public_id,
+                'tenant_code' => $tenant->tenant_code,
+                'landlord_id' => Auth::guard('landlord')->id()
+            ]);
 
-        return redirect()
-            ->route('landlord.properties.show', $propertyId)
-            ->with('success', 'Tenant restored successfully.');
+            return redirect()
+                ->route('landlord.properties.show', $propertyPublicId)
+                ->with('success', 'Tenant restored successfully.');
+                
+        } catch (\Exception $e) {
+            Log::error('Error restoring tenant', [
+                'message' => $e->getMessage(),
+                'public_id' => $public_id
+            ]);
+            return back()->withErrors(['error' => 'Failed to restore tenant. Please try again.']);
+        }
     }
 
     /**
@@ -661,7 +634,7 @@ class TenantController extends Controller
     {
         $this->authorizeTenant($tenant);
 
-        $propertyId = $tenant->property_id;
+        $propertyPublicId = $tenant->property->public_id;
 
         $tenant->update([
             'status' => 'moved_out',
@@ -677,7 +650,7 @@ class TenantController extends Controller
         ]);
 
         return redirect()
-            ->route('landlord.properties.show', $propertyId)
+            ->route('landlord.properties.show', $propertyPublicId)
             ->with('success', 'Tenant moved out successfully.');
     }
 
@@ -687,6 +660,8 @@ class TenantController extends Controller
     public function reactivate(Tenant $tenant)
     {
         $this->authorizeTenant($tenant);
+
+        $propertyPublicId = $tenant->property->public_id;
 
         $tenant->update([
             'status' => 'active',
@@ -700,7 +675,7 @@ class TenantController extends Controller
         ]);
 
         return redirect()
-            ->route('landlord.properties.show', $tenant->property_id)
+            ->route('landlord.properties.show', $propertyPublicId)
             ->with('success', 'Tenant reactivated successfully.');
     }
 
@@ -717,7 +692,6 @@ class TenantController extends Controller
             $q->where('landlord_id', Auth::guard('landlord')->id());
         });
 
-        // Search filter
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
@@ -727,7 +701,6 @@ class TenantController extends Controller
             });
         }
 
-        // Filter by payment status (paid/unpaid) for specific month/year
         if ($paymentStatus !== 'all') {
             if ($paymentStatus === 'paid') {
                 $query->whereHas('payments', function ($q) use ($month) {

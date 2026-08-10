@@ -139,13 +139,17 @@
                     </select>
                 </div>
 
+                {{-- Sort Direction --}}
+                <input type="hidden" name="sort_by" value="{{ request('sort_by', 'name') }}">
+                <input type="hidden" name="sort_dir" value="{{ request('sort_dir', 'asc') }}">
+
                 {{-- Action Buttons --}}
                 <div class="flex items-center gap-2">
                     <button type="submit" class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition whitespace-nowrap">
                         Search
                     </button>
                     
-                    @if(request('search') || request('month') || (request('payment_status') && request('payment_status') != 'all'))
+                    @if(request('search') || request('month') || (request('payment_status') && request('payment_status') != 'all') || request('sort_by') || request('sort_dir'))
                         <a href="{{ route('landlord.properties.show', $property) }}" class="text-sm text-[#6B7280] hover:text-[#ca0251] transition whitespace-nowrap">
                             Clear
                         </a>
@@ -158,7 +162,9 @@
                 'property' => $property->id,
                 'month' => request('month'),
                 'payment_status' => request('payment_status', 'all'),
-                'search' => request('search')
+                'search' => request('search'),
+                'sort_by' => request('sort_by', 'name'),
+                'sort_dir' => request('sort_dir', 'asc')
             ]) }}"
                target="_blank"
                rel="noopener noreferrer"
@@ -168,7 +174,7 @@
         </div>
         
         {{-- Active Filter Display --}}
-        @if(request('search') || request('month') || (request('payment_status') && request('payment_status') != 'all'))
+        @if(request('search') || request('month') || (request('payment_status') && request('payment_status') != 'all') || request('sort_by') || request('sort_dir'))
             <div class="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-[#E5E7EB]">
                 <span class="text-xs text-[#6B7280]">Active Filters:</span>
                 @if(request('search'))
@@ -186,6 +192,12 @@
                         {{ request('payment_status') == 'paid' ? 'Paid' : 'Unpaid' }}
                     </span>
                 @endif
+                @if(request('sort_by'))
+                    <span class="text-xs bg-[#F3F4F6] text-[#374151] px-2.5 py-0.5 rounded-full">
+                        Sort: {{ ucfirst(str_replace('_', ' ', request('sort_by'))) }}
+                        {{ request('sort_dir') == 'asc' ? '↑' : '↓' }}
+                    </span>
+                @endif
             </div>
         @endif
     </div>
@@ -196,8 +208,46 @@
             <table class="w-full text-sm">
                 <thead class="bg-[#F8FAFC]">
                     <tr class="text-[#6B7280]">
-                        <th class="px-4 py-3 text-left font-medium">Tenant Code</th>
-                        <th class="px-4 py-3 text-left font-medium">Name</th>
+                        {{-- Tenant Code with Sort --}}
+                        <th class="px-4 py-3 text-left font-medium">
+                            <div class="flex items-center gap-1 group">
+                                <span>Tenant Code</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'tenant_code', 'sort_dir' => 'asc'])) }}" 
+                                       class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'tenant_code' && request('sort_dir') == 'asc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
+                                        <svg class="w-3 h-3 -mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'tenant_code', 'sort_dir' => 'desc'])) }}" 
+                                       class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'tenant_code' && request('sort_dir') == 'desc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
+                                        <svg class="w-3 h-3 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        {{-- Name with Sort --}}
+                        <th class="px-4 py-3 text-left font-medium">
+                            <div class="flex items-center gap-1 group">
+                                <span>Name</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'name', 'sort_dir' => 'asc'])) }}" 
+                                       class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'name' && request('sort_dir') == 'asc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
+                                        <svg class="w-3 h-3 -mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'name', 'sort_dir' => 'desc'])) }}" 
+                                       class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'name' && request('sort_dir') == 'desc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
+                                        <svg class="w-3 h-3 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
                         <th class="px-4 py-3 text-left font-medium">Email</th>
                         <th class="px-4 py-3 text-left font-medium">Phone</th>
                         <th class="px-4 py-3 text-left font-medium">Rent (MK)</th>
@@ -302,7 +352,6 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1">
-                                    {{-- Fixed: Using route helper with tenant model for route model binding --}}
                                     <a href="{{ route('landlord.tenants.edit', $tenant) }}"
                                        title="Edit Tenant"
                                        class="p-2 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">

@@ -22,6 +22,12 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         @if($properties->count() > 0)
             <table class="w-full">
@@ -44,7 +50,7 @@
                                 {{ $property->deleted_at ? $property->deleted_at->format('M d, Y H:i') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <form action="{{ route('landlord.properties.restore', $property->id) }}" 
+                                <form action="{{ route('landlord.properties.restore', $property->public_id) }}" 
                                       method="POST" class="inline"
                                       onsubmit="return confirm('Are you sure you want to restore this property?')">
                                     @csrf

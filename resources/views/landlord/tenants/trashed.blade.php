@@ -21,6 +21,12 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         @if($tenants->count() > 0)
             <table class="w-full">
@@ -51,7 +57,7 @@
                                 {{ $tenant->deleted_at ? $tenant->deleted_at->format('M d, Y H:i') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <form action="{{ route('landlord.tenants.restore', $tenant->id) }}" 
+                                <form action="{{ route('landlord.tenants.restore', $tenant->public_id) }}" 
                                       method="POST" class="inline"
                                       onsubmit="return confirm('Are you sure you want to restore this tenant?')">
                                     @csrf

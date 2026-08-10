@@ -56,7 +56,6 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validate - address and description are now optional
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'address' => 'nullable|string|max:255',
@@ -65,7 +64,6 @@ class PropertyController extends Controller
                 'max_tenants' => 'required|integer|min:1',
             ]);
 
-            // Set default values for nullable fields if not provided
             $data['address'] = $data['address'] ?? '';
             $data['description'] = $data['description'] ?? '';
             $data['landlord_id'] = Auth::guard('landlord')->id();
@@ -109,11 +107,11 @@ class PropertyController extends Controller
     {
         $this->authorizeProperty($property);
         
-        // Get filter parameters
         $month = $request->month ?? null;
         $paymentStatus = $request->payment_status ?? 'all';
+        $sortBy = $request->sort_by ?? 'name';
+        $sortDir = $request->sort_dir ?? 'asc';
         
-        // Start with base query for tenants
         $query = Tenant::where('property_id', $property->id);
 
         $search = $request->search;
@@ -127,15 +125,20 @@ class PropertyController extends Controller
             });
         }
         
-        // Apply payment filters using the extracted method
         $this->applyPaymentFilters($query, $paymentStatus, $month);
         
-        // Get tenants with their payments - with pagination
+        // Apply sorting - allowed columns to prevent SQL injection
+        $allowedSorts = ['name', 'tenant_code', 'email', 'phone', 'monthly_rent', 'status'];
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('name', 'asc');
+        }
+        
         $tenants = $query->with(['payments' => function ($q) {
             $q->where('status', 'Approved')->orderBy('created_at', 'desc');
         }])->paginate(25);
         
-        // Generate month options for dropdown - Show 2026 and 2027 months
         $months = [];
         $startDate = Carbon::create(2026, 1, 1);
         $endDate = Carbon::create(2027, 12, 1);
@@ -145,7 +148,7 @@ class PropertyController extends Controller
             $startDate->addMonth();
         }
         
-        return view('landlord.properties.show', compact('property', 'tenants', 'months', 'month', 'paymentStatus'));
+        return view('landlord.properties.show', compact('property', 'tenants', 'months', 'month', 'paymentStatus', 'sortBy', 'sortDir'));
     }
 
     /**
@@ -155,36 +158,41 @@ class PropertyController extends Controller
     {
         $this->authorizeProperty($property);
         
-        // Get filter parameters
         $month = $request->month ?? null;
         $paymentStatus = $request->payment_status ?? 'all';
+        $sortBy = $request->sort_by ?? 'name';
+        $sortDir = $request->sort_dir ?? 'asc';
         
-        // Start with base query for tenants
         $query = Tenant::where('property_id', $property->id);
         
-        // Apply payment filters using the extracted method
         $this->applyPaymentFilters($query, $paymentStatus, $month);
         
-        // Get tenants with their payments
+        // Apply sorting for PDF export
+        $allowedSorts = ['name', 'tenant_code', 'email', 'phone', 'monthly_rent', 'status'];
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('name', 'asc');
+        }
+        
         $tenants = $query->with(['payments' => function ($q) {
             $q->where('status', 'Approved');
         }])->get();
         
-        // Generate PDF
         $pdf = Pdf::loadView('exports.tenants-pdf', [
             'tenants' => $tenants,
             'property' => $property,
             'paymentStatus' => $paymentStatus,
             'month' => $month,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir,
             'landlord' => Auth::guard('landlord')->user(),
             'generatedAt' => now()
         ]);
         
         $pdf->setPaper('A4', 'landscape');
         
-        // Use public_id or slug for better filename
         $filename = Str::slug($property->name) . '.pdf';
-        // Alternative: $filename = 'property_tenants_' . $property->public_id . '_' . date('Y-m-d') . '.pdf';
         
         return $pdf->download($filename);
     }
@@ -214,7 +222,6 @@ class PropertyController extends Controller
                 'max_tenants' => 'required|integer|min:1',
             ]);
 
-            // Set default values for nullable fields if not provided
             $data['address'] = $data['address'] ?? '';
             $data['description'] = $data['description'] ?? '';
 
@@ -386,17 +393,10 @@ class PropertyController extends Controller
 
     /**
      * Apply payment filters to the tenant query.
-     * This method extracts the duplicated payment filtering logic for maintainability.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $paymentStatus
-     * @param string|null $month
-     * @return void
      */
     private function applyPaymentFilters($query, string $paymentStatus, ?string $month): void
     {
         if ($paymentStatus !== 'all' && $month) {
-            // PAID: Tenants who have a payment record for the selected month
             if ($paymentStatus === 'paid') {
                 $query->whereHas('payments', function ($q) use ($month) {
                     $q->where('status', 'Approved')
@@ -407,9 +407,7 @@ class PropertyController extends Controller
                                    ->orWhere('payment_month', '=', $month);
                       });
                 });
-            } 
-            // UNPAID: Tenants who DO NOT have a payment record for the selected month
-            elseif ($paymentStatus === 'unpaid') {
+            } elseif ($paymentStatus === 'unpaid') {
                 $query->whereDoesntHave('payments', function ($q) use ($month) {
                     $q->where('status', 'Approved')
                       ->where(function ($subQuery) use ($month) {
@@ -421,7 +419,6 @@ class PropertyController extends Controller
                 });
             }
         } elseif ($paymentStatus !== 'all' && !$month) {
-            // If no month selected, use current month
             $currentMonth = date('Y-m');
             
             if ($paymentStatus === 'paid') {
@@ -446,7 +443,6 @@ class PropertyController extends Controller
                 });
             }
         } elseif ($paymentStatus === 'all' && $month) {
-            // Month only filter - show tenants who have paid for this month
             $query->whereHas('payments', function ($q) use ($month) {
                 $q->where('status', 'Approved')
                   ->where(function ($subQuery) use ($month) {

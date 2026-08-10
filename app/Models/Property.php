@@ -35,6 +35,17 @@ class Property extends Model
     ];
 
     /**
+     * Get the route key for the model.
+     * This tells Laravel to use public_id instead of id for route model binding.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'public_id';
+    }
+
+    /**
      * Get the landlord that owns the property.
      */
     public function landlord(): BelongsTo

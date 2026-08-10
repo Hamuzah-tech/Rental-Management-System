@@ -31,6 +31,17 @@ class Tenant extends Model
     ];
 
     /**
+     * Get the route key for the model.
+     * This tells Laravel to use public_id instead of id for route model binding.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'public_id';
+    }
+
+    /**
      * Generate a secure random 6-character alphanumeric tenant code.
      * Uses cryptographically secure random bytes for maximum security.
      * Automatically checks for uniqueness and regenerates if duplicate found.
