@@ -138,7 +138,7 @@
         @endif
     </div>
 
-    @if(isset($month) || (isset($paymentStatus) && $paymentStatus != 'all') || isset($search))
+    @if(isset($month) && $month || (isset($paymentStatus) && $paymentStatus != 'all') || isset($search))
         <div class="filters">
             <strong>Filters Applied:</strong>
             @if(isset($month) && $month)
@@ -164,10 +164,9 @@
         <thead>
             <tr>
                 <th width="5%">#</th>
-                <th width="25%">Tenant Name</th>
-                <th width="20%">Phone</th>
-                <th width="30%">Email</th>
-                <th width="20%">Hostel</th>
+                <th width="35%">Tenant Name</th>
+                <th width="25%">Phone</th>
+                <th width="35%">Email</th>
             </tr>
         </thead>
         <tbody>
@@ -177,11 +176,10 @@
                     <td><strong>{{ e($tenant->name) }}</strong></td>
                     <td>{{ e($tenant->phone) }}</td>
                     <td>{{ e($tenant->email) }}</td>
-                    <td>{{ e($tenant->property->name ?? $property->name ?? 'N/A') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted" style="padding: 20px;">
+                    <td colspan="4" class="text-center text-muted" style="padding: 20px;">
                         No tenants found matching the filters.
                     </td>
                 </tr>

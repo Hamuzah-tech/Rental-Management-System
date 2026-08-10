@@ -93,7 +93,7 @@
     {{-- Filters --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <form method="GET" action="{{ route('landlord.properties.show', $property) }}" class="flex flex-wrap items-end gap-3 w-full md:w-auto" id="filterForm">
+            <form method="GET" action="{{ route('landlord.properties.show', $property->public_id) }}" class="flex flex-wrap items-end gap-3 w-full md:w-auto" id="filterForm">
                 {{-- Search Input --}}
                 <div class="flex-1 md:flex-none">
                     <label class="block text-sm font-medium text-[#374151] mb-1">
@@ -150,7 +150,7 @@
                     </button>
                     
                     @if(request('search') || request('month') || (request('payment_status') && request('payment_status') != 'all') || request('sort_by') || request('sort_dir'))
-                        <a href="{{ route('landlord.properties.show', $property) }}" class="text-sm text-[#6B7280] hover:text-[#ca0251] transition whitespace-nowrap">
+                        <a href="{{ route('landlord.properties.show', $property->public_id) }}" class="text-sm text-[#6B7280] hover:text-[#ca0251] transition whitespace-nowrap">
                             Clear
                         </a>
                     @endif
@@ -159,7 +159,7 @@
 
             {{-- PDF Text Button --}}
             <a href="{{ route('landlord.properties.export.pdf', [
-                'property' => $property->id,
+                'property' => $property->public_id,
                 'month' => request('month'),
                 'payment_status' => request('payment_status', 'all'),
                 'search' => request('search'),
@@ -213,13 +213,13 @@
                             <div class="flex items-center gap-1 group">
                                 <span>Tenant Code</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'tenant_code', 'sort_dir' => 'asc'])) }}" 
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property->public_id], request()->query(), ['sort_by' => 'tenant_code', 'sort_dir' => 'asc'])) }}" 
                                        class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'tenant_code' && request('sort_dir') == 'asc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
                                         <svg class="w-3 h-3 -mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                                         </svg>
                                     </a>
-                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'tenant_code', 'sort_dir' => 'desc'])) }}" 
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property->public_id], request()->query(), ['sort_by' => 'tenant_code', 'sort_dir' => 'desc'])) }}" 
                                        class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'tenant_code' && request('sort_dir') == 'desc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
                                         <svg class="w-3 h-3 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -233,13 +233,13 @@
                             <div class="flex items-center gap-1 group">
                                 <span>Name</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'name', 'sort_dir' => 'asc'])) }}" 
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property->public_id], request()->query(), ['sort_by' => 'name', 'sort_dir' => 'asc'])) }}" 
                                        class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'name' && request('sort_dir') == 'asc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
                                         <svg class="w-3 h-3 -mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                                         </svg>
                                     </a>
-                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property], request()->query(), ['sort_by' => 'name', 'sort_dir' => 'desc'])) }}" 
+                                    <a href="{{ route('landlord.properties.show', array_merge(['property' => $property->public_id], request()->query(), ['sort_by' => 'name', 'sort_dir' => 'desc'])) }}" 
                                        class="leading-none hover:text-[#ca0251] transition {{ request('sort_by') == 'name' && request('sort_dir') == 'desc' ? 'text-[#ca0251]' : 'text-[#9CA3AF]' }}">
                                         <svg class="w-3 h-3 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
