@@ -24,12 +24,10 @@
                             class="w-full text-left px-4 py-3 hover:bg-[#F3F4F6] transition border-b border-[#E5E7EB] text-sm text-[#111827]">
                         Landlord Manual
                     </button>
-                    <a href="{{ asset('storage/manuals/tenant-manual.pdf') }}" 
-                       target="_blank"
-                       download
-                       class="block w-full text-left px-4 py-3 hover:bg-[#F3F4F6] transition text-sm text-[#111827]">
+                    <button onclick="requestTenantApproval()" 
+                            class="w-full text-left px-4 py-3 hover:bg-[#F3F4F6] transition text-sm text-[#111827]">
                         Tenant Manual
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -113,7 +111,7 @@
         </div>
     </footer>
 
-    <!-- Request Approval Modal -->
+    <!-- Request Approval Modal (Landlord) -->
     <div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6 shadow-xl">
             <div class="text-center">
@@ -122,7 +120,24 @@
                     The Landlord Manual is available upon request.<br>
                     Please contact the Operations Manager for access.
                 </p>
-                <button onclick="closeModal()" 
+                <button onclick="closeModal('approvalModal')" 
+                        class="w-full bg-[#0F172A] text-white py-2 px-4 rounded-lg hover:bg-[#ca0251] transition">
+                    Okay, Got it
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenant Manual Modal -->
+    <div id="tenantModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6 shadow-xl">
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-[#111827] mb-2">Tenant Manual</h3>
+                <p class="text-sm text-[#6B7280] mb-6">
+                    The Tenant Manual is available upon request.<br>
+                    Please contact the Operations Manager for access.
+                </p>
+                <button onclick="closeModal('tenantModal')" 
                         class="w-full bg-[#0F172A] text-white py-2 px-4 rounded-lg hover:bg-[#ca0251] transition">
                     Okay, Got it
                 </button>
@@ -131,7 +146,7 @@
     </div>
 
     <style>
-        #approvalModal.show {
+        #approvalModal.show, #tenantModal.show {
             display: flex !important;
         }
     </style>
@@ -141,14 +156,24 @@
             document.getElementById('approvalModal').classList.add('show');
         }
 
-        function closeModal() {
-            document.getElementById('approvalModal').classList.remove('show');
+        function requestTenantApproval() {
+            document.getElementById('tenantModal').classList.add('show');
         }
 
-        // Close modal when clicking outside
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Close modals when clicking outside
         document.getElementById('approvalModal').addEventListener('click', function(e) {
             if (e.target === this) {
-                closeModal();
+                closeModal('approvalModal');
+            }
+        });
+
+        document.getElementById('tenantModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal('tenantModal');
             }
         });
     </script>
