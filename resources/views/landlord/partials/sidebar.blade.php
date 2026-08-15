@@ -1,37 +1,22 @@
 <!-- resources/views/landlord/partials/sidebar.blade.php -->
-<div x-data="{ open: false }"
-     x-init="
-        const sync = () => { open = window.innerWidth >= 1024; };
-        sync();
-        window.addEventListener('resize', sync);
-     ">
-
-    <!-- Mobile Hamburger - White lines, no background -->
-    <button @click="open = !open" class="fixed top-3 left-3 z-[60] lg:hidden p-2 rounded-lg transition" aria-label="Toggle menu">
-        <div class="space-y-1.5">
-            <span class="block w-7 h-0.5 bg-white rounded-full"></span>
-            <span class="block w-5 h-0.5 bg-white rounded-full"></span>
-            <span class="block w-6 h-0.5 bg-white rounded-full"></span>
-        </div>
-    </button>
-
+<div>
     <!-- Overlay - Only for mobile -->
-    <div x-show="open"
+    <div x-show="sidebarOpen"
          x-transition:enter="transition-opacity ease-linear duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition-opacity ease-linear duration-300"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         @click="open = false"
+         @click="sidebarOpen = false"
          class="fixed inset-0 bg-black/40 z-40 lg:hidden"
          x-cloak>
     </div>
 
     <!-- Sidebar -->
     <aside
-           class="fixed top-0 left-0 z-50 w-[270px] h-screen bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-[4px_0_20px_rgba(0,0,0,0.08)] lg:shadow-[2px_0_15px_rgba(0,0,0,0.06)] transition-transform duration-300 lg:!translate-x-0"
-           :class="open ? 'translate-x-0' : '-translate-x-full'">
+           class="app-sidebar fixed top-0 left-0 z-50 w-[270px] h-screen bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-[4px_0_20px_rgba(0,0,0,0.08)] lg:shadow-[2px_0_15px_rgba(0,0,0,0.06)] transition-transform duration-300"
+           :class="{ 'is-open': sidebarOpen }">
 
         <!-- Logo - Fixed at top -->
         <div class="flex-shrink-0 px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
@@ -39,7 +24,7 @@
                 <h1 class="text-lg font-bold text-[#ca0251]">Alendi</h1>
                 <p class="text-xs text-slate-500">For Landlords. For Tenants.</p>
             </div>
-            <button @click="open = false" class="lg:hidden text-slate-500 hover:text-[#ca0251]">
+            <button type="button" @click="sidebarOpen = false" class="lg:hidden text-slate-500 hover:text-[#ca0251]" aria-label="Close menu">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>

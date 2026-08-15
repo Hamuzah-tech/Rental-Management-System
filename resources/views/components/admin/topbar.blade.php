@@ -44,6 +44,7 @@ $notificationCount = $notifications->count();
             type="button"
             @click="sidebarOpen = true"
             class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+            x-show="!sidebarOpen"
             aria-label="Open menu"
         >
             <div class="space-y-1.5">

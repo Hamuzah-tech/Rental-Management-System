@@ -7,9 +7,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        [x-cloak] { display: none !important; }
+        @media (max-width: 1023px) {
+            .app-sidebar { transform: translateX(-100%); }
+            .app-sidebar.is-open { transform: translateX(0); }
+        }
+        @media (min-width: 1024px) {
+            .app-sidebar { transform: none !important; }
+        }
+    </style>
 </head>
 
-<body class="bg-slate-100 overflow-x-hidden">
+<body class="bg-slate-100">
 
 <div
     class="flex min-h-screen"

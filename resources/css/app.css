@@ -7,16 +7,9 @@
 }
 
 @layer base {
-    html,
-    body {
-        overflow-x: hidden;
-        max-width: 100%;
-    }
-
     img,
     video,
-    canvas,
-    svg {
+    canvas {
         max-width: 100%;
         height: auto;
     }
