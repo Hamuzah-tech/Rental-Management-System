@@ -126,11 +126,11 @@
 
 
             <!-- Footer -->
-            <div class="border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+            <div class="border-t border-slate-200 px-4 sm:px-6 py-4 page-actions">
 
 
                 <a href="{{ route('admin.landlords.index') }}"
-                   class="px-5 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition">
+                   class="px-5 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition text-center w-full sm:w-auto">
 
                     Cancel
 
@@ -141,7 +141,7 @@
 
                 <button
                     type="submit"
-                    class="flex items-center gap-2 px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl transition">
+                    class="flex items-center justify-center gap-2 px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl transition w-full sm:w-auto">
 
 
                     <x-heroicon-o-check class="w-5 h-5"/>

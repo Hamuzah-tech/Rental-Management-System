@@ -8,7 +8,7 @@
 </head>
 <body class="bg-white relative min-h-screen flex flex-col">
     <!-- Header with Manuals in top-right -->
-    <header class="w-full px-6 py-4">
+    <header class="w-full px-4 sm:px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-end">
             <div class="relative group">
                 <button class="text-[#111827] hover:text-[#ca0251] font-medium text-sm flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] transition">
@@ -34,7 +34,7 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex-1 flex items-center justify-center px-6 py-12">
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
         <div class="w-full max-w-md">
             
             <!-- Logo -->
@@ -46,7 +46,7 @@
 
             <!-- Centered Welcome Section -->
             <div class="text-center mb-10">
-                <h1 class="text-3xl font-bold text-[#111827]">
+                <h1 class="text-2xl sm:text-3xl font-bold text-[#111827]">
                     Alendi Estates
                 </h1>
                 <p class="mt-2 text-[#6B7280]">
@@ -57,7 +57,7 @@
             <div class="mt-10 space-y-4">
                 <!-- Landlord -->
                 <a href="{{ route('landlord.login') }}"
-                   class="flex items-center gap-4 rounded-xl border border-[#E5E7EB] p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-[#ca0251]">
+                   class="flex items-center gap-3 sm:gap-4 rounded-xl border border-[#E5E7EB] p-4 sm:p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-[#ca0251]">
 
                     <x-heroicon-o-home-modern
                         class="w-12 h-12 text-[#6B7280] flex-shrink-0"/>
@@ -77,7 +77,7 @@
 
                 <!-- Tenant Portal -->
                 <a href="{{ route('tenant.payments.index') }}"
-                   class="flex items-center gap-4 rounded-xl border border-[#E5E7EB] p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-[#ca0251]">
+                   class="flex items-center gap-3 sm:gap-4 rounded-xl border border-[#E5E7EB] p-4 sm:p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-[#ca0251]">
 
                     <x-heroicon-o-credit-card
                         class="w-12 h-12 text-[#6B7280] flex-shrink-0"/>

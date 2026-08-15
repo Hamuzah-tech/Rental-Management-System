@@ -28,13 +28,13 @@
             <!-- Property Information -->
             <div class="px-6 py-4 bg-[#F8FAFC] border-b border-[#E5E7EB]">
                 <div class="flex flex-col gap-1 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-[#6B7280]">Property:</span>
-                        <span class="font-medium text-[#111827]">{{ $property->name }}</span>
+                    <div class="flex justify-between gap-4">
+                        <span class="text-[#6B7280] flex-shrink-0">Property:</span>
+                        <span class="font-medium text-[#111827] text-right break-anywhere">{{ $property->name }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-[#6B7280]">Rent:</span>
-                        <span class="font-medium text-[#111827]">MK {{ number_format($property->monthly_rent ?? 0) }}</span>
+                    <div class="flex justify-between gap-4">
+                        <span class="text-[#6B7280] flex-shrink-0">Rent:</span>
+                        <span class="font-medium text-[#111827] text-right">MK {{ number_format($property->monthly_rent ?? 0) }}</span>
                     </div>
                 </div>
             </div>

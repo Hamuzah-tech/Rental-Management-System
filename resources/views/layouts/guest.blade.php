@@ -31,9 +31,9 @@
         @else
             <!-- Default header for guest pages -->
             <header class="bg-[#ca0251] border-b border-[#a80244] px-4 sm:px-6 lg:px-8 py-3 flex-shrink-0">
-                <div class="max-w-7xl mx-auto flex items-center justify-between">
-                    <h1 class="text-xl font-bold text-white">Alendi</h1>
-                    <p class="text-sm text-white/80">For Landlords. For Tenants.</p>
+                <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+                    <h1 class="text-lg sm:text-xl font-bold text-white">Alendi</h1>
+                    <p class="hidden sm:block text-sm text-white/80">For Landlords. For Tenants.</p>
                 </div>
             </header>
         @endif

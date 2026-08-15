@@ -108,15 +108,15 @@
         </div>
 
         <!-- Footer - Compact -->
-        <div class="border-t border-slate-200 px-5 py-3 flex justify-end gap-2.5">
+        <div class="border-t border-slate-200 px-5 py-3 page-actions">
             <a href="{{ route('landlord.properties.index') }}"
-               class="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] transition text-sm">
+               class="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-[#ca0251]/10 hover:text-[#ca0251] hover:border-[#ca0251] transition text-sm w-full sm:w-auto text-center">
                 Cancel
             </a>
 
             <button
                 type="submit"
-                class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-1.5 rounded-lg transition flex items-center gap-2 text-sm">
+                class="bg-[#ca0251] hover:bg-[#a80244] text-white px-5 py-1.5 rounded-lg transition flex items-center justify-center gap-2 text-sm w-full sm:w-auto">
                 <x-heroicon-o-check class="w-4 h-4"/>
                 Update Hostel
             </button>

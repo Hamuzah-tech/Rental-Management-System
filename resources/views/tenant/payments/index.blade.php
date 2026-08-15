@@ -11,7 +11,7 @@
 
 <body class="bg-white">
 
-<div class="min-h-screen flex items-center justify-center px-6">
+<div class="min-h-screen flex items-center justify-center px-4 sm:px-6">
 
     <div class="w-full max-w-3xl">
 
@@ -24,7 +24,7 @@
             </a>
         </div>
 
-        <h1 class="text-3xl font-bold text-slate-800">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
             Tenant Dashboard
         </h1>
 
@@ -36,7 +36,7 @@
             
             <!-- Record Payment -->
             <a href="{{ route('tenant.payments.create') }}"
-               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition-all duration-300 hover:border-[#ca0251] hover:shadow-lg hover:-translate-y-1">
+               class="flex items-center gap-3 sm:gap-4 rounded-xl border border-slate-200 p-4 sm:p-5 transition-all duration-300 hover:border-[#ca0251] hover:shadow-lg hover:-translate-y-1">
 
                 <x-heroicon-o-credit-card class="w-12 h-12 text-[#ca0251] flex-shrink-0"/>
 
@@ -55,7 +55,7 @@
 
             <!-- Payment History -->
             <a href="{{ route('tenant.payments.history') }}"
-               class="flex items-center gap-4 rounded-xl border border-slate-200 p-5 transition-all duration-300 hover:border-[#ca0251] hover:shadow-lg hover:-translate-y-1">
+               class="flex items-center gap-3 sm:gap-4 rounded-xl border border-slate-200 p-4 sm:p-5 transition-all duration-300 hover:border-[#ca0251] hover:shadow-lg hover:-translate-y-1">
 
                 <x-heroicon-o-document-text class="w-12 h-12 text-[#ca0251] flex-shrink-0"/>
 

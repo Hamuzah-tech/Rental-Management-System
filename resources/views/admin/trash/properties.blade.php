@@ -5,13 +5,13 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
+    <div class="page-header mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Archived Properties</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Archived Properties</h1>
             <p class="text-slate-500 text-sm">Manage all soft-deleted properties</p>
         </div>
-        <a href="{{ route('admin.dashboard') }}" 
-           class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm transition">
+        <a href="{{ route('admin.dashboard') }}"
+           class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm transition w-full sm:w-auto text-center">
             ← Dashboard
         </a>
     </div>
@@ -24,7 +24,8 @@
 
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         @if($properties->count() > 0)
-            <table class="w-full">
+            <div class="table-scroll">
+            <table class="w-full min-w-[640px]">
                 <thead class="bg-slate-50 border-b border-slate-200">
                     <tr>
                         <th class="text-left px-6 py-3 text-sm font-medium text-slate-600">Property Name</th>
@@ -78,8 +79,9 @@
                     @endforeach
                 </tbody>
             </table>
-            
-            <div class="px-6 py-4 border-t border-slate-200">
+            </div>
+
+            <div class="px-4 sm:px-6 py-4 border-t border-slate-200 overflow-x-auto">
                 {{ $properties->links() }}
             </div>
         @else

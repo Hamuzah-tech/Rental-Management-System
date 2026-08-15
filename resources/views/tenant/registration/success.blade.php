@@ -5,14 +5,14 @@
 @section('title', 'Registration Successful')
 
 @section('content')
-<div class="min-h-screen bg-slate-100 py-12">
+<div class="min-h-screen bg-slate-100 py-8 sm:py-12 px-4">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             
             <!-- Header -->
-            <div class="px-8 py-6 border-b border-slate-200">
+            <div class="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">
                         Registration Successful
                     </h1>
                     <p class="text-slate-500 mt-1">
@@ -21,7 +21,7 @@
                 </div>
             </div>
 
-            <div class="p-8 space-y-6">
+            <div class="p-4 sm:p-8 space-y-6">
                 
                 <!-- Success Message -->
                 <div class="rounded-xl border border-green-200 bg-green-50 p-6">
@@ -50,7 +50,7 @@
                             </tr>
                             <tr class="border-b border-slate-100">
                                 <td class="px-4 py-3 font-medium text-slate-600">Email</td>
-                                <td class="px-4 py-3 text-slate-800">{{ $tenant->email }}</td>
+                                <td class="px-4 py-3 text-slate-800 break-anywhere">{{ $tenant->email }}</td>
                             </tr>
                             <tr class="border-b border-slate-100">
                                 <td class="px-4 py-3 font-medium text-slate-600">Phone</td>

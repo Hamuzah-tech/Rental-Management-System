@@ -14,16 +14,16 @@
 
     <!-- Property Info -->
 
-    <div class="bg-white border border-slate-200 rounded-xl p-6">
+    <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
 
 
-        <div class="flex justify-between items-start">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
 
 
             <div>
 
 
-                <h2 class="text-2xl font-bold text-slate-800">
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-800">
 
                     {{ $property->name }}
 
@@ -161,7 +161,7 @@
 
 
 
-        <div class="px-6 py-4 border-b border-slate-200">
+        <div class="px-4 sm:px-6 py-4 border-b border-slate-200">
 
 
             <h3 class="text-lg font-bold text-slate-800">
@@ -173,11 +173,8 @@
 
         </div>
 
-
-
-
-
-        <table class="w-full text-sm">
+        <div class="table-scroll">
+        <table class="w-full text-sm min-w-[480px]">
 
 
 
@@ -299,6 +296,7 @@
 
 
         </table>
+        </div>
 
 
 

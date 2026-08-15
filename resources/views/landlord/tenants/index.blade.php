@@ -38,8 +38,57 @@
 
     {{-- Tenants Table --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+        <div class="divide-y divide-[#E5E7EB] md:hidden">
+            @forelse($tenants as $index => $tenant)
+                <div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-medium text-[#111827] truncate">{{ e($tenant->name) }}</p>
+                            <p class="font-mono text-xs text-[#6B7280] mt-0.5">{{ e($tenant->tenant_code) }}</p>
+                        </div>
+                        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium capitalize flex-shrink-0
+                            @if($tenant->status == 'active') bg-green-100 text-green-700
+                            @elseif($tenant->status == 'inactive') bg-[#F3F4F6] text-[#6B7280]
+                            @else bg-[#F3F4F6] text-[#374151] @endif">
+                            {{ e($tenant->status) }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-[#374151] break-anywhere">{{ e($tenant->email) }}</p>
+                    <p class="text-sm text-[#374151]">{{ e($tenant->phone) }}</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="text-[#6B7280]">Hostel:</span>
+                            <span class="text-[#111827]">{{ e($tenant->property->name ?? 'N/A') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[#6B7280]">Rent:</span>
+                            <span class="text-[#111827]">MK {{ number_format((float)($tenant->monthly_rent ?? 0)) }}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 pt-1">
+                        <a href="{{ route('landlord.tenants.edit', $tenant) }}" title="Edit Tenant" class="p-2 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
+                            <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                        </a>
+                        <a href="{{ route('landlord.tenants.show', $tenant) }}" title="View Tenant" class="p-2 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
+                            <x-heroicon-o-eye class="w-5 h-5"/>
+                        </a>
+                        <form method="POST" action="{{ route('landlord.tenants.destroy', $tenant) }}" id="delete-tenant-mobile-{{ $tenant->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" title="Delete Tenant"
+                                onclick="openConfirmModal('delete-tenant-mobile-{{ $tenant->id }}','Delete Tenant','Are you sure you want to delete this tenant? This action cannot be undone.')"
+                                class="p-2 rounded-lg text-[#6B7280] hover:bg-red-50 hover:text-red-600 transition">
+                                <x-heroicon-o-trash class="w-5 h-5"/>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-[#6B7280] text-sm">No tenants found.</div>
+            @endforelse
+        </div>
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-sm min-w-[800px]">
                 <thead class="bg-[#F8FAFC]">
                     <tr class="text-[#6B7280]">
                         <th class="px-4 py-3 text-left font-medium">#</th>

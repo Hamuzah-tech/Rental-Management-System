@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer base {
+    html,
+    body {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+
+    img,
+    video,
+    canvas,
+    svg {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+@layer components {
+    .table-scroll {
+        @apply overflow-x-auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .page-header {
+        @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .page-actions {
+        @apply flex w-full flex-col-reverse gap-3 sm:w-auto sm:flex-row sm:justify-end;
+    }
+}
+
+@layer utilities {
+    .break-anywhere {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+}
+
+/* Keep Laravel pagination usable on small screens */
+nav[role="navigation"] span,
+nav[role="navigation"] a {
+    min-width: 2rem;
+}
+
+nav[role="navigation"] > div {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+}

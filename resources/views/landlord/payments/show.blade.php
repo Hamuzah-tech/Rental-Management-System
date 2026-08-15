@@ -13,7 +13,7 @@
     @endif
 
     <!-- Header -->
-    <div class="bg-white rounded-lg border border-[#E5E7EB] px-5 py-3 flex justify-between items-center">
+    <div class="bg-white rounded-lg border border-[#E5E7EB] px-4 sm:px-5 py-3 page-header">
         <div>
             <h2 class="text-base font-semibold text-[#111827]">Payment Information</h2>
             <p class="text-[#6B7280] text-xs">Review this tenant payment.</p>
@@ -29,7 +29,7 @@
         <!-- Payment Details -->
         <div class="lg:col-span-2 bg-white rounded-lg border border-[#E5E7EB] px-5 py-4">
             <h3 class="font-semibold text-sm mb-3 text-[#111827]">Payment Details</h3>
-            <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <div>
                     <p class="text-[#6B7280] text-xs mb-0.5">Tenant</p>
                     <p class="text-[#111827] font-medium">{{ $payment->tenant->name }}</p>
@@ -184,7 +184,7 @@
         <!-- Decision Card - When not pending -->
         <div class="bg-white rounded-lg border border-[#E5E7EB] px-5 py-4">
             <h3 class="font-semibold text-sm mb-2 text-[#111827]">Decision</h3>
-            <div class="grid grid-cols-3 gap-4 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
                     <p class="text-[#6B7280] text-xs mb-0.5">Approved By</p>
                     <p class="text-[#111827]">{{ optional($payment->approver)->name ?? 'N/A' }}</p>
@@ -215,7 +215,7 @@
             alt="Payment Screenshot">
         <button 
             onclick="closeModal()" 
-            class="absolute -top-12 right-0 text-white hover:text-gray-300 transition text-2xl bg-black/50 hover:bg-black/70 rounded-full w-10 h-10 flex items-center justify-center">
+            class="absolute top-4 right-4 text-white hover:text-gray-300 transition text-2xl bg-black/50 hover:bg-black/70 rounded-full w-10 h-10 flex items-center justify-center">
             ✕
         </button>
     </div>

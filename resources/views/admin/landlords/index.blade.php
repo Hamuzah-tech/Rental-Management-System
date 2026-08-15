@@ -10,11 +10,11 @@
 
 
     <!-- Header -->
-    <div class="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center">
+    <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 page-header">
 
         <div>
 
-            <h2 class="text-xl font-bold text-slate-800">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-800">
                 Landlords
             </h2>
 
@@ -26,7 +26,7 @@
 
 
         <a href="{{ route('admin.landlords.create') }}"
-           class="bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-900 transition text-sm">
+           class="bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-900 transition text-sm w-full sm:w-auto text-center">
 
             + Create Landlord
 
@@ -119,8 +119,69 @@
 
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
+        {{-- Mobile cards --}}
+        <div class="divide-y divide-slate-100 md:hidden">
+            @forelse($landlords as $index => $landlord)
+                <div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-medium text-slate-800 truncate">{{ $landlord->name }}</p>
+                            <p class="text-xs text-slate-500 truncate">{{ $landlord->username }}</p>
+                        </div>
+                        @if($landlord->status)
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs flex-shrink-0">Active</span>
+                        @else
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-xs flex-shrink-0">Suspended</span>
+                        @endif
+                    </div>
+                    <p class="text-sm text-slate-600 break-anywhere">{{ $landlord->email }}</p>
+                    <p class="text-sm text-slate-600">{{ $landlord->phone }}</p>
+                    <div class="flex flex-wrap gap-1 pt-1">
+                        <a href="{{ route('admin.landlords.show',$landlord) }}" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="View">
+                            <x-heroicon-o-eye class="w-5 h-5"/>
+                        </a>
+                        <a href="{{ route('admin.landlords.edit',$landlord) }}" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="Edit">
+                            <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                        </a>
+                        <form action="{{ route('admin.landlords.status',$landlord) }}" method="POST" id="status-form-mobile-{{ $landlord->id }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="button" title="{{ $landlord->status ? 'Suspend' : 'Activate' }}"
+                                onclick="openConfirmModal('status-form-mobile-{{ $landlord->id }}','{{ $landlord->status ? 'Suspend Landlord' : 'Activate Landlord' }}','Are you sure you want to change this landlord status?')"
+                                class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                                @if($landlord->status)
+                                    <x-heroicon-o-pause-circle class="w-5 h-5"/>
+                                @else
+                                    <x-heroicon-o-check-circle class="w-5 h-5"/>
+                                @endif
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.landlords.reset-password',$landlord) }}" method="POST" id="reset-form-mobile-{{ $landlord->id }}">
+                            @csrf
+                            <button type="button" title="Reset Password"
+                                onclick="openConfirmModal('reset-form-mobile-{{ $landlord->id }}','Reset Password','Are you sure you want to reset this landlord password?')"
+                                class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                                <x-heroicon-o-key class="w-5 h-5"/>
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.landlords.destroy',$landlord) }}" method="POST" id="delete-form-mobile-{{ $landlord->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" title="Delete"
+                                onclick="openConfirmModal('delete-form-mobile-{{ $landlord->id }}','Delete Landlord','Are you sure you want to delete this landlord? This action cannot be undone.')"
+                                class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                                <x-heroicon-o-trash class="w-5 h-5"/>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-slate-500 text-sm">No landlords found.</div>
+            @endforelse
+        </div>
 
-        <table class="w-full text-sm">
+        <div class="hidden md:block table-scroll">
+        <table class="w-full text-sm min-w-[720px]">
 
 
             <thead class="bg-slate-50">
@@ -393,6 +454,7 @@
 
 
         </table>
+        </div>
 
 
     </div>
@@ -417,7 +479,7 @@
 <!-- Confirmation Modal -->
 
 <div id="confirmModal"
-     class="fixed inset-0 hidden items-center justify-center z-50">
+     class="fixed inset-0 hidden items-center justify-center z-50 p-4">
 
 
     <!-- Background -->
@@ -463,12 +525,12 @@
 
 
 
-        <div class="flex justify-end gap-3">
+        <div class="page-actions">
 
 
             <button
                 onclick="closeConfirmModal()"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50">
+                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 w-full sm:w-auto">
 
                 Cancel
 
@@ -478,7 +540,7 @@
 
             <button
                 onclick="submitConfirmAction()"
-                class="px-4 py-2 rounded-xl bg-slate-800 text-white hover:bg-slate-900">
+                class="px-4 py-2 rounded-xl bg-slate-800 text-white hover:bg-slate-900 w-full sm:w-auto">
 
                 Confirm
 

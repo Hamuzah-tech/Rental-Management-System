@@ -13,7 +13,7 @@
 
 
         <!-- Header -->
-        <div class="border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+        <div class="border-b border-slate-200 px-4 sm:px-6 py-4 page-header">
 
 
             <div>
@@ -33,7 +33,7 @@
 
 
             <a href="{{ route('admin.landlords.edit',$landlord) }}"
-               class="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm transition">
+               class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm transition w-full sm:w-auto">
 
 
                 <x-heroicon-o-pencil-square class="w-4 h-4"/>
@@ -50,7 +50,7 @@
 
 
         <!-- Details -->
-        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
 
 
 

@@ -17,7 +17,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-[#E5E7EB] overflow-hidden">
 
             <!-- Header -->
-            <div class="px-6 py-4 border-b border-[#E5E7EB]">
+            <div class="px-4 sm:px-6 py-4 border-b border-[#E5E7EB]">
                 <div>
                     <h1 class="text-lg font-bold text-[#111827]">
                         Tenant Registration
@@ -29,7 +29,7 @@
             </div>
 
             <!-- Property -->
-            <div class="px-6 py-3 bg-[#F8FAFC] border-b border-[#E5E7EB]">
+            <div class="px-4 sm:px-6 py-3 bg-[#F8FAFC] border-b border-[#E5E7EB]">
                 <div class="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
                     <span class="text-[#6B7280]">Property:</span>
                     <span class="font-medium text-[#111827]">{{ $property->name }}</span>
@@ -61,7 +61,7 @@
 
                 @csrf
 
-                <div class="p-6 space-y-4">
+                <div class="p-4 sm:p-6 space-y-4">
 
                     <!-- Name & Email - Side by Side -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -201,7 +201,7 @@
                 </div>
 
                 <!-- Footer -->
-                <div class="border-t border-[#E5E7EB] bg-[#F8FAFC] px-6 py-3">
+                <div class="border-t border-[#E5E7EB] bg-[#F8FAFC] px-4 sm:px-6 py-3">
                     <button
                         type="submit"
                         id="submitBtn"

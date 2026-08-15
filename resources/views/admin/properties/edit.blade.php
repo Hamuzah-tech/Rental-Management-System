@@ -208,11 +208,11 @@
             <!-- Footer -->
 
 
-            <div class="border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+            <div class="border-t border-slate-200 px-4 sm:px-6 py-4 page-actions">
 
 
                 <a href="{{ route('admin.properties.index') }}"
-                   class="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+                   class="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition w-full sm:w-auto text-center">
 
 
                     Cancel
@@ -224,7 +224,7 @@
 
 
                 <button
-                    class="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl transition">
+                    class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl transition w-full sm:w-auto">
 
 
 

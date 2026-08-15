@@ -7,18 +7,18 @@
 <div class="space-y-6">
 
     {{-- Header --}}
-    <div class="bg-white border border-[#E5E7EB] rounded-xl p-5 flex flex-row justify-between items-center gap-4">
-        <div>
-            <h2 class="text-xl font-bold text-[#111827]">
+    <div class="bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-5 page-header">
+        <div class="min-w-0">
+            <h2 class="text-lg sm:text-xl font-bold text-[#111827] break-anywhere">
                 {{ e($property->name) }}
             </h2>
             <p class="text-sm text-[#6B7280] mt-1">
                 Manage tenants for this property
             </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
             <a href="{{ route('landlord.properties.index') }}"
-               class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2 whitespace-nowrap">
+               class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg text-sm transition flex items-center justify-center gap-2 w-full sm:w-auto">
                 <x-heroicon-o-arrow-left class="w-4 h-4"/>
                 Back
             </a>
@@ -93,9 +93,9 @@
     {{-- Filters --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <form method="GET" action="{{ route('landlord.properties.show', $property->public_id) }}" class="flex flex-wrap items-end gap-3 w-full md:w-auto" id="filterForm">
+            <form method="GET" action="{{ route('landlord.properties.show', $property->public_id) }}" class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 w-full" id="filterForm">
                 {{-- Search Input --}}
-                <div class="flex-1 md:flex-none">
+                <div class="w-full md:flex-1 md:min-w-[200px]">
                     <label class="block text-sm font-medium text-[#374151] mb-1">
                         Search Tenant
                     </label>
@@ -104,17 +104,17 @@
                         name="search"
                         value="{{ e(request('search')) }}"
                         placeholder="Name, Code, Phone or Email"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full md:w-64"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full"
                         maxlength="100">
                 </div>
 
                 {{-- Month Filter --}}
-                <div>
+                <div class="w-full sm:w-auto">
                     <label for="month" class="block text-sm font-medium text-[#374151] mb-1">Month</label>
                     <select 
                         id="month" 
                         name="month" 
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[140px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full sm:min-w-[140px] bg-white text-[#111827]"
                     >
                         <option value="">All Months</option>
                         @foreach($months as $value => $label)
@@ -126,12 +126,12 @@
                 </div>
 
                 {{-- Payment Status Filter --}}
-                <div>
+                <div class="w-full sm:w-auto">
                     <label for="payment_status" class="block text-sm font-medium text-[#374151] mb-1">Payment Status</label>
                     <select 
                         id="payment_status" 
                         name="payment_status" 
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[140px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full sm:min-w-[140px] bg-white text-[#111827]"
                     >
                         <option value="all" {{ request('payment_status') == 'all' ? 'selected' : '' }}>All Tenants</option>
                         <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>Paid</option>
@@ -144,8 +144,8 @@
                 <input type="hidden" name="sort_dir" value="{{ request('sort_dir', 'asc') }}">
 
                 {{-- Action Buttons --}}
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition whitespace-nowrap">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="submit" class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition whitespace-nowrap w-full sm:w-auto">
                         Search
                     </button>
                     
@@ -204,8 +204,75 @@
 
     {{-- Tenants Table --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+        <div class="divide-y divide-[#E5E7EB] md:hidden">
+            @forelse($tenants as $index => $tenant)
+                @php
+                    $hasPayment = $tenant->payments->count() > 0;
+                    $paymentMonths = $tenant->payments->pluck('payment_month')->toArray();
+                    $paymentMonthsList = [];
+                    foreach ($paymentMonths as $pm) {
+                        $months = explode(',', $pm);
+                        foreach ($months as $m) {
+                            $paymentMonthsList[] = trim($m);
+                        }
+                    }
+                    $paymentMonthsList = array_unique($paymentMonthsList);
+                    sort($paymentMonthsList);
+                    $paidForSelectedMonth = request('month') ? in_array(request('month'), $paymentMonthsList) : false;
+                    $hasAnyPayment = $hasPayment && count($paymentMonthsList) > 0;
+                @endphp
+                <div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-medium text-[#111827] truncate">{{ e($tenant->name) }}</p>
+                            <p class="font-mono text-xs text-[#6B7280] mt-0.5">{{ e($tenant->tenant_code) }}</p>
+                        </div>
+                        <span class="inline-block bg-[#F3F4F6] text-[#374151] px-2.5 py-0.5 rounded-full text-xs font-medium capitalize flex-shrink-0">
+                            {{ e($tenant->status) }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-[#374151] break-anywhere">{{ e($tenant->email) }}</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="text-[#6B7280]">Phone:</span>
+                            <span class="text-[#111827]">{{ e($tenant->phone) }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[#6B7280]">Rent:</span>
+                            <span class="text-[#111827]">MK {{ number_format((float)($tenant->monthly_rent ?? 0)) }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        @if(request('month') ? $paidForSelectedMonth : $hasAnyPayment)
+                            <span class="inline-flex items-center bg-green-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold">Paid</span>
+                        @else
+                            <span class="inline-flex items-center bg-red-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold">Unpaid</span>
+                        @endif
+                    </div>
+                    <div class="flex gap-1 pt-1">
+                        <a href="{{ route('landlord.tenants.edit', $tenant) }}" title="Edit Tenant" class="p-2 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
+                            <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                        </a>
+                        <a href="{{ route('landlord.tenants.show', $tenant) }}" title="View Tenant" class="p-2 rounded-lg text-[#6B7280] hover:bg-[#ca0251]/10 hover:text-[#ca0251] transition">
+                            <x-heroicon-o-eye class="w-5 h-5"/>
+                        </a>
+                        <form method="POST" action="{{ route('landlord.tenants.destroy', $tenant) }}" id="delete-tenant-mobile-{{ $tenant->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" title="Delete Tenant"
+                                onclick="openConfirmModal('delete-tenant-mobile-{{ $tenant->id }}','Delete Tenant','Are you sure you want to delete this tenant? This action cannot be undone.')"
+                                class="p-2 rounded-lg text-[#6B7280] hover:bg-red-50 hover:text-red-600 transition">
+                                <x-heroicon-o-trash class="w-5 h-5"/>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-[#6B7280] text-sm">No tenants found for this property.</div>
+            @endforelse
+        </div>
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-sm min-w-[800px]">
                 <thead class="bg-[#F8FAFC]">
                     <tr class="text-[#6B7280]">
                         {{-- Tenant Code with Sort --}}

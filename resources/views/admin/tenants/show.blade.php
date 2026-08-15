@@ -14,12 +14,12 @@
 <div class="bg-white rounded-xl shadow p-6">
 
 
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
 
 
 <div>
 
-<h2 class="text-2xl font-bold">
+<h2 class="text-xl sm:text-2xl font-bold">
 {{ $tenant->name }}
 </h2>
 
@@ -31,7 +31,7 @@ Tenant Information
 
 
 <a href="{{ route('admin.tenants.index') }}"
-class="bg-gray-600 text-white px-5 py-2 rounded-lg">
+class="bg-gray-600 text-white px-5 py-2 rounded-lg w-full sm:w-auto text-center">
 
 Back
 

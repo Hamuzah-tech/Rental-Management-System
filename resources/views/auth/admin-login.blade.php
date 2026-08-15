@@ -21,7 +21,7 @@
 </head>
 <body class="bg-white">
 
-<div class="min-h-screen flex items-center justify-center px-6">
+<div class="min-h-screen flex items-center justify-center px-4 sm:px-6">
 
     <div class="w-full max-w-md">
 
@@ -34,7 +34,7 @@
 
         <!-- header -->
         <div class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-slate-800">Admin Portal</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Admin Portal</h1>
             <p class="text-slate-500 mt-2">Operations manager workspace login.</p>
         </div>
 

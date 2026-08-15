@@ -17,9 +17,9 @@
                 Tenant details and payment history.
             </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
             <a href="{{ route('landlord.properties.show', $tenant->property->public_id) }}"
-               class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+               class="bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg text-sm transition flex items-center justify-center gap-2 w-full sm:w-auto">
                 <x-heroicon-o-arrow-left class="w-4 h-4"/>
                 Back to Property
             </a>
@@ -85,7 +85,7 @@
 
     {{-- Payment History --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-[#E5E7EB] flex justify-between items-center">
+        <div class="px-4 sm:px-6 py-4 border-b border-[#E5E7EB] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <h3 class="font-semibold text-[#111827] text-sm">Payment History</h3>
             <span class="text-xs text-[#6B7280]">
                 Total Paid: MK {{ number_format((float)$tenant->payments->where('status', 'Approved')->sum('amount')) }}

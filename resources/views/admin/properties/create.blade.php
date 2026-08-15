@@ -144,11 +144,11 @@ class="w-full rounded-lg border-gray-300">{{ old('description') }}</textarea>
 
 
 
-<div class="border-t px-6 py-4 flex justify-end gap-3">
+<div class="border-t px-4 sm:px-6 py-4 page-actions">
 
 
 <a href="{{ route('admin.properties.index') }}"
-class="px-5 py-2 border rounded-lg">
+class="px-5 py-2 border rounded-lg text-center w-full sm:w-auto">
 
 Cancel
 
@@ -157,7 +157,7 @@ Cancel
 
 
 <button
-class="bg-indigo-600 text-white px-6 py-2 rounded-lg">
+class="bg-indigo-600 text-white px-6 py-2 rounded-lg w-full sm:w-auto">
 
 Save Property
 

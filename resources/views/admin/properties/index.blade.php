@@ -14,12 +14,12 @@
 
     <!-- Header -->
 
-    <div class="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center">
+    <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 page-header">
 
 
         <div>
 
-            <h2 class="text-xl font-bold text-slate-800">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-800">
                 Properties
             </h2>
 
@@ -35,7 +35,7 @@
 
 
         <a href="{{ route('admin.properties.create') }}"
-           class="bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-900 transition text-sm flex items-center gap-2">
+           class="bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-900 transition text-sm flex items-center justify-center gap-2 w-full sm:w-auto">
 
 
             <x-heroicon-o-plus class="w-4 h-4"/>
@@ -75,9 +75,47 @@
 
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
+        {{-- Mobile cards --}}
+        <div class="divide-y divide-slate-100 md:hidden">
+            @forelse($properties as $index => $property)
+                <div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-medium text-slate-800 truncate">{{ $property->name }}</p>
+                            <p class="text-xs text-slate-500">{{ $property->landlord->name }}</p>
+                        </div>
+                        @if($property->status)
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs flex-shrink-0">Active</span>
+                        @else
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-xs flex-shrink-0">Inactive</span>
+                        @endif
+                    </div>
+                    <p class="text-sm text-slate-600">Tenants: {{ $property->tenants_count ?? 0 }}</p>
+                    <div class="flex flex-wrap gap-1 pt-1">
+                        <a href="{{ route('admin.properties.show',$property) }}" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="View">
+                            <x-heroicon-o-eye class="w-5 h-5"/>
+                        </a>
+                        <a href="{{ route('admin.properties.edit',$property) }}" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="Edit">
+                            <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                        </a>
+                        <form method="POST" action="{{ route('admin.properties.destroy',$property) }}" id="delete-property-mobile-{{ $property->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" title="Delete"
+                                onclick="openConfirmModal('delete-property-mobile-{{ $property->id }}','Delete Property','Are you sure you want to delete this property? This action cannot be undone.')"
+                                class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                                <x-heroicon-o-trash class="w-5 h-5"/>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-slate-500 text-sm">No properties found.</div>
+            @endforelse
+        </div>
 
-
-        <table class="w-full text-sm">
+        <div class="hidden md:block table-scroll">
+        <table class="w-full text-sm min-w-[640px]">
 
 
 
@@ -337,6 +375,7 @@
 
 
         </table>
+        </div>
 
 
 
@@ -369,7 +408,7 @@
 <!-- Confirmation Modal -->
 
 <div id="confirmModal"
-     class="fixed inset-0 hidden items-center justify-center z-50">
+     class="fixed inset-0 hidden items-center justify-center z-50 p-4">
 
 
 
@@ -423,11 +462,11 @@
 
 
 
-        <div class="flex justify-end gap-3">
+        <div class="page-actions">
 
 
             <button onclick="closeConfirmModal()"
-                    class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600">
+                    class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 w-full sm:w-auto">
 
                 Cancel
 
@@ -437,7 +476,7 @@
 
 
             <button onclick="submitConfirmAction()"
-                    class="px-4 py-2 rounded-xl bg-slate-800 text-white">
+                    class="px-4 py-2 rounded-xl bg-slate-800 text-white w-full sm:w-auto">
 
                 Confirm
 

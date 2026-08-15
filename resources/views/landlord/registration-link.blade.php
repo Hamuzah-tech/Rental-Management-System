@@ -70,16 +70,16 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
                     Registration Link
                 </label>
-                <div class="flex gap-3">
+                <div class="flex flex-col sm:flex-row gap-3 min-w-0">
                     <input
                         id="registrationLink"
                         type="text"
                         readonly
                         value="{{ $registrationLink }}"
-                        class="flex-1 rounded-xl border-slate-300 bg-slate-50 focus:border-[#ca0251] focus:ring-[#ca0251]">
+                        class="w-full min-w-0 rounded-xl border-slate-300 bg-slate-50 focus:border-[#ca0251] focus:ring-[#ca0251]">
                     <button
                         onclick="copyLink()"
-                        class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 rounded-xl transition">
+                        class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-2.5 rounded-xl transition w-full sm:w-auto">
                         Copy
                     </button>
                 </div>
@@ -104,21 +104,21 @@
             </div>
 
             <!-- Actions -->
-            <div class="mt-8 flex flex-wrap gap-3">
+            <div class="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
                 <button
                     onclick="copyLink()"
-                    class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-3 rounded-xl transition">
+                    class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-3 rounded-xl transition w-full sm:w-auto">
                     Copy Registration Link
                 </button>
 
                 <button
                     onclick="window.print()"
-                    class="bg-slate-700 hover:bg-slate-800 text-white px-6 py-3 rounded-xl transition">
+                    class="bg-slate-700 hover:bg-slate-800 text-white px-6 py-3 rounded-xl transition w-full sm:w-auto">
                     Print
                 </button>
 
                 <a href="{{ route('landlord.tenants.index') }}"
-                   class="border border-slate-300 hover:border-[#ca0251] hover:text-[#ca0251] px-6 py-3 rounded-xl transition">
+                   class="border border-slate-300 hover:border-[#ca0251] hover:text-[#ca0251] px-6 py-3 rounded-xl transition w-full sm:w-auto text-center">
                     Back to Tenants
                 </a>
             </div>

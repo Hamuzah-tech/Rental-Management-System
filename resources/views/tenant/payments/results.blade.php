@@ -16,10 +16,10 @@
     <div class="w-full max-w-4xl">
 
         <!-- Header -->
-        <div class="flex items-center justify-between mb-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
 
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">
                     Payment History
                 </h1>
                 <p class="text-sm text-slate-500 mt-1">
@@ -28,7 +28,7 @@
             </div>
 
             <a href="{{ route('tenant.payments.index') }}"
-               class="flex items-center gap-1 border border-slate-300 hover:border-[#ca0251] hover:text-[#ca0251] hover:bg-[#ca0251]/10 text-slate-700 px-3 py-2 rounded-lg text-sm transition">
+               class="flex items-center justify-center gap-1 border border-slate-300 hover:border-[#ca0251] hover:text-[#ca0251] hover:bg-[#ca0251]/10 text-slate-700 px-3 py-2 rounded-lg text-sm transition w-full sm:w-auto">
 
                 <x-heroicon-o-arrow-left class="w-4 h-4"/>
                 Back
@@ -52,14 +52,14 @@
 
             <div class="space-y-2 text-sm">
 
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Name</span>
-                    <span class="font-medium text-slate-800">{{ e($tenant->name) }}</span>
+                <div class="flex justify-between gap-4">
+                    <span class="text-slate-500 flex-shrink-0">Name</span>
+                    <span class="font-medium text-slate-800 text-right break-anywhere">{{ e($tenant->name) }}</span>
                 </div>
 
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Property</span>
-                    <span class="font-medium text-slate-800">{{ e($tenant->property->name ?? 'N/A') }}</span>
+                <div class="flex justify-between gap-4">
+                    <span class="text-slate-500 flex-shrink-0">Property</span>
+                    <span class="font-medium text-slate-800 text-right break-anywhere">{{ e($tenant->property->name ?? 'N/A') }}</span>
                 </div>
 
                 <div class="flex justify-between">

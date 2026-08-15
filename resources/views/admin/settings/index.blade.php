@@ -6,9 +6,9 @@
 
 @section('content')
 
-<div class="bg-white rounded-xl shadow p-6">
+<div class="bg-white rounded-xl shadow p-4 sm:p-6">
 
-    <h2 class="text-2xl font-bold mb-2">
+    <h2 class="text-xl sm:text-2xl font-bold mb-2">
         Database Backup
     </h2>
 
@@ -20,7 +20,7 @@
         @csrf
 
         <button
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg w-full sm:w-auto">
 
             Create Backup
 

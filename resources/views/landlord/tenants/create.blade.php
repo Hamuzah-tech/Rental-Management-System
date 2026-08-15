@@ -252,15 +252,15 @@
 
                 <div id="linkContainer" class="hidden">
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Registration Link</label>
-                    <div class="flex gap-2.5">
+                    <div class="flex flex-col sm:flex-row gap-2.5 min-w-0">
                         <input
                             id="registrationLink"
                             type="text"
                             readonly
-                            class="flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-[#ca0251] focus:ring-[#ca0251] cursor-default text-sm">
+                            class="w-full min-w-0 rounded-lg border-slate-200 bg-slate-50 text-slate-600 focus:border-[#ca0251] focus:ring-[#ca0251] cursor-default text-sm">
                         <button
                             id="copyLinkBtn"
-                            class="flex-shrink-0 bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm">
+                            class="flex-shrink-0 bg-[#ca0251] hover:bg-[#a80244] text-white px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm w-full sm:w-auto">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
                             </svg>

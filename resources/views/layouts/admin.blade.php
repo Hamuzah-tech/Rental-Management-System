@@ -9,19 +9,32 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100">
+<body class="bg-slate-100 overflow-x-hidden">
 
-<div class="flex min-h-screen">
+<div
+    class="flex min-h-screen"
+    x-data="{ sidebarOpen: false }"
+    @keydown.escape.window="sidebarOpen = false"
+>
+
+    {{-- Mobile overlay --}}
+    <div
+        x-show="sidebarOpen"
+        x-transition.opacity
+        @click="sidebarOpen = false"
+        class="fixed inset-0 z-40 bg-black/40 lg:hidden"
+        x-cloak
+    ></div>
 
     {{-- Sidebar --}}
     <x-admin.sidebar />
 
-    <div class="flex-1 flex flex-col">
+    <div class="flex min-w-0 flex-1 flex-col">
 
         {{-- Topbar --}}
         <x-admin.topbar />
 
-        <main class="flex-1 p-8">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
             @yield('content')
         </main>
 

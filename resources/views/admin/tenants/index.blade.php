@@ -10,19 +10,19 @@
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 mb-6">
 
-    <form method="GET" class="flex flex-col md:flex-row gap-4">
+    <form method="GET" class="flex flex-col md:flex-row gap-3 md:gap-4">
 
         <input
             type="text"
             name="search"
             value="{{ request('search') }}"
             placeholder="Search tenant..."
-            class="flex-1 rounded-xl border-slate-300">
+            class="flex-1 rounded-xl border-slate-300 w-full">
 
         <select
             name="landlord"
             onchange="this.form.submit()"
-            class="rounded-xl border-slate-300">
+            class="rounded-xl border-slate-300 w-full md:w-auto">
 
             <option value="">All Landlords</option>
 
@@ -40,14 +40,14 @@
 
         </select>
 
-        <div class="flex gap-2">
-            <button class="px-5 bg-slate-800 text-white rounded-xl">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <button class="px-5 py-2 bg-slate-800 text-white rounded-xl w-full sm:w-auto">
                 Search
             </button>
 
             <!-- Export Button -->
             <a href="{{ route('admin.tenants.export', request()->query()) }}"
-               class="px-5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition flex items-center gap-2">
+               class="px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition flex items-center justify-center gap-2 w-full sm:w-auto">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                           d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -66,9 +66,35 @@
 
 <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
+    <div class="divide-y divide-slate-100 md:hidden">
+        @forelse($tenants as $index => $tenant)
+            <div class="p-4 space-y-2">
+                <p class="font-medium text-slate-800">{{ $tenant->name }}</p>
+                <p class="text-sm text-slate-600">{{ $tenant->phone }}</p>
+                <p class="text-sm text-slate-600">{{ $tenant->property->name ?? 'N/A' }}</p>
+                <p class="text-xs text-slate-500">Move in: {{ $tenant->move_in_date }}</p>
+                <div class="flex gap-1 pt-1">
+                    <a href="{{ route('admin.tenants.edit',$tenant) }}" title="Edit" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                        <x-heroicon-o-pencil-square class="w-5 h-5"/>
+                    </a>
+                    <form method="POST" action="{{ route('admin.tenants.destroy',$tenant) }}" id="delete-tenant-mobile-{{ $tenant->id }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" title="Delete"
+                            onclick="openConfirmModal('delete-tenant-mobile-{{ $tenant->id }}','Delete Tenant','Are you sure you want to delete this tenant? This action cannot be undone.')"
+                            class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                            <x-heroicon-o-trash class="w-5 h-5"/>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @empty
+            <div class="px-6 py-8 text-center text-slate-500 text-sm">No tenants found.</div>
+        @endforelse
+    </div>
 
-
-    <table class="w-full text-sm">
+    <div class="hidden md:block table-scroll">
+    <table class="w-full text-sm min-w-[640px]">
 
 
 
@@ -300,8 +326,7 @@
 
 
     </table>
-
-
+    </div>
 
 
 </div>
@@ -336,7 +361,7 @@
 
 
 <div id="confirmModal"
-     class="fixed inset-0 hidden items-center justify-center z-50">
+     class="fixed inset-0 hidden items-center justify-center z-50 p-4">
 
 
 
@@ -389,11 +414,11 @@
 
 
 
-        <div class="flex justify-end gap-3">
+        <div class="page-actions">
 
 
             <button onclick="closeConfirmModal()"
-                    class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600">
+                    class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 w-full sm:w-auto">
 
 
                 Cancel
@@ -406,7 +431,7 @@
 
 
             <button onclick="submitConfirmAction()"
-                    class="px-4 py-2 rounded-xl bg-slate-800 text-white">
+                    class="px-4 py-2 rounded-xl bg-slate-800 text-white w-full sm:w-auto">
 
 
                 Confirm

@@ -48,8 +48,8 @@
 
             <!-- Search Form -->
             <div class="mt-6 bg-white border border-[#E5E7EB] rounded-xl p-4">
-                <form method="GET" action="{{ route('tenant.payments.history') }}" class="flex flex-wrap items-end gap-3">
-                    <div class="flex-1 min-w-[200px]">
+                <form method="GET" action="{{ route('tenant.payments.history') }}" class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3">
+                    <div class="flex-1 min-w-0 sm:min-w-[200px]">
                         <label class="block text-xs font-medium text-[#374151] mb-1">Tenant Code</label>
                         <input type="text" 
                                name="tenant_code" 
@@ -59,7 +59,7 @@
                                class="w-full rounded-lg border-[#E5E7EB] focus:border-[#ca0251] focus:ring-[#ca0251] px-3 py-1.5 text-sm bg-white text-[#111827]">
                     </div>
                     <button type="submit" 
-                            class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition">
+                            class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition w-full sm:w-auto">
                         Search
                     </button>
                     @if(request('tenant_code'))
@@ -93,8 +93,47 @@
 
                 <!-- Payments Table -->
                 <div class="mt-4 bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                    <div class="divide-y divide-[#E5E7EB] md:hidden">
+                        @if(isset($payments) && $payments->count() > 0)
+                            @foreach($payments as $index => $payment)
+                                @php
+                                    $months = explode(',', $payment->payment_month);
+                                    $monthCount = count($months);
+                                @endphp
+                                <div class="p-4 space-y-2">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            @if($monthCount > 1)
+                                                <p class="text-sm text-[#111827]">
+                                                    {{ \Carbon\Carbon::createFromFormat('Y-m', trim($months[0]))->format('M Y') }}
+                                                    →
+                                                    {{ \Carbon\Carbon::createFromFormat('Y-m', trim(end($months)))->format('M Y') }}
+                                                </p>
+                                                <p class="text-xs text-[#6B7280]">{{ $monthCount }} months</p>
+                                            @else
+                                                <p class="text-sm text-[#111827]">{{ \Carbon\Carbon::createFromFormat('Y-m', $payment->payment_month)->format('M Y') }}</p>
+                                            @endif
+                                        </div>
+                                        @if($payment->status == 'Pending')
+                                            <span class="inline-flex items-center bg-[#ca0251] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">Pending</span>
+                                        @elseif($payment->status == 'Approved')
+                                            <span class="inline-flex items-center bg-green-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">Approved</span>
+                                        @elseif($payment->status == 'Rejected')
+                                            <span class="inline-flex items-center bg-red-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">Rejected</span>
+                                        @else
+                                            <span class="inline-flex items-center bg-[#F3F4F6] text-[#374151] px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">{{ $payment->status }}</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-sm font-medium text-[#111827]">MK {{ number_format((float)$payment->amount) }}</p>
+                                    <p class="text-xs text-[#6B7280]">{{ $payment->created_at ? $payment->created_at->format('d M Y') : 'N/A' }}</p>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="px-6 py-8 text-center text-[#6B7280] text-sm">No payment history found for this tenant code.</div>
+                        @endif
+                    </div>
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="w-full text-sm min-w-[520px]">
                             <thead class="bg-[#F8FAFC]">
                                 <tr class="text-[#6B7280]">
                                     <th class="px-4 py-3 text-left">#</th>

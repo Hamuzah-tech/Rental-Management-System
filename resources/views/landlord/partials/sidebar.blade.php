@@ -1,49 +1,37 @@
 <!-- resources/views/landlord/partials/sidebar.blade.php -->
-<div x-data="{ open: window.innerWidth >= 1024 }" 
+<div x-data="{ open: false }"
      x-init="
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                open = true;
-            } else {
-                open = false;
-            }
-        });
+        const sync = () => { open = window.innerWidth >= 1024; };
+        sync();
+        window.addEventListener('resize', sync);
      ">
 
     <!-- Mobile Hamburger - White lines, no background -->
-    <button @click="open = !open" class="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg transition">
+    <button @click="open = !open" class="fixed top-3 left-3 z-[60] lg:hidden p-2 rounded-lg transition" aria-label="Toggle menu">
         <div class="space-y-1.5">
-            <span class="block w-8 h-0.5 bg-white rounded-full"></span>
+            <span class="block w-7 h-0.5 bg-white rounded-full"></span>
             <span class="block w-5 h-0.5 bg-white rounded-full"></span>
             <span class="block w-6 h-0.5 bg-white rounded-full"></span>
         </div>
     </button>
 
     <!-- Overlay - Only for mobile -->
-    <div x-show="open && window.innerWidth < 1024" 
+    <div x-show="open"
          x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0" 
+         x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100" 
+         x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         @click="open = false" 
+         @click="open = false"
          class="fixed inset-0 bg-black/40 z-40 lg:hidden"
          x-cloak>
     </div>
 
     <!-- Sidebar -->
-    <aside x-show="open" 
-           x-transition:enter.duration.300ms
-           x-transition:leave.duration.300ms
-           class="fixed top-0 left-0 z-50 w-[270px] h-screen bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-[4px_0_20px_rgba(0,0,0,0.08)] lg:shadow-[2px_0_15px_rgba(0,0,0,0.06)]"
-           :class="{
-               'lg:!translate-x-0': true,
-               'translate-x-0': open && window.innerWidth >= 1024,
-               '-translate-x-full': !open && window.innerWidth < 1024
-           }"
-           style="display: none;"
-           x-cloak>
+    <aside
+           class="fixed top-0 left-0 z-50 w-[270px] h-screen bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-[4px_0_20px_rgba(0,0,0,0.08)] lg:shadow-[2px_0_15px_rgba(0,0,0,0.06)] transition-transform duration-300 lg:!translate-x-0"
+           :class="open ? 'translate-x-0' : '-translate-x-full'">
 
         <!-- Logo - Fixed at top -->
         <div class="flex-shrink-0 px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">

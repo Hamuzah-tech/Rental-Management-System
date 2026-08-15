@@ -37,28 +37,41 @@ $notificationCount = $notifications->count();
 
 @endphp
 
-<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
+<header class="flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
 
-    <!-- Page Title -->
-    <div>
-        <h1 class="text-2xl font-semibold text-slate-800">
+    <div class="flex min-w-0 items-center gap-3">
+        <button
+            type="button"
+            @click="sidebarOpen = true"
+            class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+            aria-label="Open menu"
+        >
+            <div class="space-y-1.5">
+                <span class="block h-0.5 w-6 rounded-full bg-slate-700"></span>
+                <span class="block h-0.5 w-4 rounded-full bg-slate-700"></span>
+                <span class="block h-0.5 w-5 rounded-full bg-slate-700"></span>
+            </div>
+        </button>
+
+        <h1 class="truncate text-lg font-semibold text-slate-800 sm:text-2xl">
             @yield('page-title', 'Dashboard')
         </h1>
     </div>
 
-    <div class="flex items-center gap-6">
+    <div class="flex flex-shrink-0 items-center gap-3 sm:gap-6">
 
         <!-- Notifications -->
-        <div class="relative">
+        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
 
             <button
-                onclick="document.getElementById('notificationMenu').classList.toggle('hidden')"
-                class="relative text-slate-500 hover:text-slate-700 transition">
+                type="button"
+                @click="open = !open"
+                class="relative text-slate-500 transition hover:text-slate-700">
 
                 <x-heroicon-o-bell class="w-6 h-6"/>
 
                 @if($notificationCount > 0)
-                    <span class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white">
                         {{ $notificationCount }}
                     </span>
                 @endif
@@ -67,10 +80,12 @@ $notificationCount = $notifications->count();
 
             <!-- Notification Dropdown -->
             <div
-                id="notificationMenu"
-                class="hidden absolute right-0 mt-3 w-96 bg-white rounded-xl shadow-xl border border-slate-200 z-50">
+                x-show="open"
+                x-cloak
+                x-transition
+                class="absolute right-0 z-50 mt-3 max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
 
-                <div class="px-4 py-3 border-b">
+                <div class="border-b px-4 py-3">
                     <h3 class="font-semibold text-slate-700">
                         Recent Activity
                     </h3>
@@ -78,13 +93,13 @@ $notificationCount = $notifications->count();
 
                 @forelse($notifications as $notification)
 
-                    <div class="px-4 py-3 border-b hover:bg-slate-50">
+                    <div class="border-b px-4 py-3 hover:bg-slate-50">
 
-                        <p class="text-sm text-slate-700">
+                        <p class="break-anywhere text-sm text-slate-700">
                             {{ $notification['message'] }}
                         </p>
 
-                        <p class="text-xs text-slate-400 mt-1">
+                        <p class="mt-1 text-xs text-slate-400">
                             {{ $notification['time']->diffForHumans() }}
                         </p>
 
@@ -103,7 +118,7 @@ $notificationCount = $notifications->count();
         </div>
 
         <!-- Avatar Only -->
-        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-semibold">
+        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white sm:h-10 sm:w-10 sm:text-base">
             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
         </div>
 

@@ -17,14 +17,14 @@
                 <p class="text-sm text-[#6B7280] mt-1">Review and approve tenant payments.</p>
             </div>
 
-            <form method="GET" action="{{ route('landlord.payments.index') }}" id="filterForm" class="flex flex-wrap items-end gap-3">
+            <form method="GET" action="{{ route('landlord.payments.index') }}" id="filterForm" class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 w-full md:w-auto">
                 {{-- Hostel Filter --}}
-                <div>
+                <div class="w-full sm:w-auto">
                     <label for="property_id" class="block text-sm font-medium text-[#374151] mb-1">Hostel</label>
                     <select
                         id="property_id"
                         name="property_id"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[160px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full sm:min-w-[160px] bg-white text-[#111827]"
                     >
                         <option value="">All Hostels</option>
                         @foreach($properties as $property)
@@ -36,12 +36,12 @@
                 </div>
 
                 {{-- Month Filter --}}
-                <div>
+                <div class="w-full sm:w-auto">
                     <label for="month" class="block text-sm font-medium text-[#374151] mb-1">Month</label>
                     <select
                         id="month"
                         name="month"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[160px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full sm:min-w-[160px] bg-white text-[#111827]"
                     >
                         <option value="">All Months</option>
                         @if(isset($months) && count($months) > 0)
@@ -57,12 +57,12 @@
                 </div>
 
                 {{-- Status Filter --}}
-                <div>
+                <div class="w-full sm:w-auto">
                     <label for="status" class="block text-sm font-medium text-[#374151] mb-1">Status</label>
                     <select
                         id="status"
                         name="status"
-                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 min-w-[140px] bg-white text-[#111827]"
+                        class="rounded-lg border-[#E5E7EB] text-sm focus:ring-[#ca0251] focus:border-[#ca0251] py-1.5 px-3 w-full sm:min-w-[140px] bg-white text-[#111827]"
                     >
                         <option value="">All Status</option>
                         <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
@@ -72,8 +72,8 @@
                 </div>
 
                 {{-- Action Buttons --}}
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="submit" class="bg-[#ca0251] hover:bg-[#a80244] text-white px-6 py-1.5 rounded-lg text-sm transition w-full sm:w-auto">
                         Search
                     </button>
                     
@@ -121,8 +121,82 @@
 
     {{-- Payments Table --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+        <div class="divide-y divide-[#E5E7EB] md:hidden">
+            @forelse($payments as $payment)
+                @php
+                    $months = explode(',', $payment->payment_month);
+                    $monthCount = count($months);
+                @endphp
+                <div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-medium text-[#111827] truncate">{{ $payment->tenant->name ?? 'N/A' }}</p>
+                            <p class="text-xs text-[#6B7280]">{{ $payment->tenant->tenant_code ?? 'N/A' }}</p>
+                        </div>
+                        @if($payment->status == 'Pending')
+                            <span class="inline-flex items-center bg-[#ca0251] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">Pending</span>
+                        @elseif($payment->status == 'Approved')
+                            <span class="inline-flex items-center bg-green-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">Approved</span>
+                        @elseif($payment->status == 'Rejected')
+                            <span class="inline-flex items-center bg-red-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">Rejected</span>
+                        @else
+                            <span class="inline-flex items-center bg-[#F3F4F6] text-[#374151] px-2.5 py-1 rounded-md text-xs font-semibold flex-shrink-0">{{ $payment->status }}</span>
+                        @endif
+                    </div>
+                    <p class="text-sm text-[#374151]">{{ $payment->tenant->property->name ?? 'N/A' }}</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="text-[#6B7280]">Period:</span>
+                            <span class="text-[#111827]">
+                                @if($monthCount > 1)
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m', trim($months[0]))->format('M Y') }}
+                                    →
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m', trim(end($months)))->format('M Y') }}
+                                @else
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m', $payment->payment_month)->format('M Y') }}
+                                @endif
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-[#6B7280]">Amount:</span>
+                            <span class="font-semibold text-[#111827]">MK {{ number_format($payment->amount) }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 pt-1">
+                        <a href="{{ route('landlord.payments.show', $payment) }}" class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-[#ca0251] hover:bg-[#ca0251]/10 rounded-lg" title="View Payment">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </a>
+                        @if($payment->status == 'Pending')
+                            <form method="POST" action="{{ route('landlord.payments.approve', $payment) }}" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-green-600 hover:bg-green-50 rounded-lg" title="Approve Payment" onclick="return confirm('Approve this payment?')">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('landlord.payments.reject', $payment) }}" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 text-[#6B7280] hover:text-red-600 hover:bg-red-50 rounded-lg" title="Reject Payment" onclick="return confirm('Reject this payment?')">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-12 text-center text-[#6B7280] text-sm">No payments found</div>
+            @endforelse
+        </div>
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-sm min-w-[760px]">
                 <thead>
                     <tr class="bg-[#F8FAFC] border-b border-[#E5E7EB]">
                         <th class="px-4 py-3.5 text-left font-semibold text-[#6B7280] uppercase tracking-wider text-xs w-12">#</th>
