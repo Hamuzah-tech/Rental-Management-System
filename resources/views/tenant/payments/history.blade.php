@@ -30,22 +30,6 @@
                 Check your approved, pending, and rejected payments.
             </p>
 
-            @if(session('success'))
-                <div class="mt-4 p-3 bg-[#ca0251]/10 border border-[#ca0251] rounded-lg text-[#ca0251] text-sm">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <ul class="text-red-600 text-xs list-disc list-inside space-y-0.5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ e($error) }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <!-- Search Form -->
             <div class="mt-6 bg-white border border-[#E5E7EB] rounded-xl p-4">
                 <form method="GET" action="{{ route('tenant.payments.history') }}" class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3">
@@ -302,6 +286,8 @@
             background: #F9FAFB;
         }
     </style>
+
+    <x-toast-container />
 
 </body>
 </html>

@@ -20,28 +20,6 @@
             </p>
         </div>
 
-        {{-- Success Message --}}
-        @if(session('success'))
-            <div class="mx-6 mt-6 p-4 rounded-lg bg-green-100 border border-green-300 text-green-800">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        {{-- Validation Errors --}}
-        @if ($errors->any())
-            <div class="mx-6 mt-6 p-4 rounded-lg bg-red-100 border border-red-300">
-                <h3 class="font-semibold text-red-700 mb-2">
-                    Please fix the following errors:
-                </h3>
-
-                <ul class="list-disc list-inside text-red-600 space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <!-- Form -->
         <form method="POST" action="{{ route('admin.landlords.store') }}">
 

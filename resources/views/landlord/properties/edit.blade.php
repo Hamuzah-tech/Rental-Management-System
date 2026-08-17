@@ -19,24 +19,6 @@
         </p>
     </div>
 
-    <!-- Success Message -->
-    @if(session('success'))
-        <div class="mx-5 mt-3 p-3 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <!-- Error Display -->
-    @if($errors->any())
-        <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <ul class="text-red-600 text-sm list-disc list-inside">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <form method="POST" action="{{ route('landlord.properties.update', $property) }}" id="editPropertyForm">
         @csrf
         @method('PUT')

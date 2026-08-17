@@ -18,49 +18,6 @@
         </div>
     </div>
 
-    <!-- Success Message -->
-    @if(session('success'))
-        <div class="mx-5 mt-3 p-3 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-lg">
-            <p class="text-sm">{{ session('success') }}</p>
-        </div>
-    @endif
-
-    <!-- General Error Message - Only show for non-field specific errors -->
-    @if(session('error') && !$errors->has('property_id'))
-        <div class="mx-5 mt-3 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h4 class="font-medium text-red-800 text-sm">Error</h4>
-                    <p class="text-red-700 text-sm mt-0.5">{{ session('error') }}</p>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <!-- Validation Errors Summary - Show only non-property_id errors here -->
-    @if($errors->any() && !$errors->has('property_id'))
-        <div class="mx-5 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div class="flex items-start gap-2">
-                <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <div>
-                    <p class="font-medium text-red-800 text-sm">Please fix the following errors:</p>
-                    <ul class="text-red-700 text-sm list-disc list-inside mt-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-    @endif
-
     <form method="POST" action="{{ route('landlord.tenants.store') }}" id="tenantForm" novalidate>
         @csrf
 
@@ -386,6 +343,7 @@
             if (data.success) {
                 linkInput.value = data.link;
                 linkContainer.classList.remove('hidden');
+                window.notify?.success('Registration link generated successfully.');
             } else {
                 throw new Error(data.message || 'Failed to generate link');
             }
@@ -396,13 +354,14 @@
             generateBtn.disabled = false;
             errorText.textContent = error.message || 'Failed to generate registration link. Please try again.';
             errorMessage.classList.remove('hidden');
+            window.notify?.error(error.message || 'Failed to generate registration link. Please try again.');
         });
     }
 
     function copyRegistrationLink() {
         const link = linkInput.value;
         if (!link) {
-            alert('No link to copy. Please generate a link first.');
+            window.notify?.error('No link to copy. Please generate a link first.');
             return;
         }
 
@@ -427,7 +386,7 @@
             document.execCommand('copy');
             showCopySuccess();
         } catch (err) {
-            alert('Failed to copy link. Please select and copy manually.');
+            window.notify?.error('Failed to copy link. Please select and copy manually.');
         } finally {
             document.body.removeChild(textArea);
         }

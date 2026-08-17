@@ -15,18 +15,6 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-xl">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         @if($tenants->count() > 0)
             <div class="table-scroll">

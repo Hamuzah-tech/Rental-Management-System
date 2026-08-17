@@ -37,6 +37,75 @@
     }
 }
 
+.toast-enter {
+    animation: toast-in 0.35s ease forwards;
+}
+
+.toast-leave {
+    animation: toast-out 0.25s ease forwards;
+}
+
+.toast-icon-pop {
+    animation: toast-icon-pop 0.4s ease;
+}
+
+.toast-check-mark {
+    stroke-dasharray: 28;
+    stroke-dashoffset: 28;
+    animation: toast-check-draw 0.45s ease 0.12s forwards;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toast-out {
+    to {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+    }
+}
+
+@keyframes toast-icon-pop {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-check-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast-enter,
+    .toast-leave,
+    .toast-icon-pop,
+    .toast-check-mark {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        stroke-dashoffset: 0;
+    }
+}
+
 /* Keep Laravel pagination usable on small screens */
 nav[role="navigation"] span,
 nav[role="navigation"] a {

@@ -15,12 +15,6 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         @if($landlords->count() > 0)
             <div class="table-scroll">

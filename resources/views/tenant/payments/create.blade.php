@@ -43,46 +43,6 @@
             </div>
         </div>
 
-        <!-- Success Message -->
-        @if(session('success'))
-            <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-[#ca0251]/10 border border-[#ca0251] rounded-lg flex items-center justify-between">
-                <div class="flex flex-wrap items-center gap-2 md:gap-3">
-                    <svg class="w-4 h-4 md:w-5 md:h-5 text-[#ca0251] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    <p class="text-[#ca0251] text-xs sm:text-sm font-medium">{{ session('success') }}</p>
-                    @php
-                        $monthCount = session('payment_month_count', 1);
-                    @endphp
-                    @if($monthCount > 1)
-                        <span class="text-[#ca0251] text-xs whitespace-nowrap">• {{ $monthCount }} months paid</span>
-                    @endif
-                </div>
-                <button onclick="this.parentElement.style.display='none'" class="text-[#ca0251] hover:text-[#a80244] flex-shrink-0 ml-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-        @endif
-
-        <!-- Error Messages -->
-        @if($errors->any())
-            <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-red-50 border border-red-200 rounded-lg">
-                <ul class="text-red-600 text-xs space-y-1 list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li class="break-words">{{ e($error) }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-3 md:mb-4 p-3 md:p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs break-words">
-                {{ e(session('error')) }}
-            </div>
-        @endif
-
         <!-- Card -->
         <div class="rounded-lg md:rounded-xl border border-slate-200 bg-white p-4 sm:p-5 md:p-6 shadow-sm">
             
@@ -481,6 +441,8 @@
             }
         }
     </style>
+
+    <x-toast-container />
 
 </body>
 </html>

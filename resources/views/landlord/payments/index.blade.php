@@ -112,13 +112,6 @@
         </div>
     @endif
 
-    {{-- Success Alert --}}
-    @if(session('success'))
-        <div class="bg-[#F3F4F6] border border-[#E5E7EB] text-[#111827] px-4 py-3 rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- Payments Table --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
         <div class="divide-y divide-[#E5E7EB] md:hidden">

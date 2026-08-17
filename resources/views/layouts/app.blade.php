@@ -31,5 +31,7 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <x-toast-container />
     </body>
 </html>

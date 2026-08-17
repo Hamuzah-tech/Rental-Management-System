@@ -53,17 +53,7 @@
 
 
 
-    <!-- Success -->
-
-    @if(session('success'))
-
-    <div class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm">
-
-        {{ session('success') }}
-
-    </div>
-
-    @endif
+    <!-- Table -->
 
 
 

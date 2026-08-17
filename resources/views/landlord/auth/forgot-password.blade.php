@@ -30,26 +30,6 @@
             </p>
         </div>
 
-        <!-- Success Message -->
-        @if (session('status'))
-            <div class="mb-4 bg-green-50 border border-green-200 text-green-600 rounded-lg p-3 text-sm">
-                {{ session('status') }}
-            </div>
-        @endif
-
-        <!-- Error Messages -->
-        @if ($errors->any())
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
-        <!-- 
-            IMPORTANT: This form MUST use method="POST" 
-            and action MUST point to route('landlord.password.email')
-        -->
         <form method="POST" action="{{ route('landlord.password.email') }}">
             @csrf
 
@@ -88,6 +68,8 @@
     </div>
 
 </div>
+
+<x-toast-container />
 
 </body>
 </html>

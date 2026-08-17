@@ -36,30 +36,6 @@
 
 
 
-    <!-- Notifications -->
-
-    @if(session('success'))
-
-        <div class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm">
-
-            {{ session('success') }}
-
-        </div>
-
-    @endif
-
-    @if ($errors->any())
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-4">
-            <div class="font-semibold mb-1">Unable to delete landlord</div>
-
-            <ul class="list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     @if(session('credentials'))
 
         <div class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-4 rounded-xl text-sm">

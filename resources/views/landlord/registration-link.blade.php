@@ -168,7 +168,7 @@ function fallbackCopy(text) {
         document.body.removeChild(textArea);
         showCopySuccess();
     } catch (err) {
-        alert('Failed to copy link. Please select and copy manually.');
+        window.notify?.error('Failed to copy link. Please select and copy manually.');
     }
 }
 

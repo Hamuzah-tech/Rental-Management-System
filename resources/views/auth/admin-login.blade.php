@@ -6,8 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Admin Login</title>
 
-    <!-- Tailwind via CDN (lightweight for demo) + Heroicons inline SVG -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* simple smooth transition for the icon */
         .toggle-pw {
@@ -37,15 +36,6 @@
             <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Admin Portal</h1>
             <p class="text-slate-500 mt-2">Operations manager workspace login.</p>
         </div>
-
-        <!-- Error Messages -->
-        @if($errors->any())
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
-                @foreach($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
 
         <form method="POST" action="{{ route('admin.login.store') }}">
             @csrf
@@ -168,6 +158,8 @@
         }
     })();
 </script>
+
+<x-toast-container />
 
 </body>
 </html>

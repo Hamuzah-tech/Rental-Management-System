@@ -6,12 +6,6 @@
 @section('content')
 <div class="max-w-4xl mx-auto space-y-4">
 
-    @if(session('success'))
-        <div class="bg-[#F3F4F6] border border-[#E5E7EB] text-[#111827] px-4 py-2 rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <!-- Header -->
     <div class="bg-white rounded-lg border border-[#E5E7EB] px-4 sm:px-5 py-3 page-header">
         <div>

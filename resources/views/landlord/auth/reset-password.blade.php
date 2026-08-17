@@ -30,19 +30,6 @@
             </p>
         </div>
 
-        <!-- Error Messages -->
-        @if ($errors->any())
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
-        <!-- 
-            IMPORTANT: This form MUST use method="POST" 
-            and action MUST point to route('landlord.password.update')
-        -->
         <form method="POST" action="{{ route('landlord.password.update') }}">
             @csrf
 
@@ -114,6 +101,8 @@
     </div>
 
 </div>
+
+<x-toast-container />
 
 </body>
 </html>

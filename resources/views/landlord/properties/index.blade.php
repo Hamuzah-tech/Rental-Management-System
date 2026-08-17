@@ -23,13 +23,6 @@
     </a>
 </div>
 
-<!-- Success -->
-@if(session('success'))
-    <div class="bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] px-3 py-2.5 rounded-lg text-sm">
-        {{ session('success') }}
-    </div>
-@endif
-
 <!-- Table -->
 <div class="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
 

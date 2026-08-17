@@ -7,19 +7,6 @@
 
 <div class="space-y-6">
 
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] px-4 py-3 rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-            {{ session('error') }}
-        </div>
-    @endif
-
     {{-- Header with Add Tenant Button --}}
     <div class="bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

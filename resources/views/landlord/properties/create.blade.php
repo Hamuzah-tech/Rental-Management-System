@@ -6,24 +6,6 @@
 
 <div class="max-w-4xl mx-auto">
 
-    <!-- Display Success Message -->
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] rounded-xl">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <!-- Display All Errors -->
-    @if($errors->any())
-        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
-            <ul class="list-disc list-inside">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
         <!-- Header - More Compact -->

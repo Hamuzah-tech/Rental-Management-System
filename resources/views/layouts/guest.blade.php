@@ -65,6 +65,8 @@
 
     </div>
 
+    <x-toast-container />
+
     @stack('scripts')
 
 </body>

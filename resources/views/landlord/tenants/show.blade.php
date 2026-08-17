@@ -26,13 +26,6 @@
         </div>
     </div>
 
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] px-4 py-3 rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- Tenant Information Cards --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-white border border-[#E5E7EB] rounded-xl p-4">

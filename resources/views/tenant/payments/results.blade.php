@@ -220,5 +220,7 @@
     }
 </style>
 
+<x-toast-container />
+
 </body>
 </html>

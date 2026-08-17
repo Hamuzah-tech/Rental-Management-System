@@ -86,6 +86,8 @@
 
 </div>
 
+<x-toast-container />
+
 <!-- Scripts Stack -->
 @stack('scripts')
 

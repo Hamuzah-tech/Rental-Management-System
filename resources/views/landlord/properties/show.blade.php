@@ -25,13 +25,6 @@
         </div>
     </div>
 
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="bg-[#ca0251]/10 border border-[#ca0251] text-[#ca0251] px-4 py-3 rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- Registration Status Section --}}
     <div class="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -85,9 +78,6 @@
                 </button>
             </form>
         </div>
-        @if(session('error'))
-            <p class="text-red-600 text-xs mt-2">{{ session('error') }}</p>
-        @endif
     </div>
 
     {{-- Filters --}}

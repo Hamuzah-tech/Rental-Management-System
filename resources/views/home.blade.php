@@ -178,5 +178,7 @@
         });
     </script>
 
+    <x-toast-container />
+
 </body>
 </html>

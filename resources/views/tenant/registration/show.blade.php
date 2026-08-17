@@ -39,20 +39,6 @@
                 </div>
             </div>
 
-            <!-- Success Message -->
-            @if(session('success'))
-                <div class="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p class="text-green-700 text-sm">{{ session('success') }}</p>
-                </div>
-            @endif
-
-            <!-- Error Message -->
-            @if(session('error'))
-                <div class="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p class="text-red-700 text-sm">{{ session('error') }}</p>
-                </div>
-            @endif
-
             <!-- Form -->
             <form method="POST"
                   action="{{ route('tenant.registration.store', $property->registration_token) }}"

@@ -29,13 +29,6 @@
             </p>
         </div>
 
-        @if ($errors->any())
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
-                {{ $errors->first() }}
-            </div>
-        @endif
-
-        <!-- Upright Form -->
         <form method="POST" action="{{ route('landlord.login') }}">
             @csrf
 
@@ -89,6 +82,8 @@
     </div>
 
 </div>
+
+<x-toast-container />
 
 </body>
 </html>
