@@ -9,12 +9,36 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         [x-cloak] { display: none !important; }
-        @media (max-width: 1023px) {
-            .app-sidebar { transform: translateX(-100%); }
-            .app-sidebar.is-open { transform: translateX(0); }
+
+        .app-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+            width: 16rem;
+            height: 100%;
+            height: 100dvh;
         }
+
+        @media (max-width: 1023px) {
+            .app-sidebar {
+                transform: translateX(-100%);
+                pointer-events: none;
+            }
+            .app-sidebar.is-open {
+                transform: translateX(0);
+                pointer-events: auto;
+            }
+        }
+
         @media (min-width: 1024px) {
-            .app-sidebar { transform: none !important; }
+            .app-sidebar {
+                transform: none !important;
+                pointer-events: auto;
+            }
+            .app-content {
+                margin-left: 16rem;
+            }
         }
     </style>
 </head>
@@ -22,7 +46,7 @@
 <body class="bg-slate-100">
 
 <div
-    class="flex min-h-screen"
+    class="min-h-screen"
     x-data="{ sidebarOpen: false }"
     @keydown.escape.window="sidebarOpen = false"
 >
@@ -36,10 +60,10 @@
         x-cloak
     ></div>
 
-    {{-- Sidebar --}}
+    {{-- Sidebar is always overlay/fixed, never in the content flow --}}
     <x-admin.sidebar />
 
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="app-content flex min-h-screen min-w-0 flex-col">
 
         {{-- Topbar --}}
         <x-admin.topbar />

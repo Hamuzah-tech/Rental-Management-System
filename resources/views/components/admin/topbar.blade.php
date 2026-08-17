@@ -43,15 +43,12 @@ $notificationCount = $notifications->count();
         <button
             type="button"
             @click="sidebarOpen = true"
-            class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
-            x-show="!sidebarOpen"
+            class="inline-flex items-center justify-center rounded-lg p-2 text-slate-700 hover:bg-slate-100 lg:hidden"
             aria-label="Open menu"
         >
-            <div class="space-y-1.5">
-                <span class="block h-0.5 w-6 rounded-full bg-slate-700"></span>
-                <span class="block h-0.5 w-4 rounded-full bg-slate-700"></span>
-                <span class="block h-0.5 w-5 rounded-full bg-slate-700"></span>
-            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
         </button>
 
         <h1 class="truncate text-lg font-semibold text-slate-800 sm:text-2xl">

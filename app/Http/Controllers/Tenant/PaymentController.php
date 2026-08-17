@@ -9,7 +9,6 @@ use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class PaymentController extends Controller
@@ -70,7 +69,17 @@ class PaymentController extends Controller
                 'payment_month' => 'required|string|date_format:Y-m',
                 'month_count' => 'nullable|integer|min:1|max:12',
                 'amount' => 'required|numeric|min:0',
-                'screenshot' => 'required|image|max:102400',
+                'screenshot' => [
+                    'required',
+                    'file',
+                    'max:5120',
+                    'mimes:jpeg,jpg,png,webp',
+                    'mimetypes:image/jpeg,image/png,image/webp',
+                ],
+            ], [
+                'screenshot.mimes' => 'The screenshot must be a JPG, JPEG, PNG, or WebP image.',
+                'screenshot.mimetypes' => 'The screenshot must be a JPG, JPEG, PNG, or WebP image.',
+                'screenshot.max' => 'The screenshot may not be greater than 5MB.',
             ]);
 
             // Find tenant by code
@@ -133,23 +142,7 @@ class PaymentController extends Controller
             // Store as comma-separated string
             $paymentMonths = implode(',', $months);
 
-            // Handle screenshot upload - FIXED!
-            $screenshotPath = null;
-            if ($request->hasFile('screenshot')) {
-                $file = $request->file('screenshot');
-                $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-                
-                // Save directly to public/payments/
-                $file->move(public_path('payments'), $filename);
-                $screenshotPath = $filename; // Store just the filename
-                
-                // Log the upload for debugging
-                Log::info('Screenshot uploaded', [
-                    'filename' => $filename,
-                    'path' => public_path('payments/' . $filename),
-                    'url' => asset('payments/' . $filename)
-                ]);
-            }
+            $screenshotPath = $this->storePaymentScreenshot($request->file('screenshot'));
 
             // Create payment record
             $payment = Payment::create([
@@ -325,5 +318,49 @@ class PaymentController extends Controller
         session()->forget('verified_tenant_code');
         return redirect()->route('tenant.payments.history')
             ->with('success', 'Session cleared successfully.');
+    }
+
+    /**
+     * Store a payment screenshot privately using a verified image type.
+     * The original client filename and extension are never used.
+     */
+    private function storePaymentScreenshot(\Illuminate\Http\UploadedFile $file): string
+    {
+        $realPath = $file->getRealPath();
+        $header = file_get_contents($realPath, false, null, 0, 512);
+
+        if ($header !== false && preg_match('/<svg\b|<!DOCTYPE\s+svg|image\/svg/i', $header)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'screenshot' => 'The screenshot must be a JPG, JPEG, PNG, or WebP image.',
+            ]);
+        }
+
+        $imageInfo = @getimagesize($realPath);
+
+        $extensionMap = [
+            IMAGETYPE_JPEG => 'jpg',
+            IMAGETYPE_PNG => 'png',
+            IMAGETYPE_WEBP => 'webp',
+        ];
+
+        if ($imageInfo === false || !isset($extensionMap[$imageInfo[2]])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'screenshot' => 'The screenshot must be a JPG, JPEG, PNG, or WebP image.',
+            ]);
+        }
+
+        $filename = bin2hex(random_bytes(16)) . '.' . $extensionMap[$imageInfo[2]];
+
+        $stored = $file->storeAs('', $filename, 'payments');
+
+        if ($stored === false) {
+            throw new \RuntimeException('Failed to store payment screenshot.');
+        }
+
+        Log::info('Screenshot uploaded', [
+            'filename' => $filename,
+        ]);
+
+        return $filename;
     }
 }

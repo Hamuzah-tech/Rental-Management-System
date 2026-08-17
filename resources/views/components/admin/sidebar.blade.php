@@ -1,6 +1,6 @@
 <!-- resources/views/components/admin/sidebar.blade.php -->
 <aside
-    class="app-sidebar fixed inset-y-0 left-0 z-50 flex h-full min-h-screen w-64 flex-col border-r border-slate-200 bg-white text-slate-700 shadow-xl transition-transform duration-300 lg:static lg:z-auto lg:shadow-none"
+    class="app-sidebar flex flex-col border-r border-slate-200 bg-white text-slate-700 shadow-xl transition-transform duration-300 lg:shadow-none"
     :class="{ 'is-open': sidebarOpen }"
 >
 

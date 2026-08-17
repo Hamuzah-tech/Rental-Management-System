@@ -225,10 +225,10 @@
                                 <input type="file" 
                                        name="screenshot" 
                                        required
-                                       accept="image/*,.pdf"
+                                       accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
                                        class="w-full rounded-lg border bg-white px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm text-slate-800 file:mr-2 sm:file:mr-3 file:rounded-lg file:border-0 file:bg-[#ca0251]/10 file:px-3 sm:file:px-4 file:py-1 sm:file:py-2 file:text-xs sm:file:text-sm file:font-medium file:text-[#ca0251] hover:file:bg-[#ca0251]/20 transition {{ $errors->has('screenshot') ? 'border-red-500' : 'border-slate-200' }}" />
                             </div>
-                            <p class="text-[10px] sm:text-xs text-slate-400 mt-1">JPG, PNG (Max 5MB)</p>
+                            <p class="text-[10px] sm:text-xs text-slate-400 mt-1">JPG, JPEG, PNG, or WebP (Max 5MB)</p>
                             @error('screenshot')
                                 <p class="text-red-500 text-xs mt-1">{{ e($message) }}</p>
                             @enderror

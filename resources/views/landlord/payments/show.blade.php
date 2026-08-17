@@ -94,12 +94,17 @@
         <div class="bg-white rounded-lg border border-[#E5E7EB] px-5 py-4 flex flex-col">
             <h3 class="font-semibold text-sm mb-2 text-[#111827]">Payment Screenshot</h3>
             @if($payment->screenshot)
+                @php
+                    $screenshotUrl = route('landlord.payments.screenshot', $payment, false);
+                @endphp
                 <img 
-                    src="{{ asset('payments/'.$payment->screenshot) }}" 
+                    src="{{ $screenshotUrl }}" 
+                    alt="Payment screenshot"
                     class="rounded-lg border w-full h-32 object-cover cursor-pointer"
-                    onclick="openModal('{{ asset('payments/'.$payment->screenshot) }}')">
+                    onclick="openModal({{ json_encode($screenshotUrl) }})">
                 <button 
-                    onclick="openModal('{{ asset('payments/'.$payment->screenshot) }}')"
+                    type="button"
+                    onclick="openModal({{ json_encode($screenshotUrl) }})"
                     class="mt-2 text-[#ca0251] hover:text-[#a80244] text-sm text-center transition">
                     Open Full Image
                 </button>

@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class PaymentController extends Controller
@@ -172,5 +171,79 @@ class PaymentController extends Controller
         });
 
         return back()->with('success', 'Payment rejected successfully.');
+    }
+
+    /**
+     * Serve a payment screenshot only to the landlord who owns the related property.
+     */
+    public function screenshot(Payment $payment)
+    {
+        abort_unless(
+            $payment->tenant->property->landlord_id === Auth::guard('landlord')->id(),
+            403,
+            'You are not authorized to view this payment screenshot.'
+        );
+
+        if (empty($payment->screenshot)) {
+            abort(404);
+        }
+
+        $filename = basename($payment->screenshot);
+
+        $allowedMimes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+        ];
+
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (!isset($allowedMimes[$extension])) {
+            abort(404);
+        }
+
+        $path = $this->resolveScreenshotPath($filename);
+
+        if ($path === null) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Content-Type' => $allowedMimes[$extension],
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
+            'Content-Disposition' => 'inline; filename="payment-screenshot.' . $extension . '"',
+        ]);
+    }
+
+    /**
+     * Resolve a screenshot filename to a file inside private storage,
+     * with a read-only fallback for legacy files still under public/payments.
+     */
+    private function resolveScreenshotPath(string $filename): ?string
+    {
+        $filename = basename($filename);
+
+        $candidates = [
+            storage_path('app/private/payments/' . $filename),
+            public_path('payments/' . $filename),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (!is_file($candidate) || !is_readable($candidate)) {
+                continue;
+            }
+
+            $realFile = realpath($candidate);
+
+            if ($realFile === false || !is_file($realFile)) {
+                continue;
+            }
+
+            return $realFile;
+        }
+
+        return null;
     }
 }
